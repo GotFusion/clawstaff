@@ -7,12 +7,17 @@ let package = Package(
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "OpenStaffApp", targets: ["OpenStaffApp"])
+        .executable(name: "OpenStaffApp", targets: ["OpenStaffApp"]),
+        .executable(name: "OpenStaffCaptureCLI", targets: ["OpenStaffCaptureCLI"])
     ],
     targets: [
         .executableTarget(
             name: "OpenStaffApp",
             path: "Sources/OpenStaffApp"
+        ),
+        .executableTarget(
+            name: "OpenStaffCaptureCLI",
+            path: "Sources/OpenStaffCaptureCLI"
         )
     ]
 )

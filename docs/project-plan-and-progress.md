@@ -108,10 +108,9 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 在 `apps/macos` 落地 SwiftUI 最小空应用，并提供统一启动命令 `make dev`。
 - 完成阶段 1.1 事件模型定义：`RawEvent` / `ContextSnapshot` / `NormalizedEvent`。
 - 新增事件 schema 文档、JSON Schema、样例 JSONL 与 `ADR-0001-event-schema.md`。
+- 完成阶段 1.2 采集引擎最小实现：`OpenStaffCaptureCLI`（权限检查、全局点击监听、上下文抓取、本地队列）。
 
 ### 未开始
-- 采集引擎代码实现。
-- 事件采集进程（权限检查、点击监听、上下文抓取）。
 - JSONL 落盘与 session 分文件轮转。
 - 知识 schema 定义与任务切片实现。
 - 与 ChatGPT 的脚本联通。
@@ -119,10 +118,10 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 业务级 GUI 原型与前端实现。
 
 ### 下一步建议
-1. 开始 TODO 1.2：实现权限检查与全局点击监听，产出 `RawEvent`。
-2. 在采集器中补 `ContextSnapshot` 读取（前台 app + windowTitle + windowId）。
-3. 开始 TODO 1.3：按 `sessionId` 写入 `data/raw-events/{date}/{sessionId}.jsonl`。
-4. 新增 schema 校验脚本（`scripts/validation`）并在写盘前执行快速校验。
+1. 开始 TODO 1.3：为 `OpenStaffCaptureCLI` 增加 JSONL 落盘（按日期 + session 分文件）。
+2. 增加写盘轮转策略（按文件大小阈值切分）和中断恢复追加逻辑。
+3. 新增 schema 校验脚本（`scripts/validation`）并在写盘前执行快速校验。
+4. 补 `ADR-0002-storage-strategy.md`，冻结原始事件存储与轮转规则。
 
 ---
 
