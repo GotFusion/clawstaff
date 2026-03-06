@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Local env
+.env.local
+
+# SwiftPM build artifacts
+apps/macos/.build/
+apps/macos/.swiftpm/
+
+# Runtime data (keep directory skeleton only)
+data/raw-events/*
+!data/raw-events/.gitkeep
+
+data/knowledge/*
+!data/knowledge/.gitkeep
+
+data/logs/*
+!data/logs/.gitkeep
+
+data/skills/

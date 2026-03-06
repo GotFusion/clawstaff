@@ -1,0 +1,20 @@
+app:
+  name: OpenStaff
+  mode: teaching
+  timezone: Asia/Shanghai
+
+storage:
+  root: data
+  rawEventsDir: raw-events
+  knowledgeDir: knowledge
+  logsDir: logs
+
+logging:
+  level: info
+  format: json
+
+openclaw:
+  integrationMode: file-first
+  skillsPendingDir: data/skills/pending
+  skillsDoneDir: data/skills/done
+  cliPath: vendors/openclaw/bin/openclaw

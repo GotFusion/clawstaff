@@ -1,0 +1,5 @@
+app:
+  mode: teaching
+
+logging:
+  level: debug

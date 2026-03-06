@@ -1,30 +1,30 @@
-# OpenStuff 详细编码步骤 TODO 清单（可直接按顺序执行）
+# OpenStaff 详细编码步骤 TODO 清单（可直接按顺序执行）
 
 > 目标：把规划文档变成可执行开发路线。每一项都定义输入、输出、验收标准。
 
 ## 阶段 0：基线准备（Day 0 ~ Day 1）
 
 ### TODO 0.1 锁定技术栈与运行边界
-- [ ] 明确 macOS GUI 技术方案（例如 Tauri / Electron / SwiftUI 绑定）。
-- [ ] 明确核心服务语言（TS/Python/Rust 任一，先单一语言优先）。
-- [ ] 记录 OpenClaw 集成方式（进程调用 / API / 文件驱动）。
+- [x] 明确 macOS GUI 技术方案（SwiftUI + AppKit 桥接策略）。
+- [x] 明确核心服务语言（Swift 6，单语言优先）。
+- [x] 记录 OpenClaw 集成方式（文件驱动优先 + 进程调用补充）。
 
 **输出物**
 - `docs/adr/ADR-0000-tech-stack.md`
 
 **验收标准**
-- [ ] 团队成员可在同一命令下启动最小空应用。
+- [x] 团队成员可在同一命令下启动最小空应用（`make dev`）。
 
 ### TODO 0.2 约定目录与命名规范
-- [ ] 定义 `shared/contracts`（或 `core/contracts`）位置。
-- [ ] 定义日志、数据、配置文件命名规范。
-- [ ] 定义错误码和状态码命名规则。
+- [x] 定义 `shared/contracts`（或 `core/contracts`）位置（采用 `core/contracts`）。
+- [x] 定义日志、数据、配置文件命名规范。
+- [x] 定义错误码和状态码命名规则。
 
 **输出物**
 - `docs/coding-conventions.md`
 
 **验收标准**
-- [ ] 新增模块均按统一命名规范落地。
+- [x] 新增模块均按统一命名规范落地（以 `core/contracts` + `data/*` 基线目录验证）。
 
 ---
 

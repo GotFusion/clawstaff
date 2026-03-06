@@ -1,4 +1,4 @@
-# OpenStuff 架构与目录合理性评审（v0）
+# OpenStaff 架构与目录合理性评审（v1）
 
 > 目标：在编码前先验证当前目录结构与核心实现逻辑是否合理，并明确建议调整项。
 
@@ -22,16 +22,13 @@
 3. **OpenClaw 集成边界明确**
    - vendor 引入源码，而转换逻辑在 `scripts/skills`，符合边界管理。
 
-### 2.2 可优化点（建议在编码前补齐）
+### 2.2 可优化点（Phase 0 执行后状态）
 
-1. 增加 `shared/`（或 `core/contracts/`）
-   - 用于放置通用类型、事件 schema、错误码、常量，避免 cross-module 循环引用。
-2. 增加 `apps/macos/src` 与 `apps/macos/resources` 规划文档
-   - 现在只有目录说明，建议提前约定 UI 代码和资源组织方式。
-3. 增加 `docs/adr/`（Architecture Decision Records）
-   - 用于记录关键决策（采集策略、存储选型、LLM 协议、执行安全机制）。
-4. 增加 `data/` 目录规范（仅本地开发）
-   - 例如 `data/raw-events`、`data/knowledge`、`data/logs`，用于演示与调试。
+1. `core/contracts/`：已创建，作为共享契约统一入口。
+2. `apps/macos`：已从目录说明升级为 Swift Package 最小空应用。
+3. `docs/adr/`：已创建并落地 `ADR-0000-tech-stack.md`。
+4. `data/`：已创建 `raw-events` / `knowledge` / `logs` 本地目录基线。
+5. 后续补充 `apps/macos` 资源组织（若进入 UI 开发阶段，再补 `resources/` 约定）。
 
 ## 3. 程序实现逻辑合理性（端到端）
 
@@ -73,7 +70,7 @@
 3. 高风险动作（删除、支付、系统设置）默认禁止。
 4. 教学/辅助/学生三模式需有明显状态标识和一键停止。
 
-## 6. 建议新增的文档与目录（本次暂不创建代码）
+## 6. 后续建议新增 ADR
 
 - `docs/adr/ADR-0001-event-schema.md`
 - `docs/adr/ADR-0002-storage-strategy.md`

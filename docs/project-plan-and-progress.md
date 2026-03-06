@@ -1,10 +1,10 @@
-# OpenStuff 项目方案与实现进展
+# OpenStaff 项目方案与实现进展
 
 ## 1. 项目目标
 
-OpenStuff 的定位是“老师-学生”式个人助理：
+OpenStaff 的定位是“老师-学生”式个人助理：
 - 老师：真实用户。
-- 学生：OpenStuff 软件。
+- 学生：OpenStaff 软件。
 
 学生通过观察老师在 macOS 上的操作行为进行学习，沉淀为结构化知识，再在不同模式下辅助或自主执行任务。
 
@@ -101,19 +101,23 @@ OpenStuff 的定位是“老师-学生”式个人助理：
 - 完成项目目录结构初始化。
 - 为核心目录与子目录补充职责说明文档（README）。
 - 在 `docs/` 建立本方案文档，记录目标、架构、MVP 与风险。
+- 完成阶段 0 技术栈 ADR：`docs/adr/ADR-0000-tech-stack.md`。
+- 完成编码规范文档：`docs/coding-conventions.md`。
+- 新增 `core/contracts/` 共享契约目录与 `data/` 本地数据目录基线。
+- 在 `apps/macos` 落地 SwiftUI 最小空应用，并提供统一启动命令 `make dev`。
 
 ### 未开始
 - 采集引擎代码实现。
 - 知识 schema 定义与落盘实现。
 - 与 ChatGPT 的脚本联通。
 - OpenClaw skills 转换与执行联调。
-- GUI 原型与前端实现。
+- 业务级 GUI 原型与前端实现。
 
 ### 下一步建议
-1. 先确定采集数据 schema（事件级 + 任务级）。
-2. 做一个最小采集 Demo（只记录点击 + 前台应用）。
-3. 编写首版知识解析提示词模板。
-4. 定义 OpenClaw skill 映射规则并做一条链路打通。
+1. 开始阶段 1：先定义 `RawEvent` / `ContextSnapshot` / `NormalizedEvent` 契约。
+2. 实现最小采集 Demo（点击 + 前台应用 + 窗口标题 + sessionId）。
+3. 打通 JSONL 落盘（`data/raw-events/{date}/{sessionId}.jsonl`）。
+4. 补 ADR-0001/0002，冻结事件 schema 与存储策略。
 
 ---
 
@@ -122,4 +126,3 @@ OpenStuff 的定位是“老师-学生”式个人助理：
 - 架构与目录合理性评审请见：`docs/architecture-review.md`。
 - 详细编码 TODO 清单请见：`docs/implementation-todo-checklist.md`。
 - 建议按 TODO 阶段顺序推进，每完成一个阶段回写本文件“当前实现进展”。
-
