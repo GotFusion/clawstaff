@@ -9,6 +9,7 @@ From repository root:
 ```bash
 make dev
 make capture
+make slice
 ```
 
 ## Build
@@ -22,6 +23,7 @@ make build
 - `Package.swift`: Swift package entry for macOS app shell.
 - `Sources/OpenStaffApp/OpenStaffApp.swift`: minimal window for baseline validation.
 - `Sources/OpenStaffCaptureCLI/`: Phase 1.3 capture CLI (permission check, click capture, context snapshot, JSONL persistence + rotation).
+- `Sources/OpenStaffTaskSlicerCLI/`: Phase 2.1 task slicer CLI (session events -> TaskChunk files).
 
 ## Capture CLI
 
@@ -42,6 +44,19 @@ If accessibility permission is missing, CLI prints a clear error and points to:
 Captured raw events are stored under:
 - `data/raw-events/{yyyy-mm-dd}/{sessionId}.jsonl`
 - `data/raw-events/{yyyy-mm-dd}/{sessionId}-r0001.jsonl` ... (rotation)
+
+## Task Slicer CLI
+
+```bash
+# Slice one session into task chunks
+make slice ARGS="--session-id session-20260307-a1 --date 2026-03-07"
+
+# Adjust idle threshold and print generated TaskChunk JSON lines
+make slice ARGS="--session-id session-20260307-a1 --idle-gap-seconds 30 --json"
+```
+
+Task chunks are written to:
+- `data/knowledge/{yyyy-mm-dd}/{taskId}.json`
 
 ## Planned Features
 

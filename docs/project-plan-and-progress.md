@@ -111,18 +111,19 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成阶段 1.2 采集引擎最小实现：`OpenStaffCaptureCLI`（权限检查、全局点击监听、上下文抓取、本地队列）。
 - 完成阶段 1.3 事件落盘与轮转：`RawEventFileSink`（JSONL 追加写盘、按日期+session 分片、按大小/时间轮转、异常中断恢复追加）。
 - 新增存储策略 ADR：`docs/adr/ADR-0002-storage-strategy.md`。
+- 完成阶段 2.1 任务切片器：`OpenStaffTaskSlicerCLI`（按空闲间隔 + 上下文切换切片，输出 `TaskChunk` 并生成稳定 `task_id`）。
 
 ### 未开始
-- 知识 schema 定义与任务切片实现。
+- 知识 schema 定义（`KnowledgeItem`）与摘要生成实现。
 - 与 ChatGPT 的脚本联通。
 - OpenClaw skills 转换与执行联调。
 - 业务级 GUI 原型与前端实现。
 
 ### 下一步建议
-1. 开始 TODO 2.1：实现 session -> task 的任务切片器（空闲间隔 + 窗口切换规则）。
-2. 开始 TODO 2.2：冻结 `KnowledgeItem` schema（含 `schemaVersion` 与约束字段）。
-3. 增加 `scripts/validation`：对 `data/raw-events/**/*.jsonl` 做 schema 快速校验。
-4. 准备 TODO 2.3：基于规则生成首版任务摘要，形成老师可审阅文本。
+1. 开始 TODO 2.2：冻结 `KnowledgeItem` schema（含 `schemaVersion` 与约束字段）。
+2. 开始 TODO 2.3：基于 `TaskChunk` 生成首版规则摘要（老师可审阅文本）。
+3. 增加 `scripts/validation`：对 `data/raw-events/**/*.jsonl` 与 `data/knowledge/**/*.json` 做 schema 快速校验。
+4. 为切片器补单元测试（空闲切分、窗口切分、task_id 稳定性）。
 
 ---
 

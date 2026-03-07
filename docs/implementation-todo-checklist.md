@@ -77,14 +77,17 @@
 ## 阶段 2：知识建模 MVP（Day 4 ~ Day 7）
 
 ### TODO 2.1 任务切片器（Session -> Task）
-- [ ] 按空闲间隔/窗口切换识别任务边界。
-- [ ] 给每段任务生成 `task_id`。
+- [x] 按空闲间隔/窗口切换识别任务边界。
+- [x] 给每段任务生成 `task_id`。
 
 **输出物**
 - `TaskChunk` 结构与切片规则。
+- `core/contracts/KnowledgeTaskContracts.swift`
+- `core/knowledge/task-slicer-v0.md`
+- `apps/macos/Sources/OpenStaffTaskSlicerCLI/*`
 
 **验收标准**
-- [ ] 可将 1 个 session 自动切分为多个任务片段。
+- [x] 可将 1 个 session 自动切分为多个任务片段。
 
 ### TODO 2.2 知识条目格式定义
 - [ ] 定义 `KnowledgeItem`（目标、步骤、上下文、约束）。

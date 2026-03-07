@@ -11,6 +11,7 @@ Shared contracts for cross-module communication.
 ## Current Contracts
 
 - `CaptureEventContracts.swift`: `RawEvent`, `ContextSnapshot`, `NormalizedEvent`.
+- `KnowledgeTaskContracts.swift`: `TaskChunk`, `TaskBoundaryReason`, `TaskSlicingPolicy`.
 
 ## Rule
 
