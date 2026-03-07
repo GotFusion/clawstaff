@@ -22,7 +22,7 @@ make build
 ## Layout
 
 - `Package.swift`: Swift package entry for macOS app shell.
-- `Sources/OpenStaffApp/OpenStaffApp.swift`: Phase 5.2 dashboard UI（模式切换、状态展示、权限状态、最近任务、学习记录与知识浏览）。
+- `Sources/OpenStaffApp/OpenStaffApp.swift`: Phase 5.3 dashboard UI（模式切换、状态展示、权限状态、学习记录浏览、审阅与反馈）。
 - `Sources/OpenStaffCaptureCLI/`: Phase 1.3 capture CLI (permission check, click capture, context snapshot, JSONL persistence + rotation).
 - `Sources/OpenStaffTaskSlicerCLI/`: Phase 2.1 task slicer CLI (session events -> TaskChunk files).
 - `Sources/OpenStaffKnowledgeBuilderCLI/`: Phase 2.2 knowledge builder CLI (TaskChunk -> KnowledgeItem).
@@ -73,10 +73,11 @@ make knowledge ARGS="--session-id session-20260307-a1 --json"
 Knowledge items are written to:
 - `data/knowledge/{yyyy-mm-dd}/{taskId}.json`
 
-## GUI Status (Phase 5.2)
+## GUI Status (Phase 5.3)
 
 - Three-mode switcher: `teaching / assist / student`（复用状态机守卫）。
 - Current status card: 当前模式、状态码、能力白名单、未满足守卫信息。
 - Permission status card: 辅助功能权限 + 数据目录可写性。
 - Recent task panel: 汇总 `data/logs/**/*.log` 与 `data/knowledge/**/*.json`。
 - Learning browser: 会话列表、任务列表、任务详情与知识条目（目标/摘要/约束/步骤）浏览。
+- Review and feedback: 执行日志详情查看 + 老师反馈入口（通过/驳回/修正），反馈写入 `data/feedback/**/*.jsonl`。

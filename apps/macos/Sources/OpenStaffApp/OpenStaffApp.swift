@@ -11,7 +11,7 @@ struct OpenStaffApp: App {
             OpenStaffDashboardView(viewModel: viewModel)
         }
         .windowResizability(.contentSize)
-        .defaultSize(width: 1080, height: 920)
+        .defaultSize(width: 1180, height: 1120)
     }
 }
 
@@ -25,7 +25,7 @@ struct OpenStaffDashboardView: View {
                     Text("OpenStaff 主界面")
                         .font(.title2)
                         .fontWeight(.semibold)
-                    Text("阶段 5.2：学习记录与知识浏览")
+                    Text("阶段 5.3：审阅与反馈")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -332,9 +332,146 @@ struct OpenStaffDashboardView: View {
                     }
                 }
             }
+
+            GroupBox("审阅与反馈") {
+                if viewModel.executionLogs.isEmpty {
+                    Text("暂无执行日志。可先运行 assist/student 流程后刷新。")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 4)
+                } else {
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("执行日志")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+
+                            List(
+                                selection: Binding(
+                                    get: { viewModel.selectedExecutionLogId },
+                                    set: { viewModel.selectExecutionLog($0) }
+                                )
+                            ) {
+                                ForEach(viewModel.executionLogs) { log in
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack {
+                                            Text(viewModel.modeDisplayName(for: log.mode))
+                                                .font(.caption)
+                                                .fontWeight(.semibold)
+                                                .foregroundStyle(log.mode.color)
+                                            Text(log.status)
+                                                .font(.caption2)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        Text(log.message)
+                                            .font(.callout)
+                                            .lineLimit(2)
+                                        Text("\(log.sessionId) · \(log.taskId ?? "no-task") · \(OpenStaffDateFormatter.displayString(from: log.timestamp))")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .padding(.vertical, 2)
+                                    .tag(log.id as String?)
+                                }
+                            }
+                            .listStyle(.inset)
+                            .frame(minWidth: 360, minHeight: 260)
+                        }
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("日志详情与老师反馈")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+
+                            if let log = viewModel.selectedExecutionLog {
+                                ScrollView {
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        LabeledContent("时间", value: OpenStaffDateFormatter.displayString(from: log.timestamp))
+                                        LabeledContent("会话 ID", value: log.sessionId)
+                                        LabeledContent("任务 ID", value: log.taskId ?? "no-task")
+                                        LabeledContent("状态码", value: log.status)
+                                        if let component = log.component {
+                                            LabeledContent("组件", value: component)
+                                        }
+                                        if let errorCode = log.errorCode {
+                                            LabeledContent("错误码", value: errorCode)
+                                        }
+                                        LabeledContent("日志位置", value: "\(log.sourceFilePath):\(log.lineNumber)")
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("消息")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            Text(log.message)
+                                                .font(.callout)
+                                        }
+
+                                        Divider()
+
+                                        if let feedback = viewModel.latestFeedbackForSelectedLog {
+                                            LabeledContent("最近反馈", value: feedback.decision.displayName)
+                                            if let note = feedback.note, !note.isEmpty {
+                                                LabeledContent("反馈备注", value: note)
+                                            }
+                                            LabeledContent("反馈时间", value: OpenStaffDateFormatter.displayString(from: feedback.timestamp))
+                                        } else {
+                                            Text("该日志暂无老师反馈。")
+                                                .font(.callout)
+                                                .foregroundStyle(.secondary)
+                                        }
+
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            Text("填写反馈备注（修正建议可写在这里）")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            TextEditor(text: $viewModel.feedbackInput)
+                                                .frame(minHeight: 84)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 6)
+                                                        .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                                                )
+                                        }
+
+                                        HStack(spacing: 8) {
+                                            Button("通过") {
+                                                viewModel.submitTeacherFeedback(decision: .approved)
+                                            }
+                                            .buttonStyle(.borderedProminent)
+
+                                            Button("驳回") {
+                                                viewModel.submitTeacherFeedback(decision: .rejected)
+                                            }
+                                            .buttonStyle(.bordered)
+
+                                            Button("修正") {
+                                                viewModel.submitTeacherFeedback(decision: .needsRevision)
+                                            }
+                                            .buttonStyle(.bordered)
+                                        }
+
+                                        if let feedbackStatusMessage = viewModel.feedbackStatusMessage {
+                                            Text(feedbackStatusMessage)
+                                                .font(.caption)
+                                                .foregroundStyle(viewModel.feedbackWriteSucceeded ? .green : .red)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            } else {
+                                Text("请选择一条执行日志进行审阅。")
+                                    .font(.callout)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                                    .padding(.top, 8)
+                            }
+                        }
+                        .frame(minWidth: 520, minHeight: 260)
+                    }
+                }
+            }
         }
         .padding(20)
-        .frame(minWidth: 980, minHeight: 920)
+        .frame(minWidth: 1080, minHeight: 1120)
         .task {
             viewModel.refreshDashboard(promptAccessibilityPermission: false)
         }
@@ -370,6 +507,12 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     @Published private(set) var learningSessions: [LearningSessionSummary]
     @Published var selectedLearningSessionId: String?
     @Published var selectedLearningTaskId: String?
+    @Published private(set) var executionLogs: [ExecutionLogSummary]
+    @Published var selectedExecutionLogId: String?
+    @Published var feedbackInput = ""
+    @Published private(set) var latestFeedbackForSelectedLog: TeacherFeedbackSummary?
+    @Published private(set) var feedbackStatusMessage: String?
+    @Published private(set) var feedbackWriteSucceeded = false
     @Published private(set) var lastRefreshedAt: Date?
 
     private let logger = InMemoryOrchestratorStateLogger()
@@ -377,12 +520,14 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     private let sessionId: String
     private var traceSequence = 0
     private var learningSnapshot = LearningSnapshot.empty
+    private var executionReviewSnapshot = ExecutionReviewSnapshot.empty
 
     init(initialMode: OpenStaffMode = .teaching) {
         self.currentMode = initialMode
         self.permissionSnapshot = .unknown
         self.recentTasks = []
         self.learningSessions = []
+        self.executionLogs = []
         self.stateMachine = ModeStateMachine(initialMode: initialMode, logger: logger)
         self.sessionId = "session-gui-\(UUID().uuidString.prefix(8).lowercased())"
     }
@@ -421,6 +566,13 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             return nil
         }
         return learningSnapshot.taskDetailsById[selectedLearningTaskId]
+    }
+
+    var selectedExecutionLog: ExecutionLogSummary? {
+        guard let selectedExecutionLogId else {
+            return nil
+        }
+        return executionReviewSnapshot.logById[selectedExecutionLogId]
     }
 
     func modeDisplayName(for mode: OpenStaffMode) -> String {
@@ -463,6 +615,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         learningSnapshot = LearningRecordRepository.loadLearningSnapshot()
         learningSessions = learningSnapshot.sessions
         reconcileLearningSelection()
+        refreshExecutionReview()
         lastRefreshedAt = Date()
     }
 
@@ -473,6 +626,51 @@ final class OpenStaffDashboardViewModel: ObservableObject {
 
     func selectLearningTask(_ taskId: String?) {
         selectedLearningTaskId = taskId
+    }
+
+    func selectExecutionLog(_ logId: String?) {
+        selectedExecutionLogId = logId
+        feedbackStatusMessage = nil
+        refreshSelectedLogFeedback()
+    }
+
+    func submitTeacherFeedback(decision: TeacherFeedbackDecision) {
+        guard let selectedExecutionLog else {
+            feedbackWriteSucceeded = false
+            feedbackStatusMessage = "未选择执行日志，无法提交反馈。"
+            return
+        }
+
+        let trimmedNote = feedbackInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        if decision == .needsRevision && trimmedNote.isEmpty {
+            feedbackWriteSucceeded = false
+            feedbackStatusMessage = "修正反馈需填写备注。"
+            return
+        }
+
+        let entry = TeacherFeedbackWriteEntry(
+            feedbackId: "feedback-\(UUID().uuidString.lowercased())",
+            timestamp: OpenStaffDateFormatter.iso8601String(from: Date()),
+            decision: decision,
+            note: trimmedNote.isEmpty ? nil : trimmedNote,
+            sessionId: selectedExecutionLog.sessionId,
+            taskId: selectedExecutionLog.taskId,
+            logEntryId: selectedExecutionLog.id,
+            logStatus: selectedExecutionLog.status,
+            logMessage: selectedExecutionLog.message,
+            component: selectedExecutionLog.component
+        )
+
+        do {
+            try TeacherFeedbackWriter.append(entry)
+            feedbackInput = ""
+            feedbackWriteSucceeded = true
+            feedbackStatusMessage = "反馈已保存：\(decision.displayName)"
+            refreshExecutionReview()
+        } catch {
+            feedbackWriteSucceeded = false
+            feedbackStatusMessage = "反馈保存失败：\(error.localizedDescription)"
+        }
     }
 
     private func reconcileLearningSelection() {
@@ -495,6 +693,31 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         if self.selectedLearningTaskId == nil {
             self.selectedLearningTaskId = tasks.first?.id
         }
+    }
+
+    private func refreshExecutionReview() {
+        executionReviewSnapshot = ExecutionReviewRepository.loadExecutionSnapshot(limit: 120)
+        executionLogs = executionReviewSnapshot.logs
+        reconcileExecutionSelection()
+        refreshSelectedLogFeedback()
+    }
+
+    private func reconcileExecutionSelection() {
+        let logIds = Set(executionLogs.map(\.id))
+        if let selectedExecutionLogId, !logIds.contains(selectedExecutionLogId) {
+            self.selectedExecutionLogId = nil
+        }
+        if self.selectedExecutionLogId == nil {
+            self.selectedExecutionLogId = executionLogs.first?.id
+        }
+    }
+
+    private func refreshSelectedLogFeedback() {
+        guard let selectedExecutionLogId else {
+            latestFeedbackForSelectedLog = nil
+            return
+        }
+        latestFeedbackForSelectedLog = executionReviewSnapshot.latestFeedbackByLogId[selectedExecutionLogId]
     }
 }
 
@@ -760,6 +983,238 @@ struct LearningSnapshot {
     let taskDetailsById: [String: LearningTaskDetail]
 
     static let empty = LearningSnapshot(sessions: [], tasksBySession: [:], taskDetailsById: [:])
+}
+
+struct ExecutionLogSummary: Identifiable {
+    let id: String
+    let mode: OpenStaffMode
+    let timestamp: Date
+    let sessionId: String
+    let taskId: String?
+    let status: String
+    let message: String
+    let component: String?
+    let errorCode: String?
+    let sourceFilePath: String
+    let lineNumber: Int
+}
+
+enum TeacherFeedbackDecision: String, Codable, CaseIterable {
+    case approved
+    case rejected
+    case needsRevision
+
+    var displayName: String {
+        switch self {
+        case .approved:
+            return "通过"
+        case .rejected:
+            return "驳回"
+        case .needsRevision:
+            return "修正"
+        }
+    }
+}
+
+struct TeacherFeedbackSummary {
+    let feedbackId: String
+    let timestamp: Date
+    let decision: TeacherFeedbackDecision
+    let note: String?
+}
+
+struct ExecutionReviewSnapshot {
+    let logs: [ExecutionLogSummary]
+    let logById: [String: ExecutionLogSummary]
+    let latestFeedbackByLogId: [String: TeacherFeedbackSummary]
+
+    static let empty = ExecutionReviewSnapshot(logs: [], logById: [:], latestFeedbackByLogId: [:])
+}
+
+enum ExecutionReviewRepository {
+    private static let decoder = JSONDecoder()
+
+    static func loadExecutionSnapshot(limit: Int) -> ExecutionReviewSnapshot {
+        let logs = loadLogs(limit: limit)
+        var logById: [String: ExecutionLogSummary] = [:]
+        logById.reserveCapacity(logs.count)
+        for log in logs {
+            logById[log.id] = log
+        }
+
+        let latestFeedbackByLogId = loadLatestFeedbackByLogId()
+        return ExecutionReviewSnapshot(logs: logs, logById: logById, latestFeedbackByLogId: latestFeedbackByLogId)
+    }
+
+    private static func loadLogs(limit: Int) -> [ExecutionLogSummary] {
+        let logFiles = listFiles(withExtension: "log", under: OpenStaffWorkspacePaths.logsDirectory)
+        guard !logFiles.isEmpty else {
+            return []
+        }
+
+        var logs: [ExecutionLogSummary] = []
+        logs.reserveCapacity(256)
+
+        for fileURL in logFiles {
+            guard let content = try? String(contentsOf: fileURL, encoding: .utf8) else {
+                continue
+            }
+            let fileName = fileURL.lastPathComponent.lowercased()
+            let defaultMode = inferMode(fromFileName: fileName)
+
+            for (index, line) in content.split(whereSeparator: \.isNewline).enumerated() {
+                guard let data = line.data(using: .utf8),
+                      let record = try? decoder.decode(ExecutionLogRecord.self, from: data),
+                      let timestamp = OpenStaffDateFormatter.date(from: record.timestamp) else {
+                    continue
+                }
+
+                let inferredMode = inferMode(component: record.component) ?? defaultMode
+                let lineNumber = index + 1
+                let logId = "\(fileURL.path)#L\(lineNumber)"
+                let item = ExecutionLogSummary(
+                    id: logId,
+                    mode: inferredMode,
+                    timestamp: timestamp,
+                    sessionId: record.sessionId,
+                    taskId: record.taskId,
+                    status: record.status,
+                    message: record.message,
+                    component: record.component,
+                    errorCode: record.errorCode,
+                    sourceFilePath: fileURL.path,
+                    lineNumber: lineNumber
+                )
+                logs.append(item)
+            }
+        }
+
+        let sorted = logs.sorted { lhs, rhs in
+            if lhs.timestamp == rhs.timestamp {
+                return lhs.id < rhs.id
+            }
+            return lhs.timestamp > rhs.timestamp
+        }
+
+        if sorted.count <= limit {
+            return sorted
+        }
+        return Array(sorted.prefix(limit))
+    }
+
+    private static func loadLatestFeedbackByLogId() -> [String: TeacherFeedbackSummary] {
+        let feedbackFiles = listFiles(withExtension: "jsonl", under: OpenStaffWorkspacePaths.feedbackDirectory)
+        guard !feedbackFiles.isEmpty else {
+            return [:]
+        }
+
+        var latestByLogId: [String: TeacherFeedbackSummary] = [:]
+        latestByLogId.reserveCapacity(64)
+
+        for fileURL in feedbackFiles {
+            guard let content = try? String(contentsOf: fileURL, encoding: .utf8) else {
+                continue
+            }
+
+            for line in content.split(whereSeparator: \.isNewline) {
+                guard let data = line.data(using: .utf8),
+                      let record = try? decoder.decode(TeacherFeedbackReadRecord.self, from: data),
+                      let timestamp = OpenStaffDateFormatter.date(from: record.timestamp) else {
+                    continue
+                }
+
+                let summary = TeacherFeedbackSummary(
+                    feedbackId: record.feedbackId,
+                    timestamp: timestamp,
+                    decision: record.decision,
+                    note: record.note
+                )
+
+                if let existing = latestByLogId[record.logEntryId] {
+                    if summary.timestamp >= existing.timestamp {
+                        latestByLogId[record.logEntryId] = summary
+                    }
+                } else {
+                    latestByLogId[record.logEntryId] = summary
+                }
+            }
+        }
+
+        return latestByLogId
+    }
+
+    private static func inferMode(component: String?) -> OpenStaffMode? {
+        let value = component?.lowercased() ?? ""
+        if value.contains("student") {
+            return .student
+        }
+        if value.contains("assist") {
+            return .assist
+        }
+        if value.contains("capture") || value.contains("knowledge") || value.contains("task") || value.contains("orchestrator") {
+            return .teaching
+        }
+        return nil
+    }
+
+    private static func inferMode(fromFileName fileName: String) -> OpenStaffMode {
+        if fileName.contains("student") {
+            return .student
+        }
+        if fileName.contains("assist") {
+            return .assist
+        }
+        return .teaching
+    }
+
+    private static func listFiles(withExtension pathExtension: String, under root: URL) -> [URL] {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: root.path) else {
+            return []
+        }
+
+        guard let enumerator = fileManager.enumerator(
+            at: root,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return []
+        }
+
+        var urls: [URL] = []
+        for case let fileURL as URL in enumerator where fileURL.pathExtension == pathExtension {
+            urls.append(fileURL)
+        }
+        return urls
+    }
+}
+
+enum TeacherFeedbackWriter {
+    private static let encoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        return encoder
+    }()
+
+    static func append(_ entry: TeacherFeedbackWriteEntry) throws {
+        let directory = OpenStaffWorkspacePaths.feedbackDirectory
+            .appendingPathComponent(OpenStaffDateFormatter.dayString(from: Date()), isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let safeTaskId = entry.taskId ?? "no-task"
+        let fileURL = directory.appendingPathComponent("\(entry.sessionId)-\(safeTaskId)-teacher-feedback.jsonl")
+        var payload = try encoder.encode(entry)
+        payload.append(0x0A)
+
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            let handle = try FileHandle(forWritingTo: fileURL)
+            try handle.seekToEnd()
+            try handle.write(contentsOf: payload)
+            try handle.close()
+        } else {
+            try payload.write(to: fileURL, options: .atomic)
+        }
+    }
 }
 
 enum LearningRecordRepository {
@@ -1031,6 +1486,65 @@ private struct KnowledgeConstraintRecord: Decodable {
     let description: String
 }
 
+private struct ExecutionLogRecord: Decodable {
+    let timestamp: String
+    let sessionId: String
+    let taskId: String?
+    let status: String
+    let message: String
+    let component: String?
+    let errorCode: String?
+}
+
+struct TeacherFeedbackWriteEntry: Codable {
+    let schemaVersion: String
+    let feedbackId: String
+    let timestamp: String
+    let reviewerRole: String
+    let decision: TeacherFeedbackDecision
+    let note: String?
+    let sessionId: String
+    let taskId: String?
+    let logEntryId: String
+    let logStatus: String
+    let logMessage: String
+    let component: String?
+
+    init(
+        feedbackId: String,
+        timestamp: String,
+        decision: TeacherFeedbackDecision,
+        note: String?,
+        sessionId: String,
+        taskId: String?,
+        logEntryId: String,
+        logStatus: String,
+        logMessage: String,
+        component: String?
+    ) {
+        self.schemaVersion = "teacher.feedback.v0"
+        self.feedbackId = feedbackId
+        self.timestamp = timestamp
+        self.reviewerRole = "teacher"
+        self.decision = decision
+        self.note = note
+        self.sessionId = sessionId
+        self.taskId = taskId
+        self.logEntryId = logEntryId
+        self.logStatus = logStatus
+        self.logMessage = logMessage
+        self.component = component
+    }
+}
+
+private struct TeacherFeedbackReadRecord: Decodable {
+    let feedbackId: String
+    let timestamp: String
+    let decision: TeacherFeedbackDecision
+    let note: String?
+    let logEntryId: String
+}
+
 enum OpenStaffWorkspacePaths {
     static var repositoryRoot: URL {
         let fileManager = FileManager.default
@@ -1065,6 +1579,10 @@ enum OpenStaffWorkspacePaths {
         dataDirectory.appendingPathComponent("task-chunks", isDirectory: true)
     }
 
+    static var feedbackDirectory: URL {
+        dataDirectory.appendingPathComponent("feedback", isDirectory: true)
+    }
+
     static func ensureDataDirectoryWritable() -> Bool {
         let fileManager = FileManager.default
         let dataPath = dataDirectory.path
@@ -1080,6 +1598,13 @@ enum OpenStaffWorkspacePaths {
 }
 
 enum OpenStaffDateFormatter {
+    static func dayString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
     static func displayString(from date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "zh_CN")
