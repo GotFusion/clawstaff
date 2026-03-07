@@ -4,6 +4,7 @@
   "taskId": "task-session-20260307-a1-001",
   "sessionId": "session-20260307-a1",
   "goal": "在 Safari 中复现任务 task-session-20260307-a1-001 的操作流程",
+  "summary": "在 Safari（OpenStaff - GitHub）中，步骤摘要：点击 -> 点击。共 2 步，任务分段原因：空闲间隔切分。",
   "steps": [
     {
       "stepId": "step-001",

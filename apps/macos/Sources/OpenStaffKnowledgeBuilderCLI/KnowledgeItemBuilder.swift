@@ -91,9 +91,14 @@ struct TaskChunkLoader {
 struct KnowledgeItemBuilder {
     private let nowProvider: () -> Date
     private let timestampFormatter: ISO8601DateFormatter
+    private let summaryGenerator: KnowledgeSummaryGenerator
 
-    init(nowProvider: @escaping () -> Date = Date.init) {
+    init(
+        nowProvider: @escaping () -> Date = Date.init,
+        summaryGenerator: KnowledgeSummaryGenerator = KnowledgeSummaryGenerator()
+    ) {
         self.nowProvider = nowProvider
+        self.summaryGenerator = summaryGenerator
 
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -105,6 +110,7 @@ struct KnowledgeItemBuilder {
         let goal = "在 \(chunk.primaryContext.appName) 中复现任务 \(chunk.taskId) 的操作流程"
 
         let steps = buildSteps(from: chunk)
+        let summary = summaryGenerator.generate(from: chunk, steps: steps)
         let context = KnowledgeContext(
             appName: chunk.primaryContext.appName,
             appBundleId: chunk.primaryContext.appBundleId,
@@ -140,6 +146,7 @@ struct KnowledgeItemBuilder {
             taskId: chunk.taskId,
             sessionId: chunk.sessionId,
             goal: goal,
+            summary: summary,
             steps: steps,
             context: context,
             constraints: constraints,

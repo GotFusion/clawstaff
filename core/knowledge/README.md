@@ -7,11 +7,11 @@
 - 已定义切片规则文档：`core/knowledge/task-slicer-v0.md`。
 - 已定义知识条目结构：`KnowledgeItem`（见 `core/contracts/KnowledgeItemContracts.swift`）。
 - 已定义知识条目文档：`core/knowledge/knowledge-item-v0.md`。
+- 已定义规则摘要文档：`core/knowledge/summary-generator-v0.md`。
 - 已提供 CLI：
   - `OpenStaffTaskSlicerCLI`（读取 session raw-events，输出 task chunk 文件）。
   - `OpenStaffKnowledgeBuilderCLI`（读取 task chunk，输出 knowledge item 文件）。
 
 ## 后续实现
-- 任务摘要规则生成（TODO 2.3）。
 - 输出可供 LLM 解析的结构化提示上下文。
 - 转换为 OpenClaw skills 所需中间格式。

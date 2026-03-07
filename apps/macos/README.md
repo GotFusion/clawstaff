@@ -66,7 +66,7 @@ Task chunks are written to:
 # Build KnowledgeItem files from task chunks
 make knowledge ARGS="--session-id session-20260307-a1 --date 2026-03-07"
 
-# Print generated KnowledgeItem JSON lines
+# Print generated KnowledgeItem JSON lines (including summary)
 make knowledge ARGS="--session-id session-20260307-a1 --json"
 ```
 

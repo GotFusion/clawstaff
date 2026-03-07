@@ -20,7 +20,7 @@ make knowledge
 - `make dev`：启动 macOS 最小空应用（Phase 0 验收命令）。
 - `make capture`：启动 Phase 1.3 采集 CLI（全局点击监听 + 上下文抓取 + JSONL 落盘轮转）。
 - `make slice`：启动 Phase 2.1 任务切片 CLI（session raw-events -> task chunks）。
-- `make knowledge`：启动 Phase 2.2 知识构建 CLI（task chunks -> knowledge items）。
+- `make knowledge`：启动 Phase 2.3 知识构建 CLI（task chunks -> knowledge items + rule summary）。
 
 ## 目录概览
 

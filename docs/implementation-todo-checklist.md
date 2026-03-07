@@ -104,14 +104,18 @@
 - [x] 任意任务切片都能映射为合法 `KnowledgeItem`。
 
 ### TODO 2.3 自动总结初版（无 LLM）
-- [ ] 用规则生成步骤摘要（例如“打开 X -> 点击 Y -> 输入 Z”）。
-- [ ] 输出老师可读的摘要文本。
+- [x] 用规则生成步骤摘要（例如“打开 X -> 点击 Y -> 输入 Z”）。
+- [x] 输出老师可读的摘要文本。
 
 **输出物**
 - `summary` 字段及其生成模块。
+- `core/contracts/KnowledgeItemContracts.swift`（`summary` 字段）
+- `apps/macos/Sources/OpenStaffKnowledgeBuilderCLI/KnowledgeSummaryGenerator.swift`
+- `core/knowledge/summary-generator-v0.md`
+- `core/knowledge/examples/summary-review-10-samples.md`
 
 **验收标准**
-- [ ] 10 条样例任务中，摘要可读性通过人工检查。
+- [x] 10 条样例任务中，摘要可读性通过人工检查。
 
 ---
 

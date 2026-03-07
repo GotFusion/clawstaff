@@ -8,6 +8,7 @@ public struct KnowledgeItem: Codable, Equatable {
     public let taskId: String
     public let sessionId: String
     public let goal: String
+    public let summary: String
     public let steps: [KnowledgeStep]
     public let context: KnowledgeContext
     public let constraints: [KnowledgeConstraint]
@@ -21,6 +22,7 @@ public struct KnowledgeItem: Codable, Equatable {
         taskId: String,
         sessionId: String,
         goal: String,
+        summary: String,
         steps: [KnowledgeStep],
         context: KnowledgeContext,
         constraints: [KnowledgeConstraint],
@@ -33,6 +35,7 @@ public struct KnowledgeItem: Codable, Equatable {
         self.taskId = taskId
         self.sessionId = sessionId
         self.goal = goal
+        self.summary = summary
         self.steps = steps
         self.context = context
         self.constraints = constraints

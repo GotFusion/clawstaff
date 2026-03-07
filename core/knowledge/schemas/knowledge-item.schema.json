@@ -9,6 +9,7 @@
     "taskId",
     "sessionId",
     "goal",
+    "summary",
     "steps",
     "context",
     "constraints",
@@ -34,6 +35,10 @@
       "pattern": "^[a-z0-9-]+$"
     },
     "goal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
       "type": "string",
       "minLength": 1
     },
