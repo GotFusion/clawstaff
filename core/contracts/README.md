@@ -14,6 +14,7 @@ Shared contracts for cross-module communication.
 - `KnowledgeTaskContracts.swift`: `TaskChunk`, `TaskBoundaryReason`, `TaskSlicingPolicy`.
 - `KnowledgeItemContracts.swift`: `KnowledgeItem`, `KnowledgeStep`, `KnowledgeContext`, `KnowledgeConstraint`, `KnowledgeSource`.
 - `OrchestratorContracts.swift`: `OpenStaffMode`, `ModeTransitionContext`, `ModeTransitionDecision`, `OrchestratorLogEntry`.
+- `AssistModeContracts.swift`: `AssistSuggestion`, `AssistConfirmationDecision`, `AssistExecutionOutcome`, `AssistLoopLogEntry`.
 
 ## Rule
 

@@ -15,6 +15,7 @@ make capture
 make slice
 make knowledge
 make orchestrator
+make assist
 make llm-prompts
 make llm-validate
 make llm-call
@@ -30,6 +31,7 @@ make skills-validate-demo
 - `make slice`：启动 Phase 2.1 任务切片 CLI（session raw-events -> task chunks）。
 - `make knowledge`：启动 Phase 2.3 知识构建 CLI（task chunks -> knowledge items + rule summary）。
 - `make orchestrator`：启动 Phase 4.1 模式状态机 CLI（模式切换守卫 + 能力白名单 + 结构化日志）。
+- `make assist`：启动 Phase 4.2 辅助模式闭环 CLI（规则预测 -> 弹窗确认 -> 执行 -> 回写日志）。
 - `make llm-prompts`：渲染 Phase 3.1 提示词模板（KnowledgeItem -> system/user prompts）。
 - `make llm-validate`：校验 LLM 结构化输出样例（强制 JSON + 一致性检查）。
 - `make llm-call`：运行 Phase 3.2 调用适配层（默认离线 `text` provider，输出到 `/tmp/openstaff-llm-call-output.json`）。

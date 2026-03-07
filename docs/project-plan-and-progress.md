@@ -118,13 +118,14 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成阶段 3.2 ChatGPT 调用适配层：新增 `chatgpt_adapter.py`（重试、超时、限流、请求摘要日志、错误报告），并提供离线 `text` provider 以支持无 API 场景验证。
 - 完成阶段 3.3 OpenClaw skill 映射器：新增 `openclaw_skill_mapper.py` 与 `validate_openclaw_skill.py`，实现 `KnowledgeItem + LLM` 到 OpenClaw `SKILL.md` 的映射，并支持字段校验与 fallback。
 - 完成阶段 4.1 模式状态机：新增 `ModeStateMachine`、`OrchestratorContracts`、`OpenStaffOrchestratorCLI`，实现三模式合法切换校验、切换守卫与能力白名单，非法切换会拒绝并输出结构化日志。
+- 完成阶段 4.2 辅助模式闭环：新增 `AssistModeLoop` + `AssistActionExecutor` + `AssistLoopLogWriter` + `OpenStaffAssistCLI`，实现“规则预测 -> 弹窗确认 -> 执行 -> 回写日志”最小闭环。
 
 ### 未开始
 - OpenClaw skills 执行联调。
 - 业务级 GUI 原型与前端实现。
 
 ### 下一步建议
-1. 开始阶段 4.2：实现辅助模式“预测 -> 确认 -> 执行 -> 回写日志”最小闭环。
+1. 开始阶段 4.3：实现学生模式“输入目标 -> 自动规划 -> 执行 -> 结构化审阅报告”最小闭环。
 2. API 可用后补充 `provider=openai` 联机验证（模型行为、限流参数、错误码映射）并补充 skill 端到端执行联调。
 3. 增加 `scripts/validation`：对 `data/raw-events/**/*.jsonl`、`data/task-chunks/**/*.json`、`data/knowledge/**/*.json`、`data/skills/**/*.json` 做 schema 快速校验。
 4. 为切片器、映射器、摘要器补单元测试（边界切分、字段完整性、fallback 稳定性）。

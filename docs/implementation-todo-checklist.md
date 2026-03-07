@@ -176,14 +176,19 @@
 - [x] 非法状态切换被拒绝并记录日志（`make orchestrator` 默认输出结构化日志，非法切换返回退出码 `2`）。
 
 ### TODO 4.2 辅助模式闭环
-- [ ] 下一步预测策略（先规则后模型）。
-- [ ] 弹窗确认 -> 执行 -> 回写日志。
+- [x] 下一步预测策略（先规则后模型）。
+- [x] 弹窗确认 -> 执行 -> 回写日志。
 
 **输出物**
-- 辅助模式最小链路。
+- `core/orchestrator/AssistModeLoop.swift`
+- `core/orchestrator/assist-mode-loop-v0.md`
+- `core/contracts/AssistModeContracts.swift`
+- `core/executor/AssistActionExecutor.swift`
+- `core/storage/AssistLoopLogWriter.swift`
+- `apps/macos/Sources/OpenStaffAssistCLI/*`
 
 **验收标准**
-- [ ] “老师确认后执行”全链路可演示。
+- [x] “老师确认后执行”全链路可演示（`make assist ARGS="--knowledge-item core/knowledge/examples/knowledge-item.sample.json --auto-confirm yes"`）。
 
 ### TODO 4.3 学生模式闭环
 - [ ] 输入任务目标 -> 自动规划 -> 调用技能执行。
