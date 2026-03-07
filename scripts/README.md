@@ -4,4 +4,4 @@
 
 ## 子目录职责
 - `llm/`：与 ChatGPT 接口交互、提示词模板、解析流程（已落地 Phase 3.1 模板系统 + Phase 3.2 调用适配层）。
-- `skills/`：将知识文件转换为 OpenClaw skills 的脚本。
+- `skills/`：将知识文件 + LLM 结构化输出转换为 OpenClaw skills（已落地 Phase 3.3 映射器与校验器）。

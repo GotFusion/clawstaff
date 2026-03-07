@@ -1,0 +1,39 @@
+以下是模型返回（示例故意包含不完整字段，用于 fallback 验证）：
+
+```json
+{
+  "schemaVersion": "llm.knowledge-parse.v0",
+  "knowledgeItemId": "ki-task-session-20260307-c3-001",
+  "taskId": "task-session-20260307-c3-001",
+  "sessionId": "session-20260307-c3",
+  "objective": "",
+  "context": {
+    "appName": "Terminal",
+    "appBundleId": "com.apple.Terminal",
+    "windowTitle": "zsh"
+  },
+  "executionPlan": {
+    "requiresTeacherConfirmation": true,
+    "steps": [
+      {
+        "stepId": "step-001",
+        "actionType": "input",
+        "instruction": "输入命令 mkdir -p ~/Desktop/OpenStaffLogs。",
+        "target": "",
+        "sourceEventIds": []
+      }
+    ],
+    "completionCriteria": {
+      "expectedStepCount": 1,
+      "requiredFrontmostAppBundleId": "com.apple.Terminal"
+    },
+    "failurePolicy": {
+      "onContextMismatch": "stopAndAskTeacher",
+      "onStepError": "stopAndAskTeacher",
+      "onUnknownAction": "stopAndAskTeacher"
+    }
+  },
+  "safetyNotes": [],
+  "confidence": 0.76
+}
+```

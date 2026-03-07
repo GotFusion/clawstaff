@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "openstaff.openclaw-skill.v0",
+  "skillName": "openstaff-task-session-20260307-c3-001",
+  "knowledgeItemId": "ki-task-session-20260307-c3-001",
+  "taskId": "task-session-20260307-c3-001",
+  "sessionId": "session-20260307-c3",
+  "source": {
+    "knowledgeItemPath": "scripts/skills/examples/knowledge-item.sample.terminal.json",
+    "llmOutputPath": "scripts/skills/examples/llm-output.sample.terminal-invalid.txt"
+  },
+  "mappedOutput": {
+    "objective": "在 Terminal 中创建日志目录并查看当前路径",
+    "context": {
+      "appName": "Terminal",
+      "appBundleId": "com.apple.Terminal",
+      "windowTitle": "zsh"
+    },
+    "executionPlan": {
+      "requiresTeacherConfirmation": true,
+      "steps": [
+        {
+          "stepId": "step-001",
+          "actionType": "input",
+          "instruction": "输入命令 mkdir -p ~/Desktop/OpenStaffLogs。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "66666666-6666-4666-8666-666666666666"
+          ]
+        },
+        {
+          "stepId": "step-002",
+          "actionType": "input",
+          "instruction": "输入命令 pwd 并回车。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "77777777-7777-4777-8777-777777777777"
+          ]
+        }
+      ],
+      "completionCriteria": {
+        "expectedStepCount": 2,
+        "requiredFrontmostAppBundleId": "com.apple.Terminal"
+      },
+      "failurePolicy": {
+        "onContextMismatch": "stopAndAskTeacher",
+        "onStepError": "stopAndAskTeacher",
+        "onUnknownAction": "stopAndAskTeacher"
+      }
+    },
+    "safetyNotes": [
+      "执行前前台应用必须是 com.apple.Terminal。",
+      "执行命令前需要老师确认，避免误操作。",
+      "终端窗口位置变化不影响命令执行，但焦点需要正确。"
+    ],
+    "confidence": 0.72
+  },
+  "diagnostics": [
+    "LLM output schema validation failed: $.objective must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].target must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].sourceEventIds must be a non-empty array.",
+    "LLM output schema validation failed: $.safetyNotes must be a non-empty array.",
+    "Applied fallback on 10 step fields while normalizing executionPlan.",
+    "Fallback objective from KnowledgeItem.goal."
+  ],
+  "llmOutputAccepted": false,
+  "createdAt": "2026-03-08T00:08:59+08:00",
+  "generatorVersion": "openstaff-skill-mapper-v0"
+}

@@ -6,7 +6,7 @@ SLICE_TARGET := OpenStaffTaskSlicerCLI
 KNOWLEDGE_TARGET := OpenStaffKnowledgeBuilderCLI
 ARGS ?=
 
-.PHONY: build dev capture slice knowledge llm-prompts llm-validate llm-call llm-retry-demo
+.PHONY: build dev capture slice knowledge llm-prompts llm-validate llm-call llm-retry-demo skill-build skills-demo skills-validate-demo
 
 build:
 	swift build --package-path $(APP_PACKAGE_PATH)
@@ -34,3 +34,16 @@ llm-call:
 
 llm-retry-demo:
 	python3 scripts/llm/chatgpt_adapter.py --provider text --knowledge-item core/knowledge/examples/knowledge-item.sample.json --simulate-transient-failures 2 --max-retries 3 --output /tmp/openstaff-llm-retry-demo-output.json $(ARGS)
+
+skill-build:
+	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item core/knowledge/examples/knowledge-item.sample.json --llm-output scripts/llm/examples/knowledge-parse-output.sample.json --skills-root /tmp/openstaff-skills --overwrite $(ARGS)
+
+skills-demo:
+	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item core/knowledge/examples/knowledge-item.sample.json --llm-output scripts/llm/examples/knowledge-parse-output.sample.json --skills-root /tmp/openstaff-skills-demo --overwrite
+	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item scripts/skills/examples/knowledge-item.sample.finder.json --llm-output scripts/skills/examples/llm-output.sample.finder.json --skills-root /tmp/openstaff-skills-demo --overwrite
+	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item scripts/skills/examples/knowledge-item.sample.terminal.json --llm-output scripts/skills/examples/llm-output.sample.terminal-invalid.txt --skills-root /tmp/openstaff-skills-demo --overwrite
+
+skills-validate-demo: skills-demo
+	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-demo/openstaff-task-session-20260307-a1-001
+	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-demo/openstaff-task-session-20260307-b2-001
+	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-demo/openstaff-task-session-20260307-c3-001

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "llm.knowledge-parse.v0",
+  "knowledgeItemId": "ki-task-session-20260307-b2-001",
+  "taskId": "task-session-20260307-b2-001",
+  "sessionId": "session-20260307-b2",
+  "objective": "在 Finder 中创建并重命名项目文件夹",
+  "context": {
+    "appName": "Finder",
+    "appBundleId": "com.apple.finder",
+    "windowTitle": "Documents"
+  },
+  "executionPlan": {
+    "requiresTeacherConfirmation": true,
+    "steps": [
+      {
+        "stepId": "step-001",
+        "actionType": "click",
+        "instruction": "点击 Finder 侧边栏中的 Documents。",
+        "target": "unknown",
+        "sourceEventIds": [
+          "33333333-3333-4333-8333-333333333333"
+        ]
+      },
+      {
+        "stepId": "step-002",
+        "actionType": "shortcut",
+        "instruction": "使用快捷键 Command+Shift+N 创建新文件夹。",
+        "target": "unknown",
+        "sourceEventIds": [
+          "44444444-4444-4444-8444-444444444444"
+        ]
+      },
+      {
+        "stepId": "step-003",
+        "actionType": "input",
+        "instruction": "输入文件夹名称 OpenStaff-Demo 并回车。",
+        "target": "unknown",
+        "sourceEventIds": [
+          "55555555-5555-4555-8555-555555555555"
+        ]
+      }
+    ],
+    "completionCriteria": {
+      "expectedStepCount": 3,
+      "requiredFrontmostAppBundleId": "com.apple.finder"
+    },
+    "failurePolicy": {
+      "onContextMismatch": "stopAndAskTeacher",
+      "onStepError": "stopAndAskTeacher",
+      "onUnknownAction": "stopAndAskTeacher"
+    }
+  },
+  "safetyNotes": [
+    "执行前前台应用必须是 com.apple.finder。",
+    "执行该知识条目时，需要老师确认后再执行。",
+    "列表位置可能随窗口尺寸变化而漂移。"
+  ],
+  "confidence": 0.91
+}

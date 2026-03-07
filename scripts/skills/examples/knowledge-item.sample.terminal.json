@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "knowledge.item.v0",
+  "knowledgeItemId": "ki-task-session-20260307-c3-001",
+  "taskId": "task-session-20260307-c3-001",
+  "sessionId": "session-20260307-c3",
+  "goal": "在 Terminal 中创建日志目录并查看当前路径",
+  "summary": "在 Terminal（zsh）中，步骤摘要：输入 -> 输入。共 2 步，任务分段原因：会话结束切分。",
+  "steps": [
+    {
+      "stepId": "step-001",
+      "instruction": "输入命令 mkdir -p ~/Desktop/OpenStaffLogs。",
+      "sourceEventIds": [
+        "66666666-6666-4666-8666-666666666666"
+      ]
+    },
+    {
+      "stepId": "step-002",
+      "instruction": "输入命令 pwd 并回车。",
+      "sourceEventIds": [
+        "77777777-7777-4777-8777-777777777777"
+      ]
+    }
+  ],
+  "context": {
+    "appName": "Terminal",
+    "appBundleId": "com.apple.Terminal",
+    "windowTitle": "zsh",
+    "windowId": "918"
+  },
+  "constraints": [
+    {
+      "type": "frontmostAppMustMatch",
+      "description": "执行前前台应用必须是 com.apple.Terminal。"
+    },
+    {
+      "type": "manualConfirmationRequired",
+      "description": "执行命令前需要老师确认，避免误操作。"
+    },
+    {
+      "type": "coordinateTargetMayDrift",
+      "description": "终端窗口位置变化不影响命令执行，但焦点需要正确。"
+    }
+  ],
+  "source": {
+    "taskChunkSchemaVersion": "knowledge.task-chunk.v0",
+    "startTimestamp": "2026-03-07T18:32:01+08:00",
+    "endTimestamp": "2026-03-07T18:32:21+08:00",
+    "eventCount": 2,
+    "boundaryReason": "sessionEnd"
+  },
+  "createdAt": "2026-03-07T18:40:00+08:00",
+  "generatorVersion": "rule-v0"
+}

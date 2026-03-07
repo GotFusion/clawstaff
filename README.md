@@ -18,6 +18,9 @@ make llm-prompts
 make llm-validate
 make llm-call
 make llm-retry-demo
+make skill-build
+make skills-demo
+make skills-validate-demo
 ```
 
 - `make build`：构建 `apps/macos` 最小壳应用。
@@ -29,6 +32,9 @@ make llm-retry-demo
 - `make llm-validate`：校验 LLM 结构化输出样例（强制 JSON + 一致性检查）。
 - `make llm-call`：运行 Phase 3.2 调用适配层（默认离线 `text` provider，输出到 `/tmp/openstaff-llm-call-output.json`）。
 - `make llm-retry-demo`：离线模拟 2 次瞬时失败，验证重试与错误报告链路。
+- `make skill-build`：运行 Phase 3.3 单条 skill 映射（KnowledgeItem + LLM 输出 -> OpenClaw skill）。
+- `make skills-demo`：运行 3 条示例任务映射（含 1 条 fallback 案例）。
+- `make skills-validate-demo`：校验 `skills-demo` 输出技能的可读性与一致性。
 
 ## 目录概览
 

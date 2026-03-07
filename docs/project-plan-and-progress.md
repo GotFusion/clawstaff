@@ -116,16 +116,17 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成阶段 2.3 自动总结初版（无 LLM）：`KnowledgeSummaryGenerator`（规则摘要写入 `KnowledgeItem.summary`）。
 - 完成阶段 3.1 提示词模板系统：新增系统/任务提示词模板、LLM 输出 schema、提示词渲染脚本与 JSON 严格校验脚本（`scripts/llm/*`）。
 - 完成阶段 3.2 ChatGPT 调用适配层：新增 `chatgpt_adapter.py`（重试、超时、限流、请求摘要日志、错误报告），并提供离线 `text` provider 以支持无 API 场景验证。
+- 完成阶段 3.3 OpenClaw skill 映射器：新增 `openclaw_skill_mapper.py` 与 `validate_openclaw_skill.py`，实现 `KnowledgeItem + LLM` 到 OpenClaw `SKILL.md` 的映射，并支持字段校验与 fallback。
 
 ### 未开始
-- OpenClaw skills 转换与执行联调。
+- OpenClaw skills 执行联调。
 - 业务级 GUI 原型与前端实现。
 
 ### 下一步建议
-1. 开始 TODO 3.3：将 `KnowledgeItem` + LLM 输出映射为 OpenClaw skills 并加入 fallback 校验。
-2. API 可用后补充 `provider=openai` 联机验证（模型行为、限流参数、错误码映射）。
-3. 增加 `scripts/validation`：对 `data/raw-events/**/*.jsonl`、`data/task-chunks/**/*.json`、`data/knowledge/**/*.json` 做 schema 快速校验。
-4. 为切片器、知识映射器、摘要器补单元测试（边界切分、字段完整性、摘要可读性）。
+1. 开始阶段 4.1：实现三模式状态机与合法切换约束。
+2. API 可用后补充 `provider=openai` 联机验证（模型行为、限流参数、错误码映射）并补充 skill 端到端执行联调。
+3. 增加 `scripts/validation`：对 `data/raw-events/**/*.jsonl`、`data/task-chunks/**/*.json`、`data/knowledge/**/*.json`、`data/skills/**/*.json` 做 schema 快速校验。
+4. 为切片器、映射器、摘要器补单元测试（边界切分、字段完整性、fallback 稳定性）。
 
 ---
 

@@ -146,14 +146,17 @@
 - [x] 网络抖动时可自动重试并出错误报告（离线 text provider 支持瞬时失败模拟验证重试链路）。
 
 ### TODO 3.3 OpenClaw skill 映射器
-- [ ] 将 `KnowledgeItem` + LLM 结果映射为 OpenClaw 技能格式。
-- [ ] 增加字段校验与 fallback。
+- [x] 将 `KnowledgeItem` + LLM 结果映射为 OpenClaw 技能格式。
+- [x] 增加字段校验与 fallback。
 
 **输出物**
-- `scripts/skills` 生成器。
+- `scripts/skills/openclaw_skill_mapper.py`
+- `scripts/skills/validate_openclaw_skill.py`
+- `scripts/skills/schemas/openstaff-openclaw-skill.schema.json`
+- `scripts/skills/examples/*`（3 条示例输入）
 
 **验收标准**
-- [ ] 至少 3 个示例任务成功转换并可被 OpenClaw 读取。
+- [x] 至少 3 个示例任务成功转换并可被 OpenClaw 读取（`make skills-demo` + `make skills-validate-demo`）。
 
 ---
 
@@ -269,8 +272,8 @@
 - [x] 跑通 1 条知识 -> LLM 结构化输出（离线 text provider）。
 
 ### Day 6
-- [ ] 完成 OpenClaw skill 映射 v0。
-- [ ] 验证 1 条 skill 被 OpenClaw 读取。
+- [x] 完成 OpenClaw skill 映射 v0。
+- [x] 验证 1 条 skill 被 OpenClaw 读取。
 
 ### Day 7
 - [ ] 打通“教学模式最小闭环”演示。

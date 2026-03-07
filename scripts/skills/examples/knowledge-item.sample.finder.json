@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "knowledge.item.v0",
+  "knowledgeItemId": "ki-task-session-20260307-b2-001",
+  "taskId": "task-session-20260307-b2-001",
+  "sessionId": "session-20260307-b2",
+  "goal": "在 Finder 中创建并重命名项目文件夹",
+  "summary": "在 Finder（Documents）中，步骤摘要：点击 -> 快捷键 -> 输入。共 3 步，任务分段原因：上下文切换切分。",
+  "steps": [
+    {
+      "stepId": "step-001",
+      "instruction": "点击 Finder 侧边栏中的 Documents。",
+      "sourceEventIds": [
+        "33333333-3333-4333-8333-333333333333"
+      ]
+    },
+    {
+      "stepId": "step-002",
+      "instruction": "使用快捷键 Command+Shift+N 创建新文件夹。",
+      "sourceEventIds": [
+        "44444444-4444-4444-8444-444444444444"
+      ]
+    },
+    {
+      "stepId": "step-003",
+      "instruction": "输入文件夹名称 OpenStaff-Demo 并回车。",
+      "sourceEventIds": [
+        "55555555-5555-4555-8555-555555555555"
+      ]
+    }
+  ],
+  "context": {
+    "appName": "Finder",
+    "appBundleId": "com.apple.finder",
+    "windowTitle": "Documents",
+    "windowId": "2210"
+  },
+  "constraints": [
+    {
+      "type": "frontmostAppMustMatch",
+      "description": "执行前前台应用必须是 com.apple.finder。"
+    },
+    {
+      "type": "manualConfirmationRequired",
+      "description": "执行该知识条目时，需要老师确认后再执行。"
+    },
+    {
+      "type": "coordinateTargetMayDrift",
+      "description": "列表位置可能随窗口尺寸变化而漂移。"
+    }
+  ],
+  "source": {
+    "taskChunkSchemaVersion": "knowledge.task-chunk.v0",
+    "startTimestamp": "2026-03-07T16:10:11+08:00",
+    "endTimestamp": "2026-03-07T16:10:25+08:00",
+    "eventCount": 3,
+    "boundaryReason": "contextSwitch"
+  },
+  "createdAt": "2026-03-07T16:20:00+08:00",
+  "generatorVersion": "rule-v0"
+}
