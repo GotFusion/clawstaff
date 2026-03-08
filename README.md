@@ -24,6 +24,10 @@ make llm-retry-demo
 make skill-build
 make skills-demo
 make skills-validate-demo
+make test
+make test-unit
+make test-integration
+make test-e2e
 ```
 
 - `make build`：构建 `apps/macos` 最小壳应用。
@@ -41,6 +45,10 @@ make skills-validate-demo
 - `make skill-build`：运行 Phase 3.3 单条 skill 映射（KnowledgeItem + LLM 输出 -> OpenClaw skill）。
 - `make skills-demo`：运行 3 条示例任务映射（含 1 条 fallback 案例）。
 - `make skills-validate-demo`：校验 `skills-demo` 输出技能的可读性与一致性。
+- `make test`：一键执行 unit + integration + e2e 测试并输出汇总。
+- `make test-unit`：仅执行单元测试。
+- `make test-integration`：仅执行集成测试。
+- `make test-e2e`：仅执行 E2E 测试。
 
 ## 目录概览
 

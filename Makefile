@@ -9,7 +9,7 @@ ASSIST_TARGET := OpenStaffAssistCLI
 STUDENT_TARGET := OpenStaffStudentCLI
 ARGS ?=
 
-.PHONY: build dev capture slice knowledge orchestrator assist student llm-prompts llm-validate llm-call llm-retry-demo skill-build skills-demo skills-validate-demo
+.PHONY: build dev capture slice knowledge orchestrator assist student llm-prompts llm-validate llm-call llm-retry-demo skill-build skills-demo skills-validate-demo test test-unit test-integration test-e2e
 
 build:
 	swift build --package-path $(APP_PACKAGE_PATH)
@@ -59,3 +59,15 @@ skills-validate-demo: skills-demo
 	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-demo/openstaff-task-session-20260307-a1-001
 	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-demo/openstaff-task-session-20260307-b2-001
 	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-demo/openstaff-task-session-20260307-c3-001
+
+test:
+	python3 scripts/tests/run_all.py --suite all
+
+test-unit:
+	python3 scripts/tests/run_all.py --suite unit
+
+test-integration:
+	python3 scripts/tests/run_all.py --suite integration
+
+test-e2e:
+	python3 scripts/tests/run_all.py --suite e2e
