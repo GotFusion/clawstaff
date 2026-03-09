@@ -10,13 +10,16 @@ STUDENT_TARGET := OpenStaffStudentCLI
 DEMO_TARGET := OpenStaffDemoCLI
 ARGS ?=
 
-.PHONY: build dev capture slice knowledge orchestrator assist student demo-build demo-run llm-prompts llm-validate llm-call llm-retry-demo skill-build skills-demo skills-validate-demo test test-unit test-integration test-e2e release-demo release-regression release-preflight
+.PHONY: build dev xcode-open capture slice knowledge orchestrator assist student demo-build demo-run llm-prompts llm-validate llm-call llm-retry-demo skill-build skills-demo skills-validate-demo test test-unit test-integration test-e2e release-demo release-regression release-preflight
 
 build:
 	swift build --package-path $(APP_PACKAGE_PATH)
 
 dev:
 	swift run --package-path $(APP_PACKAGE_PATH) $(APP_TARGET)
+
+xcode-open:
+	./scripts/dev/open_xcode_workspace.sh
 
 capture:
 	swift run --package-path $(APP_PACKAGE_PATH) $(CAPTURE_TARGET) $(ARGS)
