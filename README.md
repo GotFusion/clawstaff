@@ -17,6 +17,8 @@ make knowledge
 make orchestrator
 make assist
 make student
+make demo-build
+make demo-run
 make llm-prompts
 make llm-validate
 make llm-call
@@ -41,6 +43,8 @@ make release-preflight
 - `make orchestrator`：启动 Phase 4.1 模式状态机 CLI（模式切换守卫 + 能力白名单 + 结构化日志）。
 - `make assist`：启动 Phase 4.2 辅助模式闭环 CLI（规则预测 -> 弹窗确认 -> 执行 -> 回写日志）。
 - `make student`：启动 Phase 4.3 学生模式闭环 CLI（输入目标 -> 自动规划 -> 技能执行 -> 结构化审阅报告）。
+- `make demo-build`：编译 Demo 体验所需 CLI（含 `OpenStaffDemoCLI`）。
+- `make demo-run`：运行一键体验 Demo（教学->辅助->学生闭环，输出目录默认 `/tmp/openstaff-demo-experience`）。
 - `make llm-prompts`：渲染 Phase 3.1 提示词模板（KnowledgeItem -> system/user prompts）。
 - `make llm-validate`：校验 LLM 结构化输出样例（强制 JSON + 一致性检查）。
 - `make llm-call`：运行 Phase 3.2 调用适配层（默认离线 `text` provider，输出到 `/tmp/openstaff-llm-call-output.json`）。

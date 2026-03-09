@@ -7,9 +7,10 @@ KNOWLEDGE_TARGET := OpenStaffKnowledgeBuilderCLI
 ORCHESTRATOR_TARGET := OpenStaffOrchestratorCLI
 ASSIST_TARGET := OpenStaffAssistCLI
 STUDENT_TARGET := OpenStaffStudentCLI
+DEMO_TARGET := OpenStaffDemoCLI
 ARGS ?=
 
-.PHONY: build dev capture slice knowledge orchestrator assist student llm-prompts llm-validate llm-call llm-retry-demo skill-build skills-demo skills-validate-demo test test-unit test-integration test-e2e release-demo release-regression release-preflight
+.PHONY: build dev capture slice knowledge orchestrator assist student demo-build demo-run llm-prompts llm-validate llm-call llm-retry-demo skill-build skills-demo skills-validate-demo test test-unit test-integration test-e2e release-demo release-regression release-preflight
 
 build:
 	swift build --package-path $(APP_PACKAGE_PATH)
@@ -34,6 +35,15 @@ assist:
 
 student:
 	swift run --package-path $(APP_PACKAGE_PATH) $(STUDENT_TARGET) $(ARGS)
+
+demo-build:
+	swift build --package-path $(APP_PACKAGE_PATH) --product $(ORCHESTRATOR_TARGET)
+	swift build --package-path $(APP_PACKAGE_PATH) --product $(ASSIST_TARGET)
+	swift build --package-path $(APP_PACKAGE_PATH) --product $(STUDENT_TARGET)
+	swift build --package-path $(APP_PACKAGE_PATH) --product $(DEMO_TARGET)
+
+demo-run: demo-build
+	swift run --package-path $(APP_PACKAGE_PATH) $(DEMO_TARGET) $(ARGS)
 
 llm-prompts:
 	python3 scripts/llm/render_knowledge_prompts.py --knowledge-item core/knowledge/examples/knowledge-item.sample.json --out-dir /tmp/openstaff-llm-prompts

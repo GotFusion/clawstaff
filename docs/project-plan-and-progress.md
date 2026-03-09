@@ -126,6 +126,7 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成阶段 6.1 安全控制：执行层新增高风险关键词+正则拦截规则，支持紧急停止状态拦截；GUI 新增紧急停止按钮与全局快捷键（`Cmd+Shift+.`）。
 - 完成阶段 6.2 测试体系落地（补强）：在原有 schema/映射链路测试基础上，新增 `test_validate_openclaw_skill.py`、`test_task_slicer_cli.py`、`test_three_mode_cli_roundtrip.py`，把覆盖扩展到 `SKILL.md` 校验器、`OpenStaffTaskSlicerCLI` 切片策略，以及 `Orchestrator/Assist/Student` 三模式真实 CLI 闭环；统一入口仍为 `scripts/tests/run_all.py` 与 `make test*`。
 - 完成阶段 6.3 发布前检查：补齐配置模板（`config/release.example.yaml`、`config/demo.example.yaml`）与配置文档；新增 `scripts/release/build_demo_bundle.py`（演示数据包）与 `scripts/release/run_regression.py`（发布回归与 JSON 报告）；新增 `make release-demo` / `make release-regression` / `make release-preflight` 一键入口。
+- 新增用户使用说明书 `docs/user-manual.md`，并新增 `OpenStaffDemoCLI` + `make demo-build` / `make demo-run`，支持一键体验教学->辅助->学生闭环。
 
 ### 未开始
 - OpenClaw skills 执行联调。

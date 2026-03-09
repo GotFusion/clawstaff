@@ -252,10 +252,12 @@
 - `config/release.example.yaml`
 - `config/demo.example.yaml`
 - `config/README.md`
+- `docs/user-manual.md`
+- `apps/macos/Sources/OpenStaffDemoCLI/OpenStaffDemoCLI.swift`
 - `scripts/release/build_demo_bundle.py`
 - `scripts/release/run_regression.py`
 - `scripts/release/README.md`
-- `Makefile`（`release-demo` / `release-regression` / `release-preflight`）
+- `Makefile`（`demo-build` / `demo-run` / `release-demo` / `release-regression` / `release-preflight`）
 
 **验收标准（阶段 6）**
 - [x] 一键执行测试脚本可输出通过/失败摘要（`make test` / `python3 scripts/tests/run_all.py --suite all`）。

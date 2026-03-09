@@ -13,7 +13,8 @@ let package = Package(
         .executable(name: "OpenStaffKnowledgeBuilderCLI", targets: ["OpenStaffKnowledgeBuilderCLI"]),
         .executable(name: "OpenStaffOrchestratorCLI", targets: ["OpenStaffOrchestratorCLI"]),
         .executable(name: "OpenStaffAssistCLI", targets: ["OpenStaffAssistCLI"]),
-        .executable(name: "OpenStaffStudentCLI", targets: ["OpenStaffStudentCLI"])
+        .executable(name: "OpenStaffStudentCLI", targets: ["OpenStaffStudentCLI"]),
+        .executable(name: "OpenStaffDemoCLI", targets: ["OpenStaffDemoCLI"])
     ],
     targets: [
         .executableTarget(
@@ -43,6 +44,10 @@ let package = Package(
         .executableTarget(
             name: "OpenStaffStudentCLI",
             path: "Sources/OpenStaffStudentCLI"
+        ),
+        .executableTarget(
+            name: "OpenStaffDemoCLI",
+            path: "Sources/OpenStaffDemoCLI"
         )
     ]
 )
