@@ -34,7 +34,7 @@ struct OpenStaffApp: App {
                 desktopWidgetViewModel: desktopWidgetViewModel
             )
         }
-        .menuBarExtraStyle(.window)
+        .menuBarExtraStyle(.menu)
     }
 }
 

@@ -237,66 +237,56 @@ struct OpenStaffMenuBarContentView: View {
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Button("打开控制台") {
-                openConsoleWindow()
+        Button("打开控制台") {
+            openConsoleWindow()
+        }
+
+        Button(desktopWidgetViewModel.isWidgetWindowVisible ? "隐藏前台部件" : "显示前台部件") {
+            toggleDesktopWidgetWindow()
+        }
+
+        Menu("部件模式") {
+            modeMenuItem("精简模式", mode: .compact)
+            modeMenuItem("详细模式", mode: .detailed)
+        }
+
+        Divider()
+
+        Button("刷新任务视图") {
+            desktopWidgetViewModel.refresh()
+            dashboardViewModel.refreshDashboard(promptAccessibilityPermission: false)
+        }
+
+        if dashboardViewModel.emergencyStopActive {
+            Button("解除紧急停止") {
+                dashboardViewModel.releaseEmergencyStop()
             }
-
-            Button(desktopWidgetViewModel.isWidgetWindowVisible ? "隐藏前台部件" : "显示前台部件") {
-                toggleDesktopWidgetWindow()
+        } else {
+            Button("触发紧急停止") {
+                dashboardViewModel.activateEmergencyStop(source: .uiButton)
             }
+            .foregroundStyle(.red)
+        }
 
-            Divider()
+        Divider()
 
-            Text("部件模式")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        Button("退出程序") {
+            NSApplication.shared.terminate(nil)
+        }
+        .foregroundStyle(.red)
+    }
 
-            Button {
-                desktopWidgetViewModel.setDisplayMode(.compact)
-                ensureWidgetWindowVisible()
-            } label: {
-                Label(
-                    "精简模式",
-                    systemImage: desktopWidgetViewModel.displayMode == .compact ? "checkmark.circle.fill" : "circle"
-                )
-            }
-
-            Button {
-                desktopWidgetViewModel.setDisplayMode(.detailed)
-                ensureWidgetWindowVisible()
-            } label: {
-                Label(
-                    "详细模式",
-                    systemImage: desktopWidgetViewModel.displayMode == .detailed ? "checkmark.circle.fill" : "circle"
-                )
-            }
-
-            Divider()
-
-            Button("刷新任务视图") {
-                desktopWidgetViewModel.refresh()
-                dashboardViewModel.refreshDashboard(promptAccessibilityPermission: false)
-            }
-
-            if dashboardViewModel.emergencyStopActive {
-                Button("解除紧急停止") {
-                    dashboardViewModel.releaseEmergencyStop()
-                }
+    @ViewBuilder
+    private func modeMenuItem(_ title: String, mode: DesktopWidgetDisplayMode) -> some View {
+        Button {
+            setModeFromMenu(mode)
+        } label: {
+            if desktopWidgetViewModel.displayMode == mode {
+                Label(title, systemImage: "checkmark")
             } else {
-                Button("触发紧急停止") {
-                    dashboardViewModel.activateEmergencyStop(source: .uiButton)
-                }
-            }
-
-            Divider()
-
-            Button("退出程序") {
-                NSApplication.shared.terminate(nil)
+                Text(title)
             }
         }
-        .padding(10)
-        .frame(minWidth: 220, alignment: .leading)
     }
 
     private func openConsoleWindow() {
@@ -319,6 +309,11 @@ struct OpenStaffMenuBarContentView: View {
             desktopWidgetViewModel.isWidgetWindowVisible = true
         }
         NSApplication.shared.activate(ignoringOtherApps: true)
+    }
+
+    private func setModeFromMenu(_ mode: DesktopWidgetDisplayMode) {
+        desktopWidgetViewModel.setDisplayMode(mode)
+        ensureWidgetWindowVisible()
     }
 
     private func closeDesktopWidgetWindowIfNeeded() {
