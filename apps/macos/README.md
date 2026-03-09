@@ -22,7 +22,8 @@ make build
 ## Layout
 
 - `Package.swift`: Swift package entry for macOS app shell.
-- `Sources/OpenStaffApp/OpenStaffApp.swift`: Phase 6.1 dashboard UI（模式切换、状态展示、学习记录/审阅、安全控制）。
+- `Sources/OpenStaffApp/OpenStaffApp.swift`: Phase 6.1 dashboard UI（首页 + 状态工作台、模式切换、学习记录/审阅、安全控制）。
+- `Sources/OpenStaffApp/OpenStaffHomeView.swift`: 首页视图（核心交互入口与三模式快捷操作）。
 - `Sources/OpenStaffCaptureCLI/`: Phase 1.3 capture CLI (permission check, click capture, context snapshot, JSONL persistence + rotation).
 - `Sources/OpenStaffTaskSlicerCLI/`: Phase 2.1 task slicer CLI (session events -> TaskChunk files).
 - `Sources/OpenStaffKnowledgeBuilderCLI/`: Phase 2.2 knowledge builder CLI (TaskChunk -> KnowledgeItem).

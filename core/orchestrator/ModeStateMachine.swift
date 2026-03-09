@@ -70,6 +70,10 @@ public final class ModeStateMachine {
         return Self.capabilityWhitelist[resolvedMode] ?? []
     }
 
+    public func setCurrentMode(_ mode: OpenStaffMode) {
+        currentMode = mode
+    }
+
     @discardableResult
     public func transition(to targetMode: OpenStaffMode, context: ModeTransitionContext) -> ModeTransitionDecision {
         let sourceMode = currentMode

@@ -43,17 +43,23 @@ struct OpenStaffRootView: View {
     @ObservedObject var desktopWidgetViewModel: OpenStaffDesktopWidgetViewModel
     @Environment(\.openWindow) private var openWindow
     @State private var hasOpenedDesktopWidget = false
+    @State private var selectedTab: OpenStaffRootTab = .home
 
     var body: some View {
-        TabView {
-            OpenStaffModeWorkbenchView(dashboardViewModel: viewModel)
+        TabView(selection: $selectedTab) {
+            OpenStaffHomeView(
+                dashboardViewModel: viewModel,
+                openStatusWorkbench: { selectedTab = .statusWorkbench }
+            )
+                .tag(OpenStaffRootTab.home)
                 .tabItem {
-                    Label("模式工作台", systemImage: "square.grid.2x2")
+                    Label("首页", systemImage: "house.fill")
                 }
 
             OpenStaffDashboardView(viewModel: viewModel)
+                .tag(OpenStaffRootTab.statusWorkbench)
                 .tabItem {
-                    Label("系统控制台", systemImage: "gauge.with.dots.needle.67percent")
+                    Label("状态工作台", systemImage: "gauge.with.dots.needle.67percent")
                 }
         }
         .background(ConsoleWindowConfigurator(windowIdentifier: OpenStaffSceneID.console))
@@ -93,6 +99,11 @@ struct OpenStaffRootView: View {
             }
         }
     }
+}
+
+private enum OpenStaffRootTab: Hashable {
+    case home
+    case statusWorkbench
 }
 
 private struct ConsoleWindowConfigurator: NSViewRepresentable {
@@ -143,10 +154,10 @@ struct OpenStaffDashboardView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("OpenStaff 主界面")
+                        Text("状态工作台")
                             .font(.title2)
                             .fontWeight(.semibold)
-                        Text("阶段 6.1：安全控制")
+                        Text("详细状态、学习记录、审阅反馈与安全控制")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -187,7 +198,7 @@ struct OpenStaffDashboardView: View {
                     }
                 }
 
-                GroupBox("模式切换") {
+                GroupBox("模式控制与守卫") {
                     VStack(alignment: .leading, spacing: 12) {
                         Picker(
                             "运行模式",
@@ -202,6 +213,24 @@ struct OpenStaffDashboardView: View {
                         }
                         .pickerStyle(.segmented)
                         .disabled(viewModel.isAnyModeRunning)
+
+                        HStack(spacing: 8) {
+                            Button(viewModel.isModeRunning(viewModel.selectedMode) ? "停止当前选中模式" : "启动当前选中模式") {
+                                viewModel.toggleMode(viewModel.selectedMode)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(!viewModel.canToggleMode(viewModel.selectedMode))
+                            .tint(viewModel.isModeRunning(viewModel.selectedMode) ? .red : viewModel.selectedMode.color)
+
+                            Button("停止所有模式") {
+                                guard let runningMode = viewModel.runningMode else {
+                                    return
+                                }
+                                viewModel.stopMode(runningMode)
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(!viewModel.isAnyModeRunning)
+                        }
 
                         Text("模式运行控制")
                             .font(.caption)
@@ -283,6 +312,8 @@ struct OpenStaffDashboardView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             LabeledContent("当前模式", value: viewModel.modeStatusSummary)
                             LabeledContent("状态码", value: viewModel.currentStatusCode)
+                            LabeledContent("采集会话", value: viewModel.activeObservationSessionId ?? "未运行")
+                            LabeledContent("点击计数", value: "\(viewModel.capturedEventCount)")
                             if !viewModel.currentCapabilities.isEmpty {
                                 LabeledContent("能力白名单", value: viewModel.currentCapabilities.joined(separator: ", "))
                             }
@@ -305,6 +336,27 @@ struct OpenStaffDashboardView: View {
                                 title: "数据目录可写",
                                 granted: viewModel.permissionSnapshot.dataDirectoryWritable
                             )
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 4)
+                    }
+
+                    GroupBox("采集监控") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            if let captureStatusText = viewModel.captureStatusText {
+                                Text(captureStatusText)
+                                    .font(.callout)
+                            } else {
+                                Text("当前没有运行需要采集屏幕点击事件的模式。")
+                                    .font(.callout)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            LabeledContent(
+                                "窗口上下文采集",
+                                value: viewModel.permissionSnapshot.accessibilityTrusted ? "已启用" : "降级（未授权）"
+                            )
+                            .font(.callout)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, 4)
@@ -982,12 +1034,30 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             return
         }
 
+        if emergencyStopActive || guardInputs.emergencyStopActive {
+            applySyntheticDecision(
+                fromMode: currentMode,
+                toMode: mode,
+                accepted: false,
+                status: .modeTransitionRejected,
+                errorCode: .guardConditionFailed,
+                message: "紧急停止已激活，请先解除后再启动\(modeDisplayName(for: mode))。"
+            )
+            return
+        }
+
         selectedMode = mode
         if currentMode != mode {
-            requestModeChange(to: mode)
-            guard lastTransitionAccepted, currentMode == mode else {
-                return
-            }
+            let previousMode = currentMode
+            stateMachine.setCurrentMode(mode)
+            currentMode = mode
+            applySyntheticDecision(
+                fromMode: previousMode,
+                toMode: mode,
+                accepted: true,
+                status: .modeTransitionAccepted,
+                message: "空闲态已直接切换到\(modeDisplayName(for: mode))并开始运行。"
+            )
         } else {
             applySyntheticDecision(
                 fromMode: mode,
@@ -1061,7 +1131,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
 
     func refreshDashboard(promptAccessibilityPermission: Bool) {
         permissionSnapshot = permissionSnapshotProvider(promptAccessibilityPermission)
-        recentTasks = RecentTaskRepository.loadRecentTasks(limit: 8)
+        recentTasks = RecentTaskRepository.loadRecentTasks(limit: 20)
         learningSnapshot = LearningRecordRepository.loadLearningSnapshot()
         learningSessions = learningSnapshot.sessions
         reconcileLearningSelection()
