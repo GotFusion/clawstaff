@@ -1,0 +1,45 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="desk" x1="120" y1="40" x2="1460" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#92AED3"/>
+      <stop offset="0.55" stop-color="#79A39B"/>
+      <stop offset="1" stop-color="#AF927B"/>
+    </linearGradient>
+    <filter id="boxShadow" x="920" y="560" width="520" height="280" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.2"/>
+    </filter>
+    <style>
+      .title { font: 700 30px "SF Pro Display", "PingFang SC", sans-serif; fill: #F8FAFC; }
+      .hint { font: 500 14px "SF Pro Display", "PingFang SC", sans-serif; fill: #E2E8F0; }
+      .label { font: 500 12px "SF Pro Display", "PingFang SC", sans-serif; fill: #E2E8F0; }
+      .main { font: 600 14px "SF Pro Display", "PingFang SC", sans-serif; fill: #FFFFFF; }
+      .sub { font: 500 13px "SF Pro Display", "PingFang SC", sans-serif; fill: #E2E8F0; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#desk)"/>
+
+  <text x="72" y="104" class="title">精简模式优化：透明方框（低打扰）</text>
+  <text x="72" y="132" class="hint">替代任务球，保留最少信息与点击入口，视觉尽量弱化。</text>
+
+  <g filter="url(#boxShadow)">
+    <rect x="980" y="610" width="392" height="154" rx="16" fill="#FFFFFF" fill-opacity="0.18"/>
+    <rect x="980.75" y="610.75" width="390.5" height="152.5" rx="15.25" stroke="#FFFFFF" stroke-opacity="0.38" stroke-width="1.5"/>
+  </g>
+
+  <text x="1004" y="640" class="label">当前任务</text>
+  <text x="1004" y="666" class="main">辅助 · task-session-20260309-a1-024</text>
+
+  <text x="1004" y="698" class="label">下一步</text>
+  <text x="1004" y="722" class="sub">学生 · task-session-20260309-a1-025</text>
+
+  <text x="1260" y="738" class="label">点击展开</text>
+  <path d="M1332 706l18 0m-9 -9l9 9l-9 9" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="72" y="186" width="820" height="254" rx="20" fill="#0F172A" fill-opacity="0.1"/>
+  <text x="104" y="228" fill="#F8FAFC" font-family="SF Pro Display, PingFang SC, sans-serif" font-size="18" font-weight="600">方框模式规则</text>
+  <text x="104" y="262" class="hint">1) 透明底 + 细边框，不用高饱和渐变。</text>
+  <text x="104" y="290" class="hint">2) 仅两行关键信息：当前任务、下一步任务。</text>
+  <text x="104" y="318" class="hint">3) 超长文案按规则截断，保持一眼可读。</text>
+  <text x="104" y="346" class="hint">4) 点击区域整块可触发，不要求精确点中图标。</text>
+</svg>

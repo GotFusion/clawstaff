@@ -1,0 +1,99 @@
+<svg width="1600" height="1100" viewBox="0 0 1600 1100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="40" x2="1460" y2="1040" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EEF5FF"/>
+      <stop offset="0.5" stop-color="#EAF8F2"/>
+      <stop offset="1" stop-color="#FFF3E6"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="1900" height="1400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="16" stdDeviation="22" flood-color="#0F172A" flood-opacity="0.2"/>
+    </filter>
+    <style>
+      .title { font: 700 34px "Avenir Next", "PingFang SC", sans-serif; fill: #0B2748; }
+      .sub { font: 500 16px "Avenir Next", "PingFang SC", sans-serif; fill: #5E748C; }
+      .panelTitle { font: 700 20px "Avenir Next", "PingFang SC", sans-serif; fill: #103050; }
+      .task { font: 600 16px "Avenir Next", "PingFang SC", sans-serif; fill: #1E3A5A; }
+      .detail { font: 500 13px "Avenir Next", "PingFang SC", sans-serif; fill: #667A90; }
+      .mono { font: 500 12px "Menlo", "SFMono-Regular", monospace; fill: #4A6178; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1100" fill="url(#bg)"/>
+
+  <text x="92" y="128" class="title">前台部件 · 详细模式（时间轴）</text>
+  <text x="92" y="162" class="sub">显示任务顺序、时间、一级任务、二级任务。由点击球体或菜单栏切换进入。</text>
+
+  <rect x="92" y="206" width="1416" height="850" rx="30" fill="#FFFFFF" filter="url(#shadow)"/>
+
+  <rect x="132" y="250" width="1336" height="88" rx="24" fill="#EEF2FF"/>
+  <circle cx="180" cy="294" r="24" fill="#1D4ED8"/>
+  <text x="168" y="300" fill="#E0F2FE" font-family="Avenir Next, PingFang SC, sans-serif" font-size="13" font-weight="700">OS</text>
+
+  <text x="220" y="285" class="task">详细模式 · 任务时间轴</text>
+  <text x="220" y="312" class="detail">显示全部任务执行链路（一级任务 + 二级任务）</text>
+
+  <rect x="1228" y="270" width="220" height="48" rx="16" fill="#DBEAFE"/>
+  <text x="1260" y="300" fill="#1D4ED8" font-family="Avenir Next, PingFang SC, sans-serif" font-size="15" font-weight="700">点击收起为球态</text>
+
+  <rect x="132" y="364" width="926" height="652" rx="24" fill="#F8FAFC"/>
+  <text x="164" y="406" class="panelTitle">任务主时间轴</text>
+
+  <line x1="190" y1="442" x2="190" y2="966" stroke="#94A3B8" stroke-width="3"/>
+
+  <circle cx="190" cy="494" r="11" fill="#2563EB"/>
+  <rect x="226" y="458" width="794" height="108" rx="16" fill="#EFF6FF"/>
+  <text x="252" y="492" class="task">一级任务 1：task-session-20260309-a1-021（教学）</text>
+  <text x="252" y="518" class="detail">时间：2026-03-09 11:18:04 · 顺序：#1</text>
+  <text x="252" y="544" class="detail">摘要：捕获点击事件并生成知识草稿</text>
+
+  <line x1="254" y1="578" x2="254" y2="644" stroke="#CBD5E1" stroke-width="2"/>
+  <rect x="274" y="576" width="746" height="66" rx="12" fill="#FFFFFF"/>
+  <text x="298" y="604" class="task">二级任务 1.1：CAPTURE_STREAM_STARTED</text>
+  <text x="298" y="626" class="mono">11:18:04 · 监听坐标 + 应用上下文写入 RawEvent</text>
+
+  <rect x="274" y="650" width="746" height="66" rx="12" fill="#FFFFFF"/>
+  <text x="298" y="678" class="task">二级任务 1.2：KNOWLEDGE_ITEM_READY</text>
+  <text x="298" y="700" class="mono">11:18:33 · task-slice 完成并生成 KnowledgeItem</text>
+
+  <circle cx="190" cy="752" r="11" fill="#F59E0B"/>
+  <rect x="226" y="716" width="794" height="108" rx="16" fill="#FFF7ED"/>
+  <text x="252" y="750" class="task">一级任务 2：task-session-20260309-a1-024（辅助）</text>
+  <text x="252" y="776" class="detail">时间：2026-03-09 11:24:36 · 顺序：#2</text>
+  <text x="252" y="802" class="detail">摘要：预测下一步并等待老师确认后执行</text>
+
+  <line x1="254" y1="838" x2="254" y2="910" stroke="#CBD5E1" stroke-width="2"/>
+  <rect x="274" y="836" width="746" height="70" rx="12" fill="#FFFFFF"/>
+  <text x="298" y="866" class="task">二级任务 2.1：ASSIST_PROMPT_SHOWN</text>
+  <text x="298" y="890" class="mono">11:24:38 · 弹窗询问“是否需要我执行下一步？”</text>
+
+  <rect x="274" y="914" width="746" height="70" rx="12" fill="#FFFFFF"/>
+  <text x="298" y="944" class="task">二级任务 2.2：ASSIST_ACTION_EXECUTED</text>
+  <text x="298" y="968" class="mono">11:24:41 · 老师同意后执行点击并写入日志</text>
+
+  <rect x="1082" y="364" width="386" height="652" rx="24" fill="#F8FAFC"/>
+  <text x="1112" y="406" class="panelTitle">右侧摘要</text>
+
+  <rect x="1112" y="430" width="326" height="92" rx="14" fill="#E0E7FF"/>
+  <text x="1136" y="462" class="task">模式：详细</text>
+  <text x="1136" y="486" class="detail">当前任务：辅助 #2</text>
+  <text x="1136" y="508" class="detail">下一任务：学生 #3</text>
+
+  <rect x="1112" y="536" width="326" height="104" rx="14" fill="#ECFEFF"/>
+  <text x="1136" y="568" class="task">排序规则</text>
+  <text x="1136" y="592" class="detail">1) 按时间升序</text>
+  <text x="1136" y="614" class="detail">2) 同时刻按任务 ID</text>
+
+  <rect x="1112" y="654" width="326" height="114" rx="14" fill="#F0FDF4"/>
+  <text x="1136" y="686" class="task">层级说明</text>
+  <text x="1136" y="710" class="detail">一级任务：按 task 聚合</text>
+  <text x="1136" y="734" class="detail">二级任务：按状态流明细</text>
+
+  <rect x="1112" y="782" width="326" height="112" rx="14" fill="#FEF2F2"/>
+  <text x="1136" y="814" fill="#B91C1C" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="600">安全状态：可中断</text>
+  <text x="1136" y="838" class="detail">紧急停止后，时间轴顶部显示红色条</text>
+  <text x="1136" y="862" class="detail">并冻结自动执行动作</text>
+
+  <rect x="1112" y="910" width="326" height="80" rx="14" fill="#FFF7ED"/>
+  <text x="1136" y="942" class="detail">最后同步：2026-03-09 11:26:40</text>
+  <text x="1136" y="966" class="detail">刷新频率：2 秒</text>
+</svg>

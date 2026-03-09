@@ -1,0 +1,63 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="desk" x1="80" y1="20" x2="1520" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9DB8DA"/>
+      <stop offset="0.5" stop-color="#7FA8A2"/>
+      <stop offset="1" stop-color="#BFA58A"/>
+    </linearGradient>
+    <filter id="menuShadow" x="0" y="0" width="1900" height="1200" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#111827" flood-opacity="0.22"/>
+    </filter>
+    <style>
+      .title { font: 700 30px "SF Pro Display", "PingFang SC", sans-serif; fill: #F8FAFC; }
+      .hint { font: 500 14px "SF Pro Display", "PingFang SC", sans-serif; fill: #E2E8F0; }
+      .item { font: 500 16px "SF Pro Display", "PingFang SC", sans-serif; fill: #0F172A; }
+      .small { font: 500 12px "SF Pro Display", "PingFang SC", sans-serif; fill: #475569; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#desk)"/>
+
+  <rect x="0" y="0" width="1600" height="42" fill="#111827" fill-opacity="0.42"/>
+  <text x="16" y="27" fill="#F8FAFC" font-family="SF Pro Display, PingFang SC, sans-serif" font-size="13" font-weight="500">Mon 09 Mar   11:32</text>
+  <circle cx="1510" cy="21" r="13" fill="#2563EB" fill-opacity="0.88"/>
+  <text x="1504" y="25" fill="#E0F2FE" font-family="SF Pro Display, PingFang SC, sans-serif" font-size="10" font-weight="700">OS</text>
+
+  <text x="76" y="118" class="title">菜单栏：macOS 原生透明风格</text>
+  <text x="76" y="146" class="hint">下拉菜单采用玻璃材质（半透明）与系统间距，不做自定义重背景。</text>
+
+  <rect x="1248" y="52" width="300" height="548" rx="14" fill="#FFFFFF" fill-opacity="0.72" filter="url(#menuShadow)"/>
+  <rect x="1248.5" y="52.5" width="299" height="547" rx="13.5" stroke="#FFFFFF" stroke-opacity="0.65"/>
+
+  <text x="1270" y="84" class="small">OpenStaff</text>
+  <line x1="1262" y1="98" x2="1534" y2="98" stroke="#CBD5E1"/>
+
+  <rect x="1262" y="110" width="272" height="34" rx="8" fill="#E2E8F0" fill-opacity="0.6"/>
+  <text x="1278" y="132" class="item">打开控制台</text>
+  <text x="1498" y="132" class="small">⌘O</text>
+
+  <text x="1278" y="170" class="item">显示前台部件</text>
+  <text x="1488" y="170" class="small">已显示</text>
+
+  <line x1="1262" y1="184" x2="1534" y2="184" stroke="#CBD5E1"/>
+  <text x="1270" y="206" class="small">部件模式</text>
+
+  <text x="1278" y="236" class="item">✓ 精简模式</text>
+  <text x="1278" y="264" class="item">详细模式</text>
+
+  <line x1="1262" y1="278" x2="1534" y2="278" stroke="#CBD5E1"/>
+  <text x="1278" y="308" class="item">刷新任务视图</text>
+
+  <line x1="1262" y1="322" x2="1534" y2="322" stroke="#CBD5E1"/>
+  <text x="1278" y="352" fill="#B91C1C" font-family="SF Pro Display, PingFang SC, sans-serif" font-size="16" font-weight="600">触发紧急停止</text>
+
+  <line x1="1262" y1="366" x2="1534" y2="366" stroke="#CBD5E1"/>
+  <text x="1278" y="396" class="item">退出程序</text>
+  <text x="1498" y="396" class="small">⌘Q</text>
+
+  <rect x="76" y="190" width="1060" height="640" rx="24" fill="#0F172A" fill-opacity="0.12"/>
+  <text x="108" y="238" fill="#F8FAFC" font-family="SF Pro Display, PingFang SC, sans-serif" font-size="18" font-weight="600">视觉约束</text>
+  <text x="108" y="272" class="hint">1) 菜单面板为半透明材质，保留桌面透出感。</text>
+  <text x="108" y="300" class="hint">2) 使用系统默认字重与行高，不使用重色块卡片。</text>
+  <text x="108" y="328" class="hint">3) 危险动作仅以文字色强调，避免视觉喧宾夺主。</text>
+</svg>

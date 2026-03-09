@@ -1,0 +1,87 @@
+<svg width="1600" height="980" viewBox="0 0 1600 980" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="40" x2="1460" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0F7FF"/>
+      <stop offset="0.5" stop-color="#EAF8F3"/>
+      <stop offset="1" stop-color="#FFF3E5"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="1900" height="1200" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.16"/>
+    </filter>
+    <style>
+      .title { font: 700 34px "Avenir Next", "PingFang SC", sans-serif; fill: #0B2748; }
+      .sub { font: 500 16px "Avenir Next", "PingFang SC", sans-serif; fill: #5E748C; }
+      .cardTitle { font: 700 18px "Avenir Next", "PingFang SC", sans-serif; fill: #103050; }
+      .text { font: 500 15px "Avenir Next", "PingFang SC", sans-serif; fill: #243B53; }
+      .hint { font: 500 12px "Avenir Next", "PingFang SC", sans-serif; fill: #667A90; }
+    </style>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#0F766E"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#B91C1C"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="980" fill="url(#bg)"/>
+
+  <text x="92" y="128" class="title">模式切换与交互关系图</text>
+  <text x="92" y="162" class="sub">两条切换路径：菜单栏切换、点击球体切换。显示/隐藏部件由菜单栏统一控制。</text>
+
+  <rect x="92" y="214" width="1416" height="700" rx="30" fill="#FFFFFF" filter="url(#shadow)"/>
+
+  <rect x="136" y="268" width="354" height="182" rx="20" fill="#EEF2FF"/>
+  <text x="164" y="306" class="cardTitle">菜单栏图标</text>
+  <text x="164" y="334" class="text">打开控制台</text>
+  <text x="164" y="358" class="text">显示/隐藏前台部件</text>
+  <text x="164" y="382" class="text">切换精简/详细模式</text>
+  <text x="164" y="406" class="text">退出程序</text>
+
+  <rect x="576" y="268" width="410" height="182" rx="20" fill="#ECFEFF"/>
+  <text x="604" y="306" class="cardTitle">前台部件（精简）</text>
+  <text x="604" y="334" class="text">球/椭圆显示当前任务与下一步任务</text>
+  <text x="604" y="358" class="text">点击球体 -> 展开详细时间轴</text>
+  <text x="604" y="382" class="hint">默认尺寸小，常驻桌面前台浮层</text>
+
+  <rect x="1072" y="268" width="392" height="182" rx="20" fill="#F0FDF4"/>
+  <text x="1100" y="306" class="cardTitle">前台部件（详细）</text>
+  <text x="1100" y="334" class="text">时间轴展示全部任务执行顺序</text>
+  <text x="1100" y="358" class="text">一级任务 + 二级任务 + 时间</text>
+  <text x="1100" y="382" class="hint">点击顶部球体可收起回精简模式</text>
+
+  <path d="M490 358 C 532 358, 542 358, 576 358" stroke="#2563EB" stroke-width="3" marker-end="url(#arrowBlue)"/>
+  <text x="498" y="344" class="hint">菜单栏切换到精简</text>
+
+  <path d="M986 358 C 1024 358, 1036 358, 1072 358" stroke="#0F766E" stroke-width="3" marker-end="url(#arrowGreen)"/>
+  <text x="994" y="344" class="hint">点击球体展开</text>
+
+  <path d="M1268 454 C 1174 508, 1056 522, 932 522 C 798 522, 702 496, 650 454" stroke="#0F766E" stroke-width="3" marker-end="url(#arrowGreen)" fill="none" stroke-dasharray="8 7"/>
+  <text x="860" y="550" class="hint">点击顶部球体收起为精简</text>
+
+  <rect x="136" y="504" width="1328" height="370" rx="24" fill="#F8FAFC"/>
+  <text x="172" y="550" class="cardTitle">行为规则（用于确认 UI 方案）</text>
+
+  <rect x="172" y="576" width="610" height="120" rx="16" fill="#FFFFFF"/>
+  <text x="196" y="612" class="text">1. 菜单栏“显示前台部件”打开部件窗口</text>
+  <text x="196" y="638" class="text">2. 菜单栏“隐藏前台部件”仅隐藏，不丢失模式状态</text>
+  <text x="196" y="664" class="hint">再次显示时保持上次模式（精简或详细）</text>
+
+  <rect x="820" y="576" width="610" height="120" rx="16" fill="#FFFFFF"/>
+  <text x="844" y="612" class="text">3. 菜单栏可直接切换精简/详细模式</text>
+  <text x="844" y="638" class="text">4. 若部件当前隐藏，切换模式会先自动显示部件</text>
+  <text x="844" y="664" class="hint">避免“切了模式但看不到效果”</text>
+
+  <rect x="172" y="714" width="610" height="132" rx="16" fill="#FEF2F2"/>
+  <text x="196" y="750" fill="#B91C1C" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">5. 紧急停止优先级最高</text>
+  <text x="196" y="776" class="text">菜单栏触发后，部件头部显示红色警示条</text>
+  <text x="196" y="802" class="text">时间轴停止自动推进，直到解除停止</text>
+  <path d="M392 812 C 480 842, 560 842, 640 812" stroke="#B91C1C" stroke-width="2.4" marker-end="url(#arrowRed)" fill="none"/>
+
+  <rect x="820" y="714" width="610" height="132" rx="16" fill="#FFF7ED"/>
+  <text x="844" y="750" class="text">6. 退出程序条目固定底部，避免误触</text>
+  <text x="844" y="776" class="text">7. 打开控制台不会改变部件当前模式</text>
+  <text x="844" y="802" class="hint">控制台与前台部件并行存在</text>
+</svg>

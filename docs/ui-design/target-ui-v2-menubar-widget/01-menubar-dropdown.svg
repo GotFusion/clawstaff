@@ -1,0 +1,133 @@
+<svg width="1600" height="980" viewBox="0 0 1600 980" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="40" x2="1460" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EEF5FF"/>
+      <stop offset="0.55" stop-color="#E7F6EF"/>
+      <stop offset="1" stop-color="#FFF4E5"/>
+    </linearGradient>
+    <linearGradient id="menubar" x1="0" y1="0" x2="1600" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#1E293B"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="1800" height="1200" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.18"/>
+    </filter>
+    <style>
+      .title { font: 700 34px "Avenir Next", "PingFang SC", sans-serif; fill: #0B2748; }
+      .sub { font: 500 16px "Avenir Next", "PingFang SC", sans-serif; fill: #5E748C; }
+      .menuTitle { font: 700 16px "Avenir Next", "PingFang SC", sans-serif; fill: #103050; }
+      .menuText { font: 500 16px "Avenir Next", "PingFang SC", sans-serif; fill: #1E3A5A; }
+      .menuHint { font: 500 12px "Avenir Next", "PingFang SC", sans-serif; fill: #6B7F95; }
+      .badge { font: 700 12px "Avenir Next", "PingFang SC", sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="980" fill="url(#bg)"/>
+
+  <rect x="0" y="0" width="1600" height="58" fill="url(#menubar)"/>
+  <text x="26" y="36" fill="#C7D2FE" font-family="Avenir Next, PingFang SC, sans-serif" font-size="14">OpenStaff 设计预览 · 菜单栏模式</text>
+
+  <circle cx="1480" cy="29" r="17" fill="#1D4ED8"/>
+  <circle cx="1480" cy="29" r="16.2" stroke="#93C5FD" stroke-width="1.6"/>
+  <text x="1472" y="34" fill="#E0F2FE" font-family="Avenir Next, PingFang SC, sans-serif" font-size="13" font-weight="700">OS</text>
+
+  <text x="92" y="142" class="title">菜单栏小图标与下拉面板</text>
+  <text x="92" y="174" class="sub">用于全局入口、模式切换与安全动作。点击菜单栏图标即可展开。</text>
+
+  <rect x="1128" y="76" width="312" height="800" rx="22" fill="#FFFFFF" filter="url(#shadow)"/>
+
+  <rect x="1150" y="102" width="268" height="44" rx="12" fill="#EEF2FF"/>
+  <circle cx="1174" cy="124" r="10" fill="#1D4ED8"/>
+  <text x="1192" y="129" class="menuTitle">OpenStaff</text>
+  <text x="1274" y="129" class="menuHint">状态：运行中</text>
+
+  <rect x="1150" y="164" width="268" height="44" rx="10" fill="#F8FAFC"/>
+  <text x="1172" y="191" class="menuText">打开控制台</text>
+  <text x="1368" y="191" class="menuHint">⌘O</text>
+
+  <rect x="1150" y="216" width="268" height="44" rx="10" fill="#F8FAFC"/>
+  <text x="1172" y="243" class="menuText">显示前台部件</text>
+  <text x="1353" y="243" class="menuHint">当前隐藏</text>
+
+  <line x1="1150" y1="276" x2="1418" y2="276" stroke="#E2E8F0"/>
+  <text x="1150" y="296" class="menuHint">部件模式</text>
+
+  <rect x="1150" y="306" width="268" height="44" rx="10" fill="#DBEAFE"/>
+  <circle cx="1174" cy="328" r="8" fill="#1D4ED8"/>
+  <text x="1192" y="333" class="menuText">精简模式</text>
+  <text x="1368" y="333" class="menuHint">已选中</text>
+
+  <rect x="1150" y="358" width="268" height="44" rx="10" fill="#F8FAFC"/>
+  <circle cx="1174" cy="380" r="7" stroke="#94A3B8" stroke-width="1.4" fill="none"/>
+  <text x="1192" y="385" class="menuText">详细模式</text>
+  <text x="1368" y="385" class="menuHint">可切换</text>
+
+  <line x1="1150" y1="420" x2="1418" y2="420" stroke="#E2E8F0"/>
+
+  <rect x="1150" y="436" width="268" height="44" rx="10" fill="#F8FAFC"/>
+  <text x="1172" y="463" class="menuText">刷新任务视图</text>
+  <text x="1368" y="463" class="menuHint">2s 自动刷新</text>
+
+  <rect x="1150" y="488" width="268" height="44" rx="10" fill="#FEF2F2"/>
+  <text x="1172" y="515" fill="#B91C1C" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="600">触发紧急停止</text>
+  <text x="1354" y="515" fill="#B91C1C" font-family="Avenir Next, PingFang SC, sans-serif" font-size="12" font-weight="600">Cmd+Shift+.</text>
+
+  <line x1="1150" y1="548" x2="1418" y2="548" stroke="#E2E8F0"/>
+
+  <rect x="1150" y="564" width="268" height="44" rx="10" fill="#FFF7ED"/>
+  <text x="1172" y="591" fill="#9A3412" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="600">退出程序</text>
+  <text x="1374" y="591" class="menuHint">⌘Q</text>
+
+  <rect x="1150" y="640" width="268" height="220" rx="14" fill="#F8FAFC"/>
+  <text x="1172" y="670" class="menuTitle">快速状态</text>
+  <text x="1172" y="698" class="menuHint">当前任务：辅助 · task-024</text>
+  <text x="1172" y="722" class="menuHint">下一任务：学生 · task-025</text>
+  <text x="1172" y="746" class="menuHint">部件模式：精简</text>
+  <text x="1172" y="770" class="menuHint">前台部件：显示中</text>
+  <text x="1172" y="794" class="menuHint">最后更新：2026-03-09 11:16:21</text>
+
+  <rect x="92" y="236" width="972" height="640" rx="28" fill="#FFFFFF" filter="url(#shadow)"/>
+  <text x="130" y="286" class="menuTitle">菜单条目与操作结果映射</text>
+
+  <rect x="130" y="314" width="410" height="118" rx="16" fill="#F8FAFC"/>
+  <text x="154" y="348" class="menuText">打开控制台</text>
+  <text x="154" y="376" class="menuHint">聚焦/打开主控制台窗口，不中断任务</text>
+  <rect x="430" y="332" width="90" height="24" rx="12" fill="#DBEAFE"/>
+  <text x="455" y="348" fill="#1D4ED8" class="badge">窗口</text>
+
+  <rect x="560" y="314" width="466" height="118" rx="16" fill="#F8FAFC"/>
+  <text x="584" y="348" class="menuText">显示/隐藏前台部件</text>
+  <text x="584" y="376" class="menuHint">控制桌面浮层部件窗口可见性</text>
+  <rect x="926" y="332" width="80" height="24" rx="12" fill="#CCFBF1"/>
+  <text x="948" y="348" fill="#0F766E" class="badge">部件</text>
+
+  <rect x="130" y="450" width="410" height="118" rx="16" fill="#EFF6FF"/>
+  <text x="154" y="484" class="menuText">精简模式 / 详细模式</text>
+  <text x="154" y="512" class="menuHint">切换球态与时间轴态，支持菜单直接切换</text>
+  <rect x="430" y="468" width="90" height="24" rx="12" fill="#E0E7FF"/>
+  <text x="452" y="484" fill="#4338CA" class="badge">模式</text>
+
+  <rect x="560" y="450" width="466" height="118" rx="16" fill="#ECFEFF"/>
+  <text x="584" y="484" class="menuText">刷新任务视图</text>
+  <text x="584" y="512" class="menuHint">读取最新任务与日志，更新时间轴内容</text>
+  <rect x="926" y="468" width="80" height="24" rx="12" fill="#A5F3FC"/>
+  <text x="948" y="484" fill="#0E7490" class="badge">刷新</text>
+
+  <rect x="130" y="586" width="410" height="118" rx="16" fill="#FEF2F2"/>
+  <text x="154" y="620" fill="#B91C1C" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="600">紧急停止 / 解除停止</text>
+  <text x="154" y="648" class="menuHint">统一安全入口，优先级高于执行逻辑</text>
+  <rect x="430" y="604" width="90" height="24" rx="12" fill="#FECACA"/>
+  <text x="452" y="620" fill="#991B1B" class="badge">安全</text>
+
+  <rect x="560" y="586" width="466" height="118" rx="16" fill="#FFF7ED"/>
+  <text x="584" y="620" fill="#9A3412" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="600">退出程序</text>
+  <text x="584" y="648" class="menuHint">结束 OpenStaff 进程并关闭窗口</text>
+  <rect x="926" y="604" width="80" height="24" rx="12" fill="#FED7AA"/>
+  <text x="948" y="620" fill="#9A3412" class="badge">系统</text>
+
+  <rect x="130" y="722" width="896" height="116" rx="16" fill="#F0FDF4"/>
+  <text x="154" y="756" class="menuText">交互约束</text>
+  <text x="154" y="784" class="menuHint">1) 菜单切换模式时，若部件隐藏则自动显示部件。</text>
+  <text x="154" y="808" class="menuHint">2) 菜单触发紧急停止后，时间轴头部显示红色状态条。</text>
+  <text x="154" y="832" class="menuHint">3) 退出程序项固定放在底部，避免误触关键操作。</text>
+</svg>

@@ -6,13 +6,62 @@ import SwiftUI
 @main
 struct OpenStaffApp: App {
     @StateObject private var viewModel = OpenStaffDashboardViewModel()
+    @StateObject private var desktopWidgetViewModel = OpenStaffDesktopWidgetViewModel()
 
     var body: some Scene {
-        WindowGroup("OpenStaff") {
-            OpenStaffDashboardView(viewModel: viewModel)
+        Window("OpenStaff", id: OpenStaffSceneID.console) {
+            OpenStaffRootView(
+                viewModel: viewModel,
+                desktopWidgetViewModel: desktopWidgetViewModel
+            )
         }
         .windowResizability(.contentSize)
         .defaultSize(width: 1180, height: 1120)
+
+        Window("OpenStaff 前台部件", id: OpenStaffSceneID.desktopWidget) {
+            OpenStaffDesktopWidgetView(viewModel: desktopWidgetViewModel)
+        }
+        .windowResizability(.contentSize)
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 290, height: 180)
+
+        MenuBarExtra("OpenStaff", systemImage: "graduationcap.circle") {
+            OpenStaffMenuBarContentView(
+                dashboardViewModel: viewModel,
+                desktopWidgetViewModel: desktopWidgetViewModel
+            )
+        }
+        .menuBarExtraStyle(.window)
+    }
+}
+
+struct OpenStaffRootView: View {
+    @ObservedObject var viewModel: OpenStaffDashboardViewModel
+    @ObservedObject var desktopWidgetViewModel: OpenStaffDesktopWidgetViewModel
+    @Environment(\.openWindow) private var openWindow
+    @State private var hasOpenedDesktopWidget = false
+
+    var body: some View {
+        TabView {
+            OpenStaffPrototypeView()
+                .tabItem {
+                    Label("原型体验", systemImage: "sparkles.rectangle.stack")
+                }
+
+            OpenStaffDashboardView(viewModel: viewModel)
+                .tabItem {
+                    Label("系统控制台", systemImage: "gauge.with.dots.needle.67percent")
+                }
+        }
+        .task {
+            guard !hasOpenedDesktopWidget else {
+                return
+            }
+            hasOpenedDesktopWidget = true
+            if desktopWidgetViewModel.isWidgetWindowVisible {
+                openWindow(id: OpenStaffSceneID.desktopWidget)
+            }
+        }
     }
 }
 

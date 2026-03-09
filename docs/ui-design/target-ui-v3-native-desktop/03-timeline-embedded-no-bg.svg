@@ -1,0 +1,79 @@
+<svg width="1600" height="980" viewBox="0 0 1600 980" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="desk" x1="120" y1="40" x2="1460" y2="940" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#95B2D6"/>
+      <stop offset="0.55" stop-color="#7EA89F"/>
+      <stop offset="1" stop-color="#B79A82"/>
+    </linearGradient>
+    <filter id="txtShadow" x="0" y="0" width="1900" height="1400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.35"/>
+    </filter>
+    <style>
+      .title { font: 700 30px "SF Pro Display", "PingFang SC", sans-serif; fill: #F8FAFC; }
+      .hint { font: 500 14px "SF Pro Display", "PingFang SC", sans-serif; fill: #E2E8F0; }
+      .l1 { font: 600 16px "SF Pro Display", "PingFang SC", sans-serif; fill: #F8FAFC; }
+      .l2 { font: 500 13px "SF Pro Display", "PingFang SC", sans-serif; fill: #E5EDF5; }
+      .time { font: 500 12px "SF Mono", "Menlo", monospace; fill: #D9E7F5; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="980" fill="url(#desk)"/>
+
+  <text x="76" y="106" class="title">详细模式：无背景时间轴（桌面嵌入）</text>
+  <text x="76" y="136" class="hint">去掉卡片底板，仅保留轨道、节点和文字，呈现“贴在桌面上”的视觉。</text>
+
+  <g filter="url(#txtShadow)">
+    <ellipse cx="210" cy="226" rx="84" ry="44" fill="#3B82F6" fill-opacity="0.55"/>
+    <text x="170" y="232" fill="#E0F2FE" font-family="SF Pro Display, PingFang SC, sans-serif" font-size="15" font-weight="700">OS 详细模式</text>
+  </g>
+
+  <line x1="240" y1="300" x2="240" y2="900" stroke="#D1DEE9" stroke-opacity="0.9" stroke-width="2.5"/>
+
+  <circle cx="240" cy="360" r="9" fill="#3B82F6"/>
+  <text x="270" y="352" class="l1">一级任务 #1  教学 · task-021</text>
+  <text x="270" y="376" class="time">11:18:04</text>
+  <text x="270" y="398" class="l2">生成知识草稿，提取步骤与约束</text>
+
+  <line x1="300" y1="418" x2="300" y2="500" stroke="#D1DEE9" stroke-opacity="0.7" stroke-width="1.6"/>
+  <circle cx="300" cy="444" r="5" fill="#93C5FD"/>
+  <text x="324" y="448" class="l2">二级任务 #1.1  CAPTURE_STREAM_STARTED</text>
+  <text x="324" y="468" class="time">11:18:04 · 原始事件开始写入</text>
+
+  <circle cx="300" cy="494" r="5" fill="#93C5FD"/>
+  <text x="324" y="498" class="l2">二级任务 #1.2  KNOWLEDGE_ITEM_READY</text>
+  <text x="324" y="518" class="time">11:18:33 · 任务切片与知识条目完成</text>
+
+  <circle cx="240" cy="592" r="9" fill="#F59E0B"/>
+  <text x="270" y="584" class="l1">一级任务 #2  辅助 · task-024</text>
+  <text x="270" y="608" class="time">11:24:36</text>
+  <text x="270" y="630" class="l2">预测下一步并弹窗确认执行</text>
+
+  <line x1="300" y1="650" x2="300" y2="734" stroke="#D1DEE9" stroke-opacity="0.7" stroke-width="1.6"/>
+  <circle cx="300" cy="676" r="5" fill="#FCD34D"/>
+  <text x="324" y="680" class="l2">二级任务 #2.1  ASSIST_PROMPT_SHOWN</text>
+  <text x="324" y="700" class="time">11:24:38 · 等待老师确认</text>
+
+  <circle cx="300" cy="726" r="5" fill="#FCD34D"/>
+  <text x="324" y="730" class="l2">二级任务 #2.2  ASSIST_ACTION_EXECUTED</text>
+  <text x="324" y="750" class="time">11:24:41 · 已执行并写入日志</text>
+
+  <circle cx="240" cy="824" r="9" fill="#10B981"/>
+  <text x="270" y="816" class="l1">一级任务 #3  学生 · task-025</text>
+  <text x="270" y="840" class="time">11:26:12</text>
+  <text x="270" y="862" class="l2">自动规划执行并输出审阅报告</text>
+
+  <text x="1040" y="316" class="hint">右上角状态（无背景）</text>
+  <text x="1040" y="344" class="l2">模式：详细</text>
+  <text x="1040" y="368" class="l2">当前：辅助 #2</text>
+  <text x="1040" y="392" class="l2">下一步：学生 #3</text>
+  <text x="1040" y="416" class="time">last refresh 11:27:03</text>
+
+  <text x="1040" y="492" class="hint">设计约束</text>
+  <text x="1040" y="520" class="l2">1) 不使用底板卡片</text>
+  <text x="1040" y="544" class="l2">2) 仅保留轨道与文字层</text>
+  <text x="1040" y="568" class="l2">3) 文字加轻阴影保证可读性</text>
+  <text x="1040" y="592" class="l2">4) 点击顶部球体收起为精简模式</text>
+
+  <text x="1040" y="676" fill="#FEE2E2" font-family="SF Pro Display, PingFang SC, sans-serif" font-size="15" font-weight="600">紧急停止：激活时显示红色状态条</text>
+  <line x1="1040" y1="692" x2="1460" y2="692" stroke="#B91C1C" stroke-width="3" stroke-dasharray="10 8"/>
+</svg>

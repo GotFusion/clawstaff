@@ -1,0 +1,95 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg4" x1="140" y1="40" x2="1490" y2="980" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2F8FF"/>
+      <stop offset="0.5" stop-color="#EEF7F2"/>
+      <stop offset="1" stop-color="#FFF5E8"/>
+    </linearGradient>
+    <linearGradient id="hero4" x1="24" y1="24" x2="1576" y2="212" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C2D12"/>
+      <stop offset="1" stop-color="#0F766E"/>
+    </linearGradient>
+    <filter id="shadow4" x="0" y="0" width="2000" height="1400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#0F172A" flood-opacity="0.14"/>
+    </filter>
+    <style>
+      .title { font: 700 18px "Avenir Next", "PingFang SC", sans-serif; fill: #0B2A47; }
+      .text { font: 500 15px "Avenir Next", "PingFang SC", sans-serif; fill: #243B53; }
+      .muted { font: 500 13px "Avenir Next", "PingFang SC", sans-serif; fill: #62788E; }
+      .mono { font: 500 12px "Menlo", monospace; fill: #DBEAFE; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg4)"/>
+  <rect x="24" y="24" width="1552" height="176" rx="30" fill="url(#hero4)" filter="url(#shadow4)"/>
+  <text x="62" y="84" fill="#FED7AA" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="500">学生模式 · Autonomous</text>
+  <text x="62" y="130" fill="#FFFFFF" font-family="Avenir Next, PingFang SC, sans-serif" font-size="38" font-weight="700">学生自主执行，老师审阅结果</text>
+  <text x="62" y="162" fill="#FFEDD5" font-family="Avenir Next, PingFang SC, sans-serif" font-size="15">目标：输入任务目标 -> 自动规划 -> 技能执行 -> 审阅报告</text>
+
+  <rect x="1318" y="56" width="226" height="54" rx="18" fill="#7C2D12"/>
+  <text x="1360" y="90" fill="#FFEDD5" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">自主执行中</text>
+
+  <rect x="24" y="224" width="490" height="342" rx="22" fill="#FFFFFF" filter="url(#shadow4)"/>
+  <text x="54" y="264" class="title">任务目标与计划</text>
+  <rect x="54" y="286" width="430" height="74" rx="12" fill="#FFF7ED"/>
+  <text x="74" y="318" class="text">目标：在 Safari 中复现点击流程并生成审阅报告</text>
+  <text x="74" y="344" class="muted">planner: RuleBasedStudentTaskPlanner</text>
+  <text x="54" y="392" class="muted">执行步骤</text>
+  <rect x="54" y="406" width="430" height="46" rx="10" fill="#F8FAFC"/>
+  <text x="74" y="434" class="text">1. 加载知识条目并校验约束</text>
+  <rect x="54" y="458" width="430" height="46" rx="10" fill="#F8FAFC"/>
+  <text x="74" y="486" class="text">2. 执行点击/等待等白名单动作</text>
+  <rect x="54" y="510" width="430" height="46" rx="10" fill="#F8FAFC"/>
+  <text x="74" y="538" class="text">3. 汇总日志并输出老师审阅报告</text>
+
+  <rect x="536" y="224" width="514" height="342" rx="22" fill="#FFFFFF" filter="url(#shadow4)"/>
+  <text x="566" y="264" class="title">执行流水</text>
+  <rect x="566" y="286" width="454" height="250" rx="14" fill="#0B1220"/>
+  <text x="586" y="318" class="mono">[10:27:31] MODE_TRANSITION assist -> student accepted=true</text>
+  <text x="586" y="346" class="mono">[10:27:32] PLAN_READY step_count=3 knowledge_items=1</text>
+  <text x="586" y="374" class="mono">[10:27:34] SKILL_EXECUTE action=open_app app=Safari</text>
+  <text x="586" y="402" class="mono">[10:27:35] SKILL_EXECUTE action=click x=1102 y=642</text>
+  <text x="586" y="430" class="mono">[10:27:38] SKILL_EXECUTE action=wait condition=dom_ready</text>
+  <text x="586" y="458" class="mono">[10:27:40] EXECUTION_FINISHED status=success</text>
+  <text x="586" y="486" class="mono">[10:27:41] REVIEW_REPORT_WRITTEN data/reports/2026-03-09/*</text>
+
+  <rect x="1072" y="224" width="504" height="342" rx="22" fill="#FFFFFF" filter="url(#shadow4)"/>
+  <text x="1102" y="264" class="title">安全控制</text>
+  <rect x="1102" y="286" width="444" height="56" rx="12" fill="#ECFDF5"/>
+  <text x="1124" y="320" class="text">高风险关键词检查：通过</text>
+  <rect x="1102" y="352" width="444" height="56" rx="12" fill="#ECFDF5"/>
+  <text x="1124" y="386" class="text">正则拦截规则：未命中</text>
+  <rect x="1102" y="418" width="444" height="56" rx="12" fill="#FEF2F2"/>
+  <text x="1124" y="452" class="text">紧急停止按钮：可随时触发</text>
+  <rect x="1102" y="490" width="212" height="40" rx="12" fill="#B91C1C"/>
+  <text x="1172" y="516" fill="#FEE2E2" font-family="Avenir Next, PingFang SC, sans-serif" font-size="15" font-weight="700">紧急停止</text>
+  <rect x="1334" y="490" width="212" height="40" rx="12" fill="#334155"/>
+  <text x="1400" y="516" fill="#E2E8F0" font-family="Avenir Next, PingFang SC, sans-serif" font-size="15" font-weight="700">解除停止</text>
+
+  <rect x="24" y="588" width="940" height="388" rx="24" fill="#FFFFFF" filter="url(#shadow4)"/>
+  <text x="54" y="630" class="title">学生模式审阅报告</text>
+  <rect x="54" y="652" width="880" height="296" rx="14" fill="#F8FAFC"/>
+  <text x="80" y="692" class="text">报告 ID：student-review-session-20260309-a1-task-003</text>
+  <text x="80" y="722" class="text">总体结论：任务已完成，建议老师确认结果后写回反馈</text>
+  <text x="80" y="752" class="muted">执行摘要</text>
+  <text x="80" y="778" class="text">• 成功执行动作：3</text>
+  <text x="80" y="804" class="text">• 回退动作：0</text>
+  <text x="80" y="830" class="text">• 异常告警：0</text>
+  <text x="80" y="868" class="muted">建议改进</text>
+  <text x="80" y="894" class="text">• 增加页面元素锚点，降低纯坐标点击漂移风险</text>
+  <text x="80" y="920" class="text">• 为关键步骤增加二次校验截图</text>
+
+  <rect x="986" y="588" width="590" height="388" rx="24" fill="#FFFFFF" filter="url(#shadow4)"/>
+  <text x="1016" y="630" class="title">老师反馈面板</text>
+  <rect x="1016" y="654" width="530" height="150" rx="14" fill="#F8FAFC"/>
+  <text x="1038" y="688" class="muted">反馈备注</text>
+  <text x="1038" y="718" class="text">执行结果可用，通过；请补充“窗口标题不匹配”失败示例。</text>
+  <text x="1016" y="842" class="muted">反馈将落盘：data/feedback/2026-03-09/*.jsonl</text>
+
+  <rect x="1016" y="864" width="160" height="44" rx="12" fill="#16A34A"/>
+  <text x="1074" y="892" fill="#F0FDF4" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">通过</text>
+  <rect x="1192" y="864" width="160" height="44" rx="12" fill="#B91C1C"/>
+  <text x="1250" y="892" fill="#FEE2E2" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">驳回</text>
+  <rect x="1368" y="864" width="178" height="44" rx="12" fill="#0F766E"/>
+  <text x="1432" y="892" fill="#CCFBF1" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">修正</text>
+</svg>

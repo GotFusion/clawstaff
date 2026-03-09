@@ -1,0 +1,91 @@
+<svg width="1600" height="1020" viewBox="0 0 1600 1020" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="desk" x1="120" y1="40" x2="1460" y2="980" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8EAAD1"/>
+      <stop offset="0.55" stop-color="#78A39B"/>
+      <stop offset="1" stop-color="#AD9079"/>
+    </linearGradient>
+    <filter id="txtShadow" x="0" y="0" width="1900" height="1400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.35"/>
+    </filter>
+    <style>
+      .title { font: 700 30px "SF Pro Display", "PingFang SC", sans-serif; fill: #F8FAFC; }
+      .hint { font: 500 14px "SF Pro Display", "PingFang SC", sans-serif; fill: #E2E8F0; }
+      .l1 { font: 600 16px "SF Pro Display", "PingFang SC", sans-serif; fill: #F8FAFC; }
+      .l2 { font: 500 13px "SF Pro Display", "PingFang SC", sans-serif; fill: #E6EDF6; }
+      .time { font: 500 12px "SF Mono", "Menlo", monospace; fill: #D9E6F3; }
+      .note { font: 500 12px "SF Pro Display", "PingFang SC", sans-serif; fill: #DCE8F4; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1020" fill="url(#desk)"/>
+
+  <text x="72" y="106" class="title">详细模式细化：无背景时间轴 + 间距规范</text>
+  <text x="72" y="136" class="hint">一级节点间距 184px，二级条目间距 46px，节点采用透明色调，文本按截断规则展示。</text>
+
+  <g filter="url(#txtShadow)">
+    <rect x="72" y="172" width="240" height="64" rx="12" fill="#FFFFFF" fill-opacity="0.16"/>
+    <text x="92" y="212" class="note">详细模式（点击方框可收起）</text>
+  </g>
+
+  <line x1="220" y1="276" x2="220" y2="952" stroke="#D6E2EE" stroke-opacity="0.9" stroke-width="2.6"/>
+
+  <circle cx="220" cy="336" r="9" fill="#93C5FD" fill-opacity="0.46" stroke="#BFDBFE" stroke-opacity="0.62" stroke-width="1.2"/>
+  <text x="248" y="330" class="l1">一级任务 #1  教学 · task-021</text>
+  <text x="248" y="352" class="time">11:18:04</text>
+  <text x="248" y="372" class="l2">摘要：捕获点击并生成知识条目（示例摘要最长 44 字符...）</text>
+
+  <line x1="280" y1="406" x2="280" y2="492" stroke="#D6E2EE" stroke-opacity="0.7" stroke-width="1.6"/>
+  <circle cx="280" cy="430" r="5" fill="#93C5FD" fill-opacity="0.34" stroke="#BFDBFE" stroke-opacity="0.48" stroke-width="1"/>
+  <text x="302" y="434" class="l2">二级任务 #1.1  CAPTURE_STREAM_STARTED</text>
+  <text x="302" y="452" class="time">11:18:04 · 原始事件流写入已开始</text>
+
+  <circle cx="280" cy="476" r="5" fill="#93C5FD" fill-opacity="0.34" stroke="#BFDBFE" stroke-opacity="0.48" stroke-width="1"/>
+  <text x="302" y="480" class="l2">二级任务 #1.2  KNOWLEDGE_ITEM_READY</text>
+  <text x="302" y="498" class="time">11:18:33 · 切片完成并生成知识条目</text>
+
+  <circle cx="220" cy="520" r="9" fill="#FDE68A" fill-opacity="0.42" stroke="#FCD34D" stroke-opacity="0.58" stroke-width="1.2"/>
+  <text x="248" y="514" class="l1">一级任务 #2  辅助 · task-024</text>
+  <text x="248" y="536" class="time">11:24:36</text>
+  <text x="248" y="556" class="l2">摘要：预测下一步并等待老师确认后执行</text>
+
+  <line x1="280" y1="590" x2="280" y2="676" stroke="#D6E2EE" stroke-opacity="0.7" stroke-width="1.6"/>
+  <circle cx="280" cy="614" r="5" fill="#FDE68A" fill-opacity="0.3" stroke="#FCD34D" stroke-opacity="0.45" stroke-width="1"/>
+  <text x="302" y="618" class="l2">二级任务 #2.1  ASSIST_PROMPT_SHOWN</text>
+  <text x="302" y="636" class="time">11:24:38 · 等待老师确认</text>
+
+  <circle cx="280" cy="660" r="5" fill="#FDE68A" fill-opacity="0.3" stroke="#FCD34D" stroke-opacity="0.45" stroke-width="1"/>
+  <text x="302" y="664" class="l2">二级任务 #2.2  ASSIST_ACTION_EXECUTED</text>
+  <text x="302" y="682" class="time">11:24:41 · 已执行并写日志</text>
+
+  <circle cx="220" cy="704" r="9" fill="#A7F3D0" fill-opacity="0.42" stroke="#6EE7B7" stroke-opacity="0.58" stroke-width="1.2"/>
+  <text x="248" y="698" class="l1">一级任务 #3  学生 · task-025</text>
+  <text x="248" y="720" class="time">11:26:12</text>
+  <text x="248" y="740" class="l2">摘要：自动规划执行并输出审阅报告</text>
+
+  <line x1="280" y1="774" x2="280" y2="860" stroke="#D6E2EE" stroke-opacity="0.7" stroke-width="1.6"/>
+  <circle cx="280" cy="798" r="5" fill="#A7F3D0" fill-opacity="0.3" stroke="#6EE7B7" stroke-opacity="0.45" stroke-width="1"/>
+  <text x="302" y="802" class="l2">二级任务 #3.1  STUDENT_PLAN_READY</text>
+  <text x="302" y="820" class="time">11:26:14 · 执行计划生成</text>
+
+  <circle cx="280" cy="844" r="5" fill="#A7F3D0" fill-opacity="0.3" stroke="#6EE7B7" stroke-opacity="0.45" stroke-width="1"/>
+  <text x="302" y="848" class="l2">二级任务 #3.2  STUDENT_REPORT_WRITTEN</text>
+  <text x="302" y="866" class="time">11:26:33 · 审阅报告已落盘</text>
+
+  <text x="1020" y="306" class="hint">截断规则示例</text>
+  <text x="1020" y="334" class="l2">原始：辅助 · task-session-20260309-a1-024 预测下一步并等待...</text>
+  <text x="1020" y="356" class="l2">显示：辅助 · task-session-20260309-a1-024...</text>
+
+  <text x="1020" y="416" class="hint">间距标注</text>
+  <text x="1020" y="444" class="time">一级到一级：184px</text>
+  <text x="1020" y="466" class="time">二级条目间：46px</text>
+  <text x="1020" y="488" class="time">组间附加留白：38px</text>
+
+  <text x="1020" y="548" class="hint">字体标注</text>
+  <text x="1020" y="576" class="time">L1: 16 / 600</text>
+  <text x="1020" y="598" class="time">L2: 13 / 500</text>
+  <text x="1020" y="620" class="time">Time: 12 / mono</text>
+
+  <text x="1020" y="706" fill="#FEE2E2" font-family="SF Pro Display, PingFang SC, sans-serif" font-size="15" font-weight="600">紧急停止：显示红色状态线</text>
+  <line x1="1020" y1="724" x2="1460" y2="724" stroke="#B91C1C" stroke-width="3" stroke-dasharray="10 8"/>
+</svg>

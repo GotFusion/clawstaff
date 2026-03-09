@@ -1,0 +1,98 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg2" x1="140" y1="40" x2="1490" y2="980" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4F9FF"/>
+      <stop offset="0.5" stop-color="#EAF7EE"/>
+      <stop offset="1" stop-color="#F8F2E8"/>
+    </linearGradient>
+    <linearGradient id="hero2" x1="34" y1="26" x2="1560" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14532D"/>
+      <stop offset="1" stop-color="#0F766E"/>
+    </linearGradient>
+    <filter id="shadow2" x="0" y="0" width="2000" height="1400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#0F172A" flood-opacity="0.14"/>
+    </filter>
+    <style>
+      .title { font: 700 18px "Avenir Next", "PingFang SC", sans-serif; fill: #0B2A47; }
+      .text { font: 500 15px "Avenir Next", "PingFang SC", sans-serif; fill: #243B53; }
+      .muted { font: 500 13px "Avenir Next", "PingFang SC", sans-serif; fill: #62788E; }
+      .mono { font: 500 12px "Menlo", "SFMono-Regular", monospace; fill: #D9F3FF; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg2)"/>
+  <rect x="24" y="24" width="1552" height="176" rx="30" fill="url(#hero2)" filter="url(#shadow2)"/>
+  <text x="62" y="84" fill="#D1FAE5" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="500">教学模式 · Learning</text>
+  <text x="62" y="130" fill="#FFFFFF" font-family="Avenir Next, PingFang SC, sans-serif" font-size="38" font-weight="700">观察老师操作，自动沉淀知识条目</text>
+  <text x="62" y="162" fill="#BEECDC" font-family="Avenir Next, PingFang SC, sans-serif" font-size="15">目标：点击采集 -> 任务切片 -> 知识摘要 -> 写入知识库</text>
+
+  <rect x="1334" y="60" width="208" height="58" rx="20" fill="#14532D"/>
+  <circle cx="1362" cy="89" r="9" fill="#22C55E"/>
+  <text x="1380" y="96" fill="#DCFCE7" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">录制中</text>
+
+  <rect x="24" y="224" width="640" height="446" rx="22" fill="#0F172A" filter="url(#shadow2)"/>
+  <text x="54" y="264" fill="#D1FAE5" font-family="Avenir Next, PingFang SC, sans-serif" font-size="19" font-weight="700">实时事件流</text>
+  <text x="54" y="286" class="muted">RawEvent JSONL（点击、前台应用、窗口标题、时间戳）</text>
+  <rect x="54" y="304" width="580" height="336" rx="14" fill="#020617"/>
+  <text x="70" y="336" class="mono">10:41:02 capture.click x=1054 y=642 app=Safari window="OpenStaff Docs"</text>
+  <text x="70" y="364" class="mono">10:41:03 capture.click x=1120 y=642 app=Safari window="OpenStaff Docs"</text>
+  <text x="70" y="392" class="mono">10:41:06 capture.click x=440 y=153 app=Finder window="Desktop"</text>
+  <text x="70" y="420" class="mono">10:41:10 context.switch app=Terminal window="zsh" reason=window_change</text>
+  <text x="70" y="448" class="mono">10:41:15 capture.click x=880 y=235 app=Terminal window="OpenStaff"</text>
+  <text x="70" y="476" class="mono">10:41:20 idle_gap=4.2s boundary=task_split</text>
+  <text x="70" y="504" class="mono">10:41:22 task_chunk_created task_id=task-session-20260309-a1-001</text>
+  <text x="70" y="532" class="mono">10:41:26 knowledge_item_written id=knowledge-session-20260309-a1-001</text>
+
+  <rect x="686" y="224" width="430" height="214" rx="22" fill="#FFFFFF" filter="url(#shadow2)"/>
+  <text x="716" y="264" class="title">上下文快照</text>
+  <rect x="716" y="282" width="370" height="52" rx="12" fill="#ECFDF5"/>
+  <text x="736" y="314" class="text">前台应用：Safari (com.apple.Safari)</text>
+  <rect x="716" y="344" width="370" height="52" rx="12" fill="#EFF6FF"/>
+  <text x="736" y="376" class="text">窗口标题：OpenStaff 用户使用说明书</text>
+  <text x="716" y="410" class="muted">本次会话：session-20260309-a1</text>
+
+  <rect x="1138" y="224" width="438" height="214" rx="22" fill="#FFFFFF" filter="url(#shadow2)"/>
+  <text x="1168" y="264" class="title">采集与写盘状态</text>
+  <text x="1168" y="300" class="text">已采集事件：126</text>
+  <text x="1168" y="328" class="text">切片任务：3</text>
+  <text x="1168" y="356" class="text">知识条目：2</text>
+  <rect x="1168" y="374" width="378" height="12" rx="6" fill="#E5E7EB"/>
+  <rect x="1168" y="374" width="294" height="12" rx="6" fill="#16A34A"/>
+  <text x="1168" y="412" class="muted">RawEventFileSink：轮转正常 / 异常可追加</text>
+
+  <rect x="24" y="692" width="540" height="284" rx="22" fill="#FFFFFF" filter="url(#shadow2)"/>
+  <text x="54" y="732" class="title">任务切片时间线</text>
+  <rect x="54" y="750" width="480" height="178" rx="12" fill="#F8FAFC"/>
+  <line x1="96" y1="824" x2="492" y2="824" stroke="#94A3B8" stroke-width="2"/>
+  <circle cx="132" cy="824" r="9" fill="#2563EB"/>
+  <circle cx="286" cy="824" r="9" fill="#0EA5E9"/>
+  <circle cx="430" cy="824" r="9" fill="#22C55E"/>
+  <text x="108" y="790" class="muted">task-001</text>
+  <text x="252" y="790" class="muted">task-002</text>
+  <text x="396" y="790" class="muted">task-003</text>
+  <text x="86" y="854" class="text">窗口切换</text>
+  <text x="250" y="854" class="text">空闲间隔 > 3s</text>
+  <text x="394" y="854" class="text">会话结束</text>
+
+  <rect x="586" y="460" width="990" height="516" rx="22" fill="#FFFFFF" filter="url(#shadow2)"/>
+  <text x="616" y="500" class="title">知识条目草稿（自动归纳）</text>
+  <rect x="616" y="520" width="930" height="426" rx="14" fill="#F8FAFC"/>
+
+  <text x="646" y="560" class="text">知识条目 ID：knowledge-session-20260309-a1-001</text>
+  <text x="646" y="590" class="text">目标：在 Safari 中复现点击流程</text>
+  <text x="646" y="620" class="text">摘要：打开目标页面 -> 定位按钮 -> 点击确认</text>
+  <text x="646" y="660" class="muted">步骤（sourceEventIds 可追溯）</text>
+  <text x="646" y="690" class="text">1. 聚焦 Safari 窗口并校验标题包含 "OpenStaff"</text>
+  <text x="646" y="718" class="text">2. 将鼠标移动到学习坐标附近，执行点击</text>
+  <text x="646" y="746" class="text">3. 等待页面反馈，记录成功状态</text>
+
+  <text x="646" y="790" class="muted">约束（来自安全策略与上下文）</text>
+  <text x="646" y="818" class="text">• 高风险动作关键词命中时阻断执行</text>
+  <text x="646" y="846" class="text">• 前台应用不匹配时禁止复现</text>
+  <text x="646" y="874" class="text">• 坐标偏移超阈值时要求人工确认</text>
+
+  <rect x="1224" y="878" width="146" height="42" rx="12" fill="#0369A1"/>
+  <text x="1265" y="904" fill="#E0F2FE" font-family="Avenir Next, PingFang SC, sans-serif" font-size="15" font-weight="700">继续采集</text>
+  <rect x="1384" y="878" width="146" height="42" rx="12" fill="#14532D"/>
+  <text x="1424" y="904" fill="#DCFCE7" font-family="Avenir Next, PingFang SC, sans-serif" font-size="15" font-weight="700">生成知识</text>
+</svg>

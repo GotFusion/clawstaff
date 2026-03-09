@@ -1,0 +1,777 @@
+import AppKit
+import Foundation
+import SwiftUI
+
+enum OpenStaffSceneID {
+    static let console = "openstaff-console"
+    static let desktopWidget = "openstaff-desktop-widget"
+}
+
+enum DesktopWidgetDisplayMode: String, CaseIterable, Identifiable {
+    case compact
+    case detailed
+
+    var id: String {
+        rawValue
+    }
+
+    var displayName: String {
+        switch self {
+        case .compact:
+            return "精简模式"
+        case .detailed:
+            return "详细模式"
+        }
+    }
+}
+
+struct DesktopWidgetSecondaryTask: Identifiable {
+    let id: String
+    let order: Int
+    let title: String
+    let timestamp: Date
+    let detail: String
+}
+
+struct DesktopWidgetPrimaryTask: Identifiable {
+    let id: String
+    let order: Int
+    let taskName: String
+    let mode: OpenStaffMode
+    let sessionId: String
+    let timestamp: Date
+    let secondaryTasks: [DesktopWidgetSecondaryTask]
+}
+
+final class OpenStaffDesktopWidgetViewModel: NSObject, ObservableObject {
+    @Published var displayMode: DesktopWidgetDisplayMode = .compact
+    @Published private(set) var timelineTasks: [DesktopWidgetPrimaryTask] = []
+    @Published private(set) var currentTaskBrief = "暂无任务"
+    @Published private(set) var nextTaskBrief = "等待下一步任务"
+    @Published private(set) var lastUpdatedAt: Date?
+    @Published var isWidgetWindowVisible = true
+
+    private var refreshTimer: Timer?
+
+    override init() {
+        super.init()
+        refresh()
+        startAutoRefresh()
+    }
+
+    deinit {
+        refreshTimer?.invalidate()
+    }
+
+    func refresh() {
+        let recentTasks = RecentTaskRepository.loadRecentTasks(limit: 32)
+        let executionLogs = ExecutionReviewRepository.loadExecutionSnapshot(limit: 240).logs
+
+        updateBriefTasks(from: recentTasks)
+        timelineTasks = buildTimelineTasks(executionLogs: executionLogs, fallbackTasks: recentTasks)
+        lastUpdatedAt = Date()
+    }
+
+    func setDisplayMode(_ mode: DesktopWidgetDisplayMode) {
+        displayMode = mode
+    }
+
+    func showDetailedMode() {
+        displayMode = .detailed
+    }
+
+    func showCompactMode() {
+        displayMode = .compact
+    }
+
+    @objc
+    private func handleRefreshTick(_ timer: Timer) {
+        refresh()
+    }
+
+    private func startAutoRefresh() {
+        refreshTimer = Timer.scheduledTimer(
+            timeInterval: 2.0,
+            target: self,
+            selector: #selector(handleRefreshTick(_:)),
+            userInfo: nil,
+            repeats: true
+        )
+        if let refreshTimer {
+            RunLoop.main.add(refreshTimer, forMode: .common)
+        }
+    }
+
+    private func updateBriefTasks(from tasks: [RecentTaskSummary]) {
+        guard let currentTask = tasks.first else {
+            currentTaskBrief = "暂无任务"
+            nextTaskBrief = "等待下一步任务"
+            return
+        }
+
+        currentTaskBrief = compactLine(task: currentTask, scenario: .compactCurrentTask)
+
+        if let nextTask = tasks.dropFirst().first {
+            nextTaskBrief = compactLine(task: nextTask, scenario: .compactNextTask)
+        } else {
+            nextTaskBrief = "等待下一步任务"
+        }
+    }
+
+    private func compactLine(
+        task: RecentTaskSummary,
+        scenario: DesktopWidgetTruncationScenario
+    ) -> String {
+        let text = "\(task.mode.widgetDisplayName) · \(task.taskId)"
+        return DesktopWidgetTruncationRule.apply(text, scenario: scenario)
+    }
+
+    private func buildTimelineTasks(
+        executionLogs: [ExecutionLogSummary],
+        fallbackTasks: [RecentTaskSummary]
+    ) -> [DesktopWidgetPrimaryTask] {
+        if !executionLogs.isEmpty {
+            return buildFromExecutionLogs(executionLogs)
+        }
+        return buildFromRecentTasks(fallbackTasks)
+    }
+
+    private func buildFromExecutionLogs(_ logs: [ExecutionLogSummary]) -> [DesktopWidgetPrimaryTask] {
+        let grouped = Dictionary(grouping: logs) { log in
+            "\(log.mode.rawValue)|\(log.sessionId)|\(log.taskId ?? "no-task")"
+        }
+
+        var groups: [(
+            id: String,
+            mode: OpenStaffMode,
+            sessionId: String,
+            taskName: String,
+            timestamp: Date,
+            logs: [ExecutionLogSummary]
+        )] = []
+        groups.reserveCapacity(grouped.count)
+
+        for (groupId, groupLogs) in grouped {
+            let sortedLogs = groupLogs.sorted { lhs, rhs in
+                lhs.timestamp < rhs.timestamp
+            }
+            guard let firstLog = sortedLogs.first else {
+                continue
+            }
+            groups.append((
+                id: groupId,
+                mode: firstLog.mode,
+                sessionId: firstLog.sessionId,
+                taskName: firstLog.taskId ?? "no-task",
+                timestamp: firstLog.timestamp,
+                logs: sortedLogs
+            ))
+        }
+
+        let sortedGroups = groups.sorted { lhs, rhs in
+            if lhs.timestamp == rhs.timestamp {
+                return lhs.id < rhs.id
+            }
+            return lhs.timestamp < rhs.timestamp
+        }
+
+        let limitedGroups = Array(sortedGroups.suffix(24))
+
+        return limitedGroups.enumerated().map { index, group in
+            let secondary = group.logs.enumerated().map { stepIndex, log in
+                DesktopWidgetSecondaryTask(
+                    id: "\(group.id)#\(stepIndex + 1)",
+                    order: stepIndex + 1,
+                    title: log.status,
+                    timestamp: log.timestamp,
+                    detail: log.message
+                )
+            }
+
+            return DesktopWidgetPrimaryTask(
+                id: group.id,
+                order: index + 1,
+                taskName: group.taskName,
+                mode: group.mode,
+                sessionId: group.sessionId,
+                timestamp: group.timestamp,
+                secondaryTasks: secondary
+            )
+        }
+    }
+
+    private func buildFromRecentTasks(_ tasks: [RecentTaskSummary]) -> [DesktopWidgetPrimaryTask] {
+        let orderedTasks = tasks.sorted { lhs, rhs in
+            lhs.timestamp < rhs.timestamp
+        }
+
+        return orderedTasks.enumerated().map { index, task in
+            let secondary = DesktopWidgetSecondaryTask(
+                id: "\(task.id)#1",
+                order: 1,
+                title: task.status,
+                timestamp: task.timestamp,
+                detail: task.message
+            )
+
+            return DesktopWidgetPrimaryTask(
+                id: task.id,
+                order: index + 1,
+                taskName: task.taskId,
+                mode: task.mode,
+                sessionId: task.sessionId,
+                timestamp: task.timestamp,
+                secondaryTasks: [secondary]
+            )
+        }
+    }
+}
+
+struct OpenStaffMenuBarContentView: View {
+    @ObservedObject var dashboardViewModel: OpenStaffDashboardViewModel
+    @ObservedObject var desktopWidgetViewModel: OpenStaffDesktopWidgetViewModel
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button("打开控制台") {
+                openConsoleWindow()
+            }
+
+            Button(desktopWidgetViewModel.isWidgetWindowVisible ? "隐藏前台部件" : "显示前台部件") {
+                toggleDesktopWidgetWindow()
+            }
+
+            Divider()
+
+            Text("部件模式")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Button {
+                desktopWidgetViewModel.setDisplayMode(.compact)
+                ensureWidgetWindowVisible()
+            } label: {
+                Label(
+                    "精简模式",
+                    systemImage: desktopWidgetViewModel.displayMode == .compact ? "checkmark.circle.fill" : "circle"
+                )
+            }
+
+            Button {
+                desktopWidgetViewModel.setDisplayMode(.detailed)
+                ensureWidgetWindowVisible()
+            } label: {
+                Label(
+                    "详细模式",
+                    systemImage: desktopWidgetViewModel.displayMode == .detailed ? "checkmark.circle.fill" : "circle"
+                )
+            }
+
+            Divider()
+
+            Button("刷新任务视图") {
+                desktopWidgetViewModel.refresh()
+                dashboardViewModel.refreshDashboard(promptAccessibilityPermission: false)
+            }
+
+            if dashboardViewModel.emergencyStopActive {
+                Button("解除紧急停止") {
+                    dashboardViewModel.releaseEmergencyStop()
+                }
+            } else {
+                Button("触发紧急停止") {
+                    dashboardViewModel.activateEmergencyStop(source: .uiButton)
+                }
+            }
+
+            Divider()
+
+            Button("退出程序") {
+                NSApplication.shared.terminate(nil)
+            }
+        }
+        .padding(10)
+        .frame(minWidth: 220, alignment: .leading)
+    }
+
+    private func openConsoleWindow() {
+        openWindow(id: OpenStaffSceneID.console)
+        NSApplication.shared.activate(ignoringOtherApps: true)
+    }
+
+    private func toggleDesktopWidgetWindow() {
+        if desktopWidgetViewModel.isWidgetWindowVisible {
+            closeDesktopWidgetWindowIfNeeded()
+            desktopWidgetViewModel.isWidgetWindowVisible = false
+        } else {
+            ensureWidgetWindowVisible()
+        }
+    }
+
+    private func ensureWidgetWindowVisible() {
+        if !desktopWidgetViewModel.isWidgetWindowVisible {
+            openWindow(id: OpenStaffSceneID.desktopWidget)
+            desktopWidgetViewModel.isWidgetWindowVisible = true
+        }
+        NSApplication.shared.activate(ignoringOtherApps: true)
+    }
+
+    private func closeDesktopWidgetWindowIfNeeded() {
+        guard let widgetWindow = NSApplication.shared.windows.first(where: {
+            $0.identifier?.rawValue == OpenStaffSceneID.desktopWidget
+        }) else {
+            return
+        }
+        widgetWindow.close()
+    }
+}
+
+struct OpenStaffDesktopWidgetView: View {
+    @ObservedObject var viewModel: OpenStaffDesktopWidgetViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesktopWidgetSpacing.widgetStack) {
+            compactOrb
+
+            if viewModel.displayMode == .detailed {
+                detailTimeline
+            }
+        }
+        .padding(DesktopWidgetSpacing.widgetOuterPadding)
+        .frame(
+            width: viewModel.displayMode == .compact ? 286 : 560,
+            height: viewModel.displayMode == .compact ? 172 : 580,
+            alignment: .topLeading
+        )
+        .background(
+            RoundedRectangle(cornerRadius: DesktopWidgetSpacing.widgetWindowCornerRadius)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesktopWidgetSpacing.widgetWindowCornerRadius)
+                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 10)
+        )
+        .background(
+            DesktopWidgetWindowConfigurator(windowIdentifier: OpenStaffSceneID.desktopWidget)
+        )
+        .onAppear {
+            viewModel.isWidgetWindowVisible = true
+            viewModel.refresh()
+        }
+        .onDisappear {
+            viewModel.isWidgetWindowVisible = false
+        }
+        .animation(.easeInOut(duration: 0.25), value: viewModel.displayMode)
+    }
+
+    private var compactOrb: some View {
+        Button {
+            if viewModel.displayMode == .compact {
+                viewModel.showDetailedMode()
+            } else {
+                viewModel.showCompactMode()
+            }
+        } label: {
+            HStack(alignment: .center, spacing: DesktopWidgetSpacing.compactRow) {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                DesktopWidgetColorPalette.compactIndicatorGradientStart,
+                                DesktopWidgetColorPalette.compactIndicatorGradientEnd
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.75), lineWidth: 1.2)
+                    )
+                    .frame(
+                        width: DesktopWidgetSpacing.compactIndicatorSize,
+                        height: DesktopWidgetSpacing.compactIndicatorSize
+                    )
+
+                VStack(alignment: .leading, spacing: DesktopWidgetSpacing.compactText) {
+                    Text("当前任务")
+                        .font(DesktopWidgetTypography.compactCaption)
+                        .foregroundStyle(.secondary)
+                    Text(viewModel.currentTaskBrief)
+                        .font(DesktopWidgetTypography.compactCurrentTask)
+                        .lineLimit(1)
+                    Text("下一步：\(viewModel.nextTaskBrief)")
+                        .font(DesktopWidgetTypography.compactNextTask)
+                        .lineLimit(1)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: viewModel.displayMode == .compact ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
+                    .font(DesktopWidgetTypography.compactChevron)
+                    .foregroundStyle(DesktopWidgetColorPalette.compactIndicatorGradientStart)
+            }
+            .padding(.horizontal, DesktopWidgetSpacing.compactHorizontalPadding)
+            .padding(.vertical, DesktopWidgetSpacing.compactVerticalPadding)
+            .background(
+                RoundedRectangle(cornerRadius: DesktopWidgetSpacing.compactCornerRadius, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                DesktopWidgetColorPalette.compactBackgroundGradientStart,
+                                DesktopWidgetColorPalette.compactBackgroundGradientEnd
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesktopWidgetSpacing.compactCornerRadius, style: .continuous)
+                            .stroke(Color.white.opacity(0.9), lineWidth: 1.4)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var detailTimeline: some View {
+        VStack(alignment: .leading, spacing: DesktopWidgetSpacing.timelineSection) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("任务时间轴")
+                    .font(DesktopWidgetTypography.timelineSectionTitle)
+
+                Spacer()
+
+                if let lastUpdatedAt = viewModel.lastUpdatedAt {
+                    Text("更新：\(OpenStaffDateFormatter.displayString(from: lastUpdatedAt))")
+                        .font(DesktopWidgetTypography.timelineMetadata)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+            }
+
+            Divider()
+
+            if viewModel.timelineTasks.isEmpty {
+                Text("暂无任务记录，可先运行教学/辅助/学生流程。")
+                    .font(DesktopWidgetTypography.timelineSecondaryDetail)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(.top, DesktopWidgetSpacing.timelineEmptyTopPadding)
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: DesktopWidgetSpacing.primaryGroupSpacing) {
+                        ForEach(viewModel.timelineTasks) { task in
+                            DesktopWidgetTimelineTaskCard(task: task)
+                        }
+                    }
+                    .padding(.vertical, DesktopWidgetSpacing.timelineContentVerticalPadding)
+                }
+            }
+        }
+        .padding(DesktopWidgetSpacing.timelineSectionPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(
+            RoundedRectangle(cornerRadius: DesktopWidgetSpacing.timelineSectionCornerRadius)
+                .fill(DesktopWidgetColorPalette.timelineSectionFill)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesktopWidgetSpacing.timelineSectionCornerRadius)
+                        .stroke(DesktopWidgetColorPalette.timelineSectionStroke, lineWidth: 1)
+                )
+        )
+    }
+}
+
+private struct DesktopWidgetTimelineTaskCard: View {
+    let task: DesktopWidgetPrimaryTask
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesktopWidgetSpacing.primaryNodeVerticalGap) {
+            HStack(alignment: .top, spacing: DesktopWidgetSpacing.primaryNodeRowSpacing) {
+                Circle()
+                    .fill(DesktopWidgetColorPalette.primaryNodeFill(for: task.mode))
+                    .overlay(
+                        Circle()
+                            .stroke(DesktopWidgetColorPalette.primaryNodeStroke(for: task.mode), lineWidth: 1)
+                    )
+                    .frame(
+                        width: DesktopWidgetSpacing.primaryNodeDotSize,
+                        height: DesktopWidgetSpacing.primaryNodeDotSize
+                    )
+                    .padding(.top, DesktopWidgetSpacing.primaryNodeDotTopOffset)
+
+                VStack(alignment: .leading, spacing: DesktopWidgetSpacing.primaryNodeTextSpacing) {
+                    Text(
+                        DesktopWidgetTruncationRule.timelinePrimaryTaskTitle(
+                            order: task.order,
+                            modeName: task.mode.widgetDisplayName,
+                            taskId: task.taskName
+                        )
+                    )
+                        .font(DesktopWidgetTypography.timelinePrimaryTaskTitle)
+                        .lineLimit(1)
+                    Text("\(task.mode.widgetDisplayName) · \(task.sessionId) · \(OpenStaffDateFormatter.displayString(from: task.timestamp))")
+                        .font(DesktopWidgetTypography.timelineMetadata)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: DesktopWidgetSpacing.secondaryNodeVerticalGap) {
+                ForEach(task.secondaryTasks) { secondary in
+                    HStack(alignment: .top, spacing: DesktopWidgetSpacing.secondaryNodeRowSpacing) {
+                        Rectangle()
+                            .fill(DesktopWidgetColorPalette.secondaryTrack)
+                            .frame(width: DesktopWidgetSpacing.trackWidth, height: DesktopWidgetSpacing.trackHeight)
+                            .padding(.leading, DesktopWidgetSpacing.trackLeadingInset)
+
+                        VStack(alignment: .leading, spacing: DesktopWidgetSpacing.secondaryNodeTextSpacing) {
+                            Text(
+                                DesktopWidgetTruncationRule.timelineSecondaryTaskTitle(
+                                    order: secondary.order,
+                                    status: secondary.title
+                                )
+                            )
+                                .font(DesktopWidgetTypography.timelineSecondaryTaskTitle)
+                                .lineLimit(1)
+                            Text(OpenStaffDateFormatter.displayString(from: secondary.timestamp))
+                                .font(DesktopWidgetTypography.timelineMetadata)
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                                .lineLimit(1)
+                            Text(
+                                DesktopWidgetTruncationRule.apply(
+                                    secondary.detail,
+                                    scenario: .timelineSecondaryTaskDetail
+                                )
+                            )
+                                .font(DesktopWidgetTypography.timelineSecondaryDetail)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
+                    .padding(.leading, DesktopWidgetSpacing.trackTextOffset)
+                }
+            }
+            .padding(.top, DesktopWidgetSpacing.primaryToSecondaryGap)
+        }
+        .padding(DesktopWidgetSpacing.taskCardPadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: DesktopWidgetSpacing.taskCardCornerRadius)
+                .fill(DesktopWidgetColorPalette.timelineCardFill)
+        )
+    }
+}
+
+private enum DesktopWidgetTypography {
+    static let compactCaption = Font.system(size: 12, weight: .medium)
+    static let compactCurrentTask = Font.system(size: 14, weight: .semibold)
+    static let compactNextTask = Font.system(size: 13, weight: .medium)
+    static let compactChevron = Font.system(size: 18, weight: .semibold)
+    static let timelineSectionTitle = Font.system(size: 16, weight: .semibold)
+    static let timelinePrimaryTaskTitle = Font.system(size: 16, weight: .semibold)
+    static let timelineMetadata = Font.system(size: 12, weight: .medium, design: .monospaced)
+    static let timelineSecondaryTaskTitle = Font.system(size: 13, weight: .medium)
+    static let timelineSecondaryDetail = Font.system(size: 12, weight: .medium)
+}
+
+private enum DesktopWidgetColorPalette {
+    static let compactIndicatorGradientStart = Color(red: 0.10, green: 0.44, blue: 0.93)
+    static let compactIndicatorGradientEnd = Color(red: 0.05, green: 0.62, blue: 0.68)
+    static let compactBackgroundGradientStart = Color(red: 0.90, green: 0.96, blue: 1.0)
+    static let compactBackgroundGradientEnd = Color(red: 0.88, green: 0.97, blue: 0.95)
+
+    static let timelineSectionFill = Color.white.opacity(0.65)
+    static let timelineSectionStroke = Color.white.opacity(0.7)
+    static let timelineCardFill = Color.white.opacity(0.8)
+    static let secondaryTrack = Color.secondary.opacity(0.35)
+
+    static func primaryNodeFill(for mode: OpenStaffMode) -> Color {
+        mode.widgetAccentColor.opacity(0.45)
+    }
+
+    static func primaryNodeStroke(for mode: OpenStaffMode) -> Color {
+        mode.widgetAccentColor.opacity(0.60)
+    }
+}
+
+private enum DesktopWidgetSpacing {
+    static let widgetStack: CGFloat = 12
+    static let widgetOuterPadding: CGFloat = 12
+    static let widgetWindowCornerRadius: CGFloat = 24
+
+    static let compactRow: CGFloat = 10
+    static let compactText: CGFloat = 4
+    static let compactIndicatorSize: CGFloat = 58
+    static let compactHorizontalPadding: CGFloat = 14
+    static let compactVerticalPadding: CGFloat = 10
+    static let compactCornerRadius: CGFloat = 54
+
+    static let timelineSection: CGFloat = 10
+    static let timelineSectionPadding: CGFloat = 10
+    static let timelineSectionCornerRadius: CGFloat = 18
+    static let timelineEmptyTopPadding: CGFloat = 8
+    static let timelineContentVerticalPadding: CGFloat = 4
+
+    static let primaryGroupSpacing: CGFloat = 12
+    static let primaryNodeVerticalGap: CGFloat = 8
+    static let primaryNodeRowSpacing: CGFloat = 10
+    static let primaryNodeDotSize: CGFloat = 10
+    static let primaryNodeDotTopOffset: CGFloat = 5
+    static let primaryNodeTextSpacing: CGFloat = 2
+    static let primaryToSecondaryGap: CGFloat = 10
+
+    static let secondaryNodeVerticalGap: CGFloat = 8
+    static let secondaryNodeRowSpacing: CGFloat = 8
+    static let secondaryNodeTextSpacing: CGFloat = 2
+
+    static let trackWidth: CGFloat = 2
+    static let trackHeight: CGFloat = 36
+    static let trackLeadingInset: CGFloat = 4
+    static let trackTextOffset: CGFloat = 24
+
+    static let taskCardPadding: CGFloat = 10
+    static let taskCardCornerRadius: CGFloat = 12
+}
+
+private enum DesktopWidgetTruncationScenario {
+    case compactCurrentTask
+    case compactNextTask
+    case timelinePrimaryTaskTitle
+    case timelineSecondaryTaskTitle
+    case timelineSecondaryTaskDetail
+}
+
+private enum DesktopWidgetTruncationRule {
+    private static let ellipsis = "..."
+
+    static func apply(_ text: String, scenario: DesktopWidgetTruncationScenario) -> String {
+        truncate(text, maxLength: maxLength(for: scenario))
+    }
+
+    static func timelinePrimaryTaskTitle(order: Int, modeName: String, taskId: String) -> String {
+        let prefix = "一级任务 \(order)：\(modeName) · "
+        let rawTitle = prefix + taskId
+        return truncatePreservingPrefix(rawTitle, prefix: prefix, maxLength: maxLength(for: .timelinePrimaryTaskTitle))
+    }
+
+    static func timelineSecondaryTaskTitle(order: Int, status: String) -> String {
+        apply("二级任务 \(order)：\(status)", scenario: .timelineSecondaryTaskTitle)
+    }
+
+    private static func maxLength(for scenario: DesktopWidgetTruncationScenario) -> Int {
+        switch scenario {
+        case .compactCurrentTask:
+            return 22
+        case .compactNextTask:
+            return 26
+        case .timelinePrimaryTaskTitle:
+            return 44
+        case .timelineSecondaryTaskTitle:
+            return 42
+        case .timelineSecondaryTaskDetail:
+            return 52
+        }
+    }
+
+    private static func truncatePreservingPrefix(
+        _ text: String,
+        prefix: String,
+        maxLength: Int
+    ) -> String {
+        guard text.count > maxLength else {
+            return text
+        }
+        if prefix.count >= maxLength {
+            return truncate(prefix, maxLength: maxLength)
+        }
+        let suffixBudget = maxLength - prefix.count
+        let suffixStart = text.index(text.startIndex, offsetBy: prefix.count)
+        let suffix = String(text[suffixStart...])
+        return prefix + truncate(suffix, maxLength: suffixBudget)
+    }
+
+    private static func truncate(_ value: String, maxLength: Int) -> String {
+        guard maxLength > 0 else {
+            return ""
+        }
+        guard value.count > maxLength else {
+            return value
+        }
+        if maxLength <= ellipsis.count {
+            return String(ellipsis.prefix(maxLength))
+        }
+        let keepLength = maxLength - ellipsis.count
+        let endIndex = value.index(value.startIndex, offsetBy: keepLength)
+        return String(value[..<endIndex]) + ellipsis
+    }
+}
+
+private struct DesktopWidgetWindowConfigurator: NSViewRepresentable {
+    let windowIdentifier: String
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView(frame: .zero)
+        DispatchQueue.main.async {
+            configureWindowIfNeeded(view.window)
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async {
+            configureWindowIfNeeded(nsView.window)
+        }
+    }
+
+    private func configureWindowIfNeeded(_ window: NSWindow?) {
+        guard let window else {
+            return
+        }
+
+        if window.identifier?.rawValue != windowIdentifier {
+            window.identifier = NSUserInterfaceItemIdentifier(windowIdentifier)
+        }
+
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true
+        window.level = .floating
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.hasShadow = true
+        window.collectionBehavior.insert([.canJoinAllSpaces, .stationary, .fullScreenAuxiliary])
+
+        window.standardWindowButton(.closeButton)?.isHidden = true
+        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        window.standardWindowButton(.zoomButton)?.isHidden = true
+    }
+}
+
+private extension OpenStaffMode {
+    var widgetDisplayName: String {
+        switch self {
+        case .teaching:
+            return "教学"
+        case .assist:
+            return "辅助"
+        case .student:
+            return "学生"
+        }
+    }
+
+    var widgetAccentColor: Color {
+        switch self {
+        case .teaching:
+            return Color(red: 0.10, green: 0.44, blue: 0.93)
+        case .assist:
+            return Color(red: 0.96, green: 0.50, blue: 0.09)
+        case .student:
+            return Color(red: 0.10, green: 0.63, blue: 0.33)
+        }
+    }
+}

@@ -1,0 +1,90 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg3" x1="140" y1="40" x2="1490" y2="980" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2F7FF"/>
+      <stop offset="0.53" stop-color="#E8F5FF"/>
+      <stop offset="1" stop-color="#F8F2EA"/>
+    </linearGradient>
+    <linearGradient id="hero3" x1="24" y1="24" x2="1576" y2="212" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E3A8A"/>
+      <stop offset="1" stop-color="#0F766E"/>
+    </linearGradient>
+    <filter id="shadow3" x="0" y="0" width="2000" height="1400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#0F172A" flood-opacity="0.13"/>
+    </filter>
+    <style>
+      .title { font: 700 18px "Avenir Next", "PingFang SC", sans-serif; fill: #0B2A47; }
+      .text { font: 500 15px "Avenir Next", "PingFang SC", sans-serif; fill: #243B53; }
+      .muted { font: 500 13px "Avenir Next", "PingFang SC", sans-serif; fill: #62788E; }
+      .pill { font: 700 12px "Avenir Next", "PingFang SC", sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg3)"/>
+  <rect x="24" y="24" width="1552" height="176" rx="30" fill="url(#hero3)" filter="url(#shadow3)"/>
+  <text x="62" y="84" fill="#DBEAFE" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="500">辅助模式 · Assist</text>
+  <text x="62" y="130" fill="#FFFFFF" font-family="Avenir Next, PingFang SC, sans-serif" font-size="38" font-weight="700">预测下一步，老师确认后执行</text>
+  <text x="62" y="162" fill="#BFDBFE" font-family="Avenir Next, PingFang SC, sans-serif" font-size="15">目标：降低重复操作成本，同时保持老师控制权</text>
+
+  <rect x="1320" y="58" width="224" height="54" rx="18" fill="#0B2A47"/>
+  <text x="1356" y="91" fill="#BAE6FD" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">待确认建议 1 条</text>
+
+  <rect x="24" y="224" width="640" height="332" rx="22" fill="#FFFFFF" filter="url(#shadow3)"/>
+  <text x="54" y="264" class="title">下一步预测卡</text>
+  <text x="54" y="292" class="muted">来源：RuleBasedAssistNextActionPredictor</text>
+  <rect x="54" y="314" width="580" height="146" rx="14" fill="#EFF6FF"/>
+  <text x="78" y="354" class="text">建议动作：点击 Safari 标签页中的“提交”按钮</text>
+  <text x="78" y="382" class="text">目标上下文：Safari / OpenStaff 用户使用说明书</text>
+  <text x="78" y="410" class="text">预计耗时：1.8s</text>
+  <text x="78" y="438" class="text">来源知识：knowledge-session-20260309-a1-001</text>
+
+  <text x="54" y="494" class="muted">预测置信度</text>
+  <text x="182" y="496" fill="#1D4ED8" font-family="Avenir Next, PingFang SC, sans-serif" font-size="24" font-weight="700">82%</text>
+  <rect x="54" y="510" width="580" height="14" rx="7" fill="#E2E8F0"/>
+  <rect x="54" y="510" width="476" height="14" rx="7" fill="#2563EB"/>
+
+  <rect x="686" y="224" width="390" height="332" rx="22" fill="#FFFFFF" filter="url(#shadow3)"/>
+  <text x="716" y="264" class="title">执行前守卫检查</text>
+  <rect x="716" y="286" width="330" height="44" rx="10" fill="#F0FDF4"/>
+  <text x="738" y="314" class="text">老师确认：已满足</text>
+  <rect x="716" y="338" width="330" height="44" rx="10" fill="#F0FDF4"/>
+  <text x="738" y="366" class="text">知识已就绪：已满足</text>
+  <rect x="716" y="390" width="330" height="44" rx="10" fill="#F0FDF4"/>
+  <text x="738" y="418" class="text">紧急停止：未激活</text>
+  <rect x="716" y="442" width="330" height="44" rx="10" fill="#FEF3C7"/>
+  <text x="738" y="470" class="text">待确认建议：是（需弹窗）</text>
+  <rect x="716" y="500" width="158" height="36" rx="10" fill="#0EA5E9"/>
+  <text x="761" y="523" fill="#E0F2FE" font-family="Avenir Next, PingFang SC, sans-serif" font-size="14" font-weight="700">刷新守卫</text>
+  <rect x="888" y="500" width="158" height="36" rx="10" fill="#1D4ED8"/>
+  <text x="930" y="523" fill="#DBEAFE" font-family="Avenir Next, PingFang SC, sans-serif" font-size="14" font-weight="700">进入确认</text>
+
+  <rect x="1098" y="224" width="478" height="332" rx="22" fill="#FFFFFF" filter="url(#shadow3)"/>
+  <text x="1128" y="264" class="title">执行审计</text>
+  <text x="1128" y="292" class="muted">traceId: assist-20260309-102410</text>
+  <rect x="1128" y="306" width="418" height="220" rx="14" fill="#0B1220"/>
+  <text x="1148" y="338" fill="#93C5FD" font-family="Menlo, monospace" font-size="12">[10:24:10] SUGGESTION_CREATED score=0.82</text>
+  <text x="1148" y="366" fill="#BFDBFE" font-family="Menlo, monospace" font-size="12">[10:24:12] TEACHER_PROMPT_SHOWN</text>
+  <text x="1148" y="394" fill="#86EFAC" font-family="Menlo, monospace" font-size="12">[10:24:18] TEACHER_APPROVED</text>
+  <text x="1148" y="422" fill="#67E8F9" font-family="Menlo, monospace" font-size="12">[10:24:19] ACTION_EXECUTED click(x=1102,y=642)</text>
+  <text x="1148" y="450" fill="#FDE68A" font-family="Menlo, monospace" font-size="12">[10:24:20] RESULT_CAPTURED status=success</text>
+  <text x="1148" y="478" fill="#C4B5FD" font-family="Menlo, monospace" font-size="12">[10:24:22] LOG_WRITTEN data/logs/assist-*.jsonl</text>
+
+  <rect x="24" y="580" width="1552" height="396" rx="24" fill="#FFFFFF" filter="url(#shadow3)"/>
+  <text x="54" y="622" class="title">老师确认弹窗（核心交互）</text>
+  <rect x="392" y="652" width="816" height="284" rx="20" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2"/>
+  <text x="432" y="700" fill="#0F172A" font-family="Avenir Next, PingFang SC, sans-serif" font-size="27" font-weight="700">建议执行下一步操作</text>
+  <text x="432" y="734" class="text">学生预测你可能要点击 Safari 的“提交”按钮，是否由学生代为执行？</text>
+
+  <rect x="432" y="758" width="736" height="72" rx="12" fill="#EFF6FF"/>
+  <text x="454" y="788" class="text">安全说明：该动作不涉及删除/支付/系统设置，属于白名单点击行为。</text>
+  <text x="454" y="814" class="muted">若窗口标题或应用不匹配，将自动取消执行。</text>
+
+  <rect x="432" y="850" width="172" height="44" rx="12" fill="#16A34A"/>
+  <text x="492" y="878" fill="#F0FDF4" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">同意执行</text>
+  <rect x="622" y="850" width="172" height="44" rx="12" fill="#B91C1C"/>
+  <text x="682" y="878" fill="#FEE2E2" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">拒绝</text>
+  <rect x="812" y="850" width="172" height="44" rx="12" fill="#0F766E"/>
+  <text x="858" y="878" fill="#CCFBF1" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">修正建议</text>
+  <rect x="1002" y="850" width="166" height="44" rx="12" fill="#334155"/>
+  <text x="1044" y="878" fill="#E2E8F0" font-family="Avenir Next, PingFang SC, sans-serif" font-size="16" font-weight="700">稍后提醒</text>
+</svg>
