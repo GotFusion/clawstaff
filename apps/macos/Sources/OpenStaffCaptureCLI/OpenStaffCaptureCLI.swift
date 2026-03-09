@@ -17,8 +17,10 @@ struct OpenStaffCaptureCLI {
 
             let permissionChecker = AccessibilityPermissionChecker()
             guard permissionChecker.isTrusted(prompt: options.promptForPermission) else {
+                let executablePath = ProcessInfo.processInfo.arguments.first ?? "unknown"
                 print("[CAP-PERMISSION-DENIED] Accessibility permission is required for global capture.")
-                print("Open System Settings > Privacy & Security > Accessibility and allow your terminal app, then rerun this command.")
+                print("Open System Settings > Privacy & Security > Accessibility and allow this executable, then rerun:")
+                print(executablePath)
                 Foundation.exit(2)
             }
 

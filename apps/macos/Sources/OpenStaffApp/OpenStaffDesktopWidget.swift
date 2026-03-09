@@ -470,27 +470,20 @@ struct OpenStaffDesktopWidgetView: View {
                         .foregroundStyle(mode.widgetAccentColor)
                         .frame(width: DesktopWidgetSpacing.modeControlLabelWidth, alignment: .leading)
 
-                    Button("开始") {
-                        dashboardViewModel.startMode(mode)
+                    Button(dashboardViewModel.isModeRunning(mode) ? "停止" : "开始") {
+                        dashboardViewModel.toggleMode(mode)
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
-                    .tint(mode.widgetAccentColor)
-                    .disabled(dashboardViewModel.currentMode == mode)
-
-                    Button("停止") {
-                        dashboardViewModel.stopMode(mode)
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .disabled(!dashboardViewModel.canStopMode(mode))
+                    .disabled(!dashboardViewModel.canToggleMode(mode))
+                    .tint(dashboardViewModel.isModeRunning(mode) ? .red : mode.widgetAccentColor)
 
                     Spacer(minLength: 0)
 
-                    Text(dashboardViewModel.currentMode == mode ? "运行中" : "未运行")
+                    Text(dashboardViewModel.isModeRunning(mode) ? "运行中" : "未运行")
                         .font(DesktopWidgetTypography.modeControlStatus)
                         .foregroundStyle(
-                            dashboardViewModel.currentMode == mode
+                            dashboardViewModel.isModeRunning(mode)
                             ? mode.widgetAccentColor
                             : DesktopWidgetColorPalette.modeControlSecondaryText
                         )

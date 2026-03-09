@@ -7,16 +7,16 @@ KNOWLEDGE_TARGET := OpenStaffKnowledgeBuilderCLI
 ORCHESTRATOR_TARGET := OpenStaffOrchestratorCLI
 ASSIST_TARGET := OpenStaffAssistCLI
 STUDENT_TARGET := OpenStaffStudentCLI
-DEMO_TARGET := OpenStaffDemoCLI
 ARGS ?=
 
-.PHONY: build dev xcode-open capture slice knowledge orchestrator assist student demo-build demo-run llm-prompts llm-validate llm-call llm-retry-demo skill-build skills-demo skills-validate-demo test test-unit test-integration test-e2e release-demo release-regression release-preflight
+.PHONY: build dev xcode-open capture slice knowledge orchestrator assist student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample test test-unit test-integration test-e2e release-regression release-preflight
 
 build:
 	swift build --package-path $(APP_PACKAGE_PATH)
 
 dev:
-	swift run --package-path $(APP_PACKAGE_PATH) $(APP_TARGET)
+	swift build --package-path $(APP_PACKAGE_PATH) --product $(APP_TARGET)
+	"$$(swift build --package-path $(APP_PACKAGE_PATH) --show-bin-path)/$(APP_TARGET)"
 
 xcode-open:
 	./scripts/dev/open_xcode_workspace.sh
@@ -39,15 +39,6 @@ assist:
 student:
 	swift run --package-path $(APP_PACKAGE_PATH) $(STUDENT_TARGET) $(ARGS)
 
-demo-build:
-	swift build --package-path $(APP_PACKAGE_PATH) --product $(ORCHESTRATOR_TARGET)
-	swift build --package-path $(APP_PACKAGE_PATH) --product $(ASSIST_TARGET)
-	swift build --package-path $(APP_PACKAGE_PATH) --product $(STUDENT_TARGET)
-	swift build --package-path $(APP_PACKAGE_PATH) --product $(DEMO_TARGET)
-
-demo-run: demo-build
-	swift run --package-path $(APP_PACKAGE_PATH) $(DEMO_TARGET) $(ARGS)
-
 llm-prompts:
 	python3 scripts/llm/render_knowledge_prompts.py --knowledge-item core/knowledge/examples/knowledge-item.sample.json --out-dir /tmp/openstaff-llm-prompts
 
@@ -57,21 +48,21 @@ llm-validate:
 llm-call:
 	python3 scripts/llm/chatgpt_adapter.py --provider text --knowledge-item core/knowledge/examples/knowledge-item.sample.json --output /tmp/openstaff-llm-call-output.json $(ARGS)
 
-llm-retry-demo:
-	python3 scripts/llm/chatgpt_adapter.py --provider text --knowledge-item core/knowledge/examples/knowledge-item.sample.json --simulate-transient-failures 2 --max-retries 3 --output /tmp/openstaff-llm-retry-demo-output.json $(ARGS)
+llm-retry:
+	python3 scripts/llm/chatgpt_adapter.py --provider text --knowledge-item core/knowledge/examples/knowledge-item.sample.json --simulate-transient-failures 2 --max-retries 3 --output /tmp/openstaff-llm-retry-output.json $(ARGS)
 
 skill-build:
 	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item core/knowledge/examples/knowledge-item.sample.json --llm-output scripts/llm/examples/knowledge-parse-output.sample.json --skills-root /tmp/openstaff-skills --overwrite $(ARGS)
 
-skills-demo:
-	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item core/knowledge/examples/knowledge-item.sample.json --llm-output scripts/llm/examples/knowledge-parse-output.sample.json --skills-root /tmp/openstaff-skills-demo --overwrite
-	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item scripts/skills/examples/knowledge-item.sample.finder.json --llm-output scripts/skills/examples/llm-output.sample.finder.json --skills-root /tmp/openstaff-skills-demo --overwrite
-	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item scripts/skills/examples/knowledge-item.sample.terminal.json --llm-output scripts/skills/examples/llm-output.sample.terminal-invalid.txt --skills-root /tmp/openstaff-skills-demo --overwrite
+skills-sample:
+	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item core/knowledge/examples/knowledge-item.sample.json --llm-output scripts/llm/examples/knowledge-parse-output.sample.json --skills-root /tmp/openstaff-skills-sample --overwrite
+	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item scripts/skills/examples/knowledge-item.sample.finder.json --llm-output scripts/skills/examples/llm-output.sample.finder.json --skills-root /tmp/openstaff-skills-sample --overwrite
+	python3 scripts/skills/openclaw_skill_mapper.py --knowledge-item scripts/skills/examples/knowledge-item.sample.terminal.json --llm-output scripts/skills/examples/llm-output.sample.terminal-invalid.txt --skills-root /tmp/openstaff-skills-sample --overwrite
 
-skills-validate-demo: skills-demo
-	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-demo/openstaff-task-session-20260307-a1-001
-	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-demo/openstaff-task-session-20260307-b2-001
-	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-demo/openstaff-task-session-20260307-c3-001
+skills-validate-sample: skills-sample
+	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-sample/openstaff-task-session-20260307-a1-001
+	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-sample/openstaff-task-session-20260307-b2-001
+	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-sample/openstaff-task-session-20260307-c3-001
 
 test:
 	python3 scripts/tests/run_all.py --suite all
@@ -85,12 +76,8 @@ test-integration:
 test-e2e:
 	python3 scripts/tests/run_all.py --suite e2e
 
-release-demo:
-	python3 scripts/release/build_demo_bundle.py --out-dir /tmp/openstaff-release-demo --overwrite
-
 release-regression:
 	python3 scripts/release/run_regression.py --suite all
 
 release-preflight:
-	python3 scripts/release/build_demo_bundle.py --out-dir /tmp/openstaff-release-preflight/demo --overwrite
 	python3 scripts/release/run_regression.py --output-root /tmp/openstaff-release-preflight/regression --suite all

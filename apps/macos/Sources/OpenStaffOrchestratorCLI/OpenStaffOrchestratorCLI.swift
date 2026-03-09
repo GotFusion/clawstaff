@@ -75,7 +75,7 @@ struct OpenStaffOrchestratorCLI {
         Flags:
           --from <teaching|assist|student>   Initial mode. Default: teaching
           --to <teaching|assist|student>     Target mode to switch to.
-          --session-id <id>                  Session ID used in structured logs. Default: session-demo
+          --session-id <id>                  Session ID used in structured logs. Default: session-default
           --task-id <id>                     Optional task ID used in structured logs.
           --trace-id <id>                    Trace ID used in structured logs. Default: auto generated.
           --timestamp <iso8601>              Timestamp used in structured logs. Default: now.
@@ -124,7 +124,7 @@ struct OrchestratorCLIOptions {
     static func parse(arguments: [String]) throws -> OrchestratorCLIOptions {
         var initialMode: OpenStaffMode = .teaching
         var targetMode: OpenStaffMode?
-        var sessionId = "session-demo"
+        var sessionId = "session-default"
         var taskId: String?
         var traceId = "trace-\(UUID().uuidString.lowercased())"
         var timestamp = currentTimestamp()

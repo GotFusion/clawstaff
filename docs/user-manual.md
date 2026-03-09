@@ -42,7 +42,6 @@ cp .env.example .env.local
 ### 2.4 配置文件
 - 默认配置：`config/default.yaml`
 - 开发覆盖：`config/dev.yaml`
-- 演示模板：`config/demo.example.yaml`
 - 发布模板：`config/release.example.yaml`
 
 ## 3. 三种模式使用方法
@@ -50,7 +49,12 @@ cp .env.example .env.local
 ### 3.1 教学模式（Learning）
 目标：采集你的操作并形成知识。
 
-常用命令：
+推荐方式（已集成到 OpenStaff App）：
+- 打开 OpenStaff 控制台。
+- 选择“教学模式”并点击“开始”。
+- 点击“停止”后会自动执行：事件切片 + 知识条目生成（不再需要手动跑 `slice/knowledge`）。
+
+兼容调试命令（仅排障/回归使用）：
 
 ```bash
 make capture ARGS="--max-events 20"
@@ -61,6 +65,11 @@ make knowledge ARGS="--task-chunk data/task-chunks/2026-03-09/task-session-20260
 ### 3.2 辅助模式（Assist）
 目标：学生预测下一步，经你确认后执行。
 
+推荐方式（已集成到 OpenStaff App）：
+- 选择“辅助模式”并点击“开始”。
+- App 会直接在模式内执行“预测 -> 确认（默认集成确认）-> 执行 -> 写日志”。
+
+兼容调试命令：
 ```bash
 make assist ARGS="--knowledge-item core/knowledge/examples/knowledge-item.sample.json --auto-confirm yes"
 ```
@@ -68,6 +77,11 @@ make assist ARGS="--knowledge-item core/knowledge/examples/knowledge-item.sample
 ### 3.3 学生模式（Student）
 目标：学生根据目标自主执行并生成审阅报告。
 
+推荐方式（已集成到 OpenStaff App）：
+- 选择“学生模式”并点击“开始”。
+- App 会直接执行“规划 -> 执行 -> 审阅报告写入”。
+
+兼容调试命令：
 ```bash
 make student ARGS="--goal 在 Safari 中复现点击流程 --knowledge core/knowledge/examples/knowledge-item.sample.json"
 ```
@@ -83,84 +97,42 @@ make llm-validate
 ### 4.2 调用适配层
 ```bash
 make llm-call
-make llm-retry-demo
+make llm-retry
 ```
 
 ### 4.3 Skill 生成与校验
 ```bash
-make skills-demo
-make skills-validate-demo
+make skills-sample
+make skills-validate-sample
 ```
 
-## 5. 一键 Demo 体验（推荐首次使用）
+## 5. 发布前检查
 
-OpenStaff 提供了可直接体验的 Demo 程序 `OpenStaffDemoCLI`。
-
-### 5.1 编译 Demo 程序
-```bash
-make demo-build
-```
-
-### 5.2 运行 Demo 程序
-```bash
-make demo-run
-```
-
-默认会自动执行：
-1. 模式切换检查（teaching -> assist）。
-2. 辅助模式闭环（预测 -> 确认 -> 执行）。
-3. 学生模式闭环（规划 -> 执行 -> 报告）。
-
-### 5.3 Demo 输出位置
-默认输出目录：
-
-```text
-/tmp/openstaff-demo-experience
-```
-
-关键文件：
-- `demo-summary.json`：Demo 执行摘要。
-- `logs/`：辅助与学生模式日志。
-- `reports/`：学生模式审阅报告。
-- `step-outputs/*.stdout.log`：每一步原始输出。
-
-### 5.4 自定义 Demo 参数
-```bash
-make demo-run ARGS="--goal 在 Finder 中执行示例流程 --output-root /tmp/my-openstaff-demo"
-```
-
-## 6. 发布前检查
-
-### 6.1 生成演示数据包
-```bash
-make release-demo
-```
-
-### 6.2 执行发布回归
+### 5.1 执行发布回归
 ```bash
 make release-regression
 ```
 
-### 6.3 一键执行发布预检
+### 5.2 一键执行发布预检
 ```bash
 make release-preflight
 ```
 
-## 7. 常见问题
+## 6. 常见问题
 
-### 7.1 提示权限不足
+### 6.1 提示权限不足
 - 采集功能依赖 macOS 辅助功能权限。
 - 请在系统设置中授权后重试。
 
-### 7.2 Swift 构建失败
+### 6.2 Swift 构建失败
 - 检查 `xcode-select -p` 指向有效开发工具链。
 - 保证当前用户对项目目录和缓存目录有写权限。
 
-### 7.3 Demo 步骤失败
-- 先运行 `make demo-build` 确保必需 CLI 已编译。
-- 查看 `step-outputs/*.stderr.log` 定位失败原因。
+### 6.3 回归步骤失败
+- 先运行 `make build` 确保必需 CLI 已编译。
+- 查看回归输出目录内的错误日志定位失败原因。
 
-## 8. 进阶建议
+## 7. 进阶建议
 
 1. 使用真实采集会话替换样例知识条目，观察模型效果变化。  
 2. 在 `config/release.example.yaml` 中细化 `safety.blockedActionKeywords`。  

@@ -42,4 +42,4 @@ python3 scripts/skills/validate_openclaw_skill.py \
 
 ### 3) 运行三条示例转换（含 fallback 案例）
 
-见根目录 `Makefile` 的 `make skills-demo` 与 `make skills-validate-demo`。
+见根目录 `Makefile` 的 `make skills-sample` 与 `make skills-validate-sample`。

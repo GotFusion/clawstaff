@@ -1,0 +1,1 @@
+../OpenStaffTaskSlicerCLI/SessionTaskSlicer.swift

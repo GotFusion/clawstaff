@@ -161,7 +161,7 @@ def main() -> int:
     run_id = datetime.now().strftime("run-%Y%m%d-%H%M%S")
     run_dir = args.output_root.resolve() / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
-    skills_root = run_dir / "skills-demo"
+    skills_root = run_dir / "skills-sample"
     report_path = args.report.resolve() if args.report else run_dir / "regression-report.json"
 
     results: list[CheckResult] = []

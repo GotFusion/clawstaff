@@ -18,20 +18,17 @@ make knowledge
 make orchestrator
 make assist
 make student
-make demo-build
-make demo-run
 make llm-prompts
 make llm-validate
 make llm-call
-make llm-retry-demo
+make llm-retry
 make skill-build
-make skills-demo
-make skills-validate-demo
+make skills-sample
+make skills-validate-sample
 make test
 make test-unit
 make test-integration
 make test-e2e
-make release-demo
 make release-regression
 make release-preflight
 ```
@@ -51,22 +48,19 @@ make release-preflight
 - `make orchestrator`：启动 Phase 4.1 模式状态机 CLI（模式切换守卫 + 能力白名单 + 结构化日志）。
 - `make assist`：启动 Phase 4.2 辅助模式闭环 CLI（规则预测 -> 弹窗确认 -> 执行 -> 回写日志）。
 - `make student`：启动 Phase 4.3 学生模式闭环 CLI（输入目标 -> 自动规划 -> 技能执行 -> 结构化审阅报告）。
-- `make demo-build`：编译 Demo 体验所需 CLI（含 `OpenStaffDemoCLI`）。
-- `make demo-run`：运行一键体验 Demo（教学->辅助->学生闭环，输出目录默认 `/tmp/openstaff-demo-experience`）。
 - `make llm-prompts`：渲染 Phase 3.1 提示词模板（KnowledgeItem -> system/user prompts）。
 - `make llm-validate`：校验 LLM 结构化输出样例（强制 JSON + 一致性检查）。
 - `make llm-call`：运行 Phase 3.2 调用适配层（默认离线 `text` provider，输出到 `/tmp/openstaff-llm-call-output.json`）。
-- `make llm-retry-demo`：离线模拟 2 次瞬时失败，验证重试与错误报告链路。
+- `make llm-retry`：离线模拟 2 次瞬时失败，验证重试与错误报告链路。
 - `make skill-build`：运行 Phase 3.3 单条 skill 映射（KnowledgeItem + LLM 输出 -> OpenClaw skill）。
-- `make skills-demo`：运行 3 条示例任务映射（含 1 条 fallback 案例）。
-- `make skills-validate-demo`：校验 `skills-demo` 输出技能的可读性与一致性。
+- `make skills-sample`：运行 3 条示例任务映射（含 1 条 fallback 案例）。
+- `make skills-validate-sample`：校验 `skills-sample` 输出技能的可读性与一致性。
 - `make test`：一键执行 unit + integration + e2e 测试并输出汇总。
 - `make test-unit`：仅执行单元测试。
 - `make test-integration`：仅执行集成测试。
 - `make test-e2e`：仅执行 E2E 测试。
-- `make release-demo`：生成发布演示数据包（默认输出 `/tmp/openstaff-release-demo`）。
 - `make release-regression`：执行发布回归检查并输出报告。
-- `make release-preflight`：一键执行“演示数据打包 + 回归检查”。
+- `make release-preflight`：一键执行发布回归预检。
 
 ## 目录概览
 

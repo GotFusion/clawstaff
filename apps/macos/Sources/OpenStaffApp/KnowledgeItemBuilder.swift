@@ -1,0 +1,1 @@
+../OpenStaffKnowledgeBuilderCLI/KnowledgeItemBuilder.swift

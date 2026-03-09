@@ -39,7 +39,7 @@
         {
           "stepId": "step-003",
           "actionType": "input",
-          "instruction": "输入文件夹名称 OpenStaff-Demo 并回车。",
+          "instruction": "输入文件夹名称 OpenStaff-Workspace 并回车。",
           "target": "unknown",
           "sourceEventIds": [
             "55555555-5555-4555-8555-555555555555"

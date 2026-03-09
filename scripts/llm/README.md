@@ -65,7 +65,7 @@ python3 scripts/llm/chatgpt_adapter.py \
   --knowledge-item core/knowledge/examples/knowledge-item.sample.json \
   --simulate-transient-failures 2 \
   --max-retries 3 \
-  --output /tmp/openstaff-llm-retry-demo-output.json
+  --output /tmp/openstaff-llm-retry-output.json
 ```
 
 ### 5) OpenAI 模式（待 API 可用后）

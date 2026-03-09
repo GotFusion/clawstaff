@@ -25,7 +25,7 @@ metadata: {"openclaw":{"emoji":"🎓","skillKey":"openstaff-task-session-2026030
 2. [shortcut] 使用快捷键 Command+Shift+N 创建新文件夹。
    - target: `unknown`
    - sourceEventIds: `44444444-4444-4444-8444-444444444444`
-3. [input] 输入文件夹名称 OpenStaff-Demo 并回车。
+3. [input] 输入文件夹名称 OpenStaff-Workspace 并回车。
    - target: `unknown`
    - sourceEventIds: `55555555-5555-4555-8555-555555555555`
 

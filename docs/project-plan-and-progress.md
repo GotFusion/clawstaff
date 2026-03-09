@@ -125,8 +125,8 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成阶段 5.3 审阅与反馈：新增执行日志审阅区，支持日志详情查看与老师反馈入口（通过/驳回/修正），反馈落盘到 `data/feedback/{yyyy-mm-dd}/*.jsonl`。
 - 完成阶段 6.1 安全控制：执行层新增高风险关键词+正则拦截规则，支持紧急停止状态拦截；GUI 新增紧急停止按钮与全局快捷键（`Cmd+Shift+.`）。
 - 完成阶段 6.2 测试体系落地（补强）：在原有 schema/映射链路测试基础上，新增 `test_validate_openclaw_skill.py`、`test_task_slicer_cli.py`、`test_three_mode_cli_roundtrip.py`，把覆盖扩展到 `SKILL.md` 校验器、`OpenStaffTaskSlicerCLI` 切片策略，以及 `Orchestrator/Assist/Student` 三模式真实 CLI 闭环；统一入口仍为 `scripts/tests/run_all.py` 与 `make test*`。
-- 完成阶段 6.3 发布前检查：补齐配置模板（`config/release.example.yaml`、`config/demo.example.yaml`）与配置文档；新增 `scripts/release/build_demo_bundle.py`（演示数据包）与 `scripts/release/run_regression.py`（发布回归与 JSON 报告）；新增 `make release-demo` / `make release-regression` / `make release-preflight` 一键入口。
-- 新增用户使用说明书 `docs/user-manual.md`，并新增 `OpenStaffDemoCLI` + `make demo-build` / `make demo-run`，支持一键体验教学->辅助->学生闭环。
+- 完成阶段 6.3 发布前检查：补齐配置模板（`config/release.example.yaml`）与配置文档；新增 `scripts/release/run_regression.py`（发布回归与 JSON 报告）；新增 `make release-regression` / `make release-preflight` 一键入口。
+- 新增用户使用说明书 `docs/user-manual.md`，覆盖教学->辅助->学生三模式日常运行与发布回归流程。
 - 完成菜单栏+前台部件 v4 的 Phase A（基础样式收敛）：字体/间距/节点透明色/截断规则统一 token 化，超长文案统一按场景截断。
 - 完成菜单栏+前台部件 v4 的 Phase B（精简模式改造）：球体样式替换为透明方框，精简信息收敛到当前任务/下一步/轻提示，整块区域可点击切换详细模式。
 - 完成菜单栏+前台部件 v4 的 Phase C（详细模式收敛）：时间轴去重背景嵌入、一级/二级透明节点调色、间距参数规范化，并加入紧急停止细红线状态提示。

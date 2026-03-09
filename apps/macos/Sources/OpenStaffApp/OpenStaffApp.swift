@@ -15,8 +15,8 @@ struct OpenStaffApp: App {
                 desktopWidgetViewModel: desktopWidgetViewModel
             )
         }
-        .windowResizability(.contentSize)
-        .defaultSize(width: 1180, height: 1120)
+        .windowResizability(.automatic)
+        .defaultSize(width: 1180, height: 900)
 
         Window("OpenStaff 前台部件", id: OpenStaffSceneID.desktopWidget) {
             OpenStaffDesktopWidgetView(
@@ -46,9 +46,9 @@ struct OpenStaffRootView: View {
 
     var body: some View {
         TabView {
-            OpenStaffPrototypeView()
+            OpenStaffModeWorkbenchView(dashboardViewModel: viewModel)
                 .tabItem {
-                    Label("原型体验", systemImage: "sparkles.rectangle.stack")
+                    Label("模式工作台", systemImage: "square.grid.2x2")
                 }
 
             OpenStaffDashboardView(viewModel: viewModel)
@@ -56,6 +56,7 @@ struct OpenStaffRootView: View {
                     Label("系统控制台", systemImage: "gauge.with.dots.needle.67percent")
                 }
         }
+        .background(ConsoleWindowConfigurator(windowIdentifier: OpenStaffSceneID.console))
         .task {
             guard !hasOpenedDesktopWidget else {
                 return
@@ -65,6 +66,72 @@ struct OpenStaffRootView: View {
                 openWindow(id: OpenStaffSceneID.desktopWidget)
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                HStack(spacing: 8) {
+                    Picker(
+                        "快捷模式",
+                        selection: Binding(
+                            get: { viewModel.selectedMode },
+                            set: { viewModel.selectMode($0) }
+                        )
+                    ) {
+                        ForEach(OpenStaffMode.allCases, id: \.self) { mode in
+                            Text(viewModel.modeDisplayName(for: mode)).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .disabled(viewModel.isAnyModeRunning)
+
+                    Button(viewModel.isModeRunning(viewModel.selectedMode) ? "停止" : "开始") {
+                        viewModel.toggleMode(viewModel.selectedMode)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!viewModel.canToggleMode(viewModel.selectedMode))
+                    .tint(viewModel.isModeRunning(viewModel.selectedMode) ? .red : viewModel.selectedMode.color)
+                }
+            }
+        }
+    }
+}
+
+private struct ConsoleWindowConfigurator: NSViewRepresentable {
+    let windowIdentifier: String
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView(frame: .zero)
+        DispatchQueue.main.async {
+            configureWindowIfNeeded(view.window)
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async {
+            configureWindowIfNeeded(nsView.window)
+        }
+    }
+
+    private func configureWindowIfNeeded(_ window: NSWindow?) {
+        guard let window else {
+            return
+        }
+
+        if window.identifier?.rawValue != windowIdentifier {
+            window.identifier = NSUserInterfaceItemIdentifier(windowIdentifier)
+        }
+
+        window.styleMask.remove(.borderless)
+        window.styleMask.insert([.titled, .resizable, .closable, .miniaturizable])
+        window.titleVisibility = .visible
+        window.titlebarAppearsTransparent = false
+        window.isMovableByWindowBackground = false
+        window.level = .normal
+        window.collectionBehavior.remove([.stationary, .canJoinAllSpaces, .fullScreenAuxiliary])
+
+        window.standardWindowButton(.closeButton)?.isHidden = false
+        window.standardWindowButton(.miniaturizeButton)?.isHidden = false
+        window.standardWindowButton(.zoomButton)?.isHidden = false
     }
 }
 
@@ -72,213 +139,215 @@ struct OpenStaffDashboardView: View {
     @ObservedObject var viewModel: OpenStaffDashboardViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("OpenStaff 主界面")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    Text("阶段 6.1：安全控制")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 6) {
-                    if let refreshedAt = viewModel.lastRefreshedAt {
-                        Text("最近刷新：\(OpenStaffDateFormatter.displayString(from: refreshedAt))")
-                            .font(.caption)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("OpenStaff 主界面")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        Text("阶段 6.1：安全控制")
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
-                    Text(viewModel.emergencyStopStatusText)
-                        .font(.caption)
-                        .foregroundStyle(viewModel.emergencyStopActive ? .red : .secondary)
-
-                    HStack(spacing: 8) {
-                        Button("刷新任务与权限") {
-                            viewModel.refreshDashboard(promptAccessibilityPermission: false)
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 6) {
+                        if let refreshedAt = viewModel.lastRefreshedAt {
+                            Text("最近刷新：\(OpenStaffDateFormatter.displayString(from: refreshedAt))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
-                        .keyboardShortcut("r", modifiers: [.command])
+                        Text(viewModel.emergencyStopStatusText)
+                            .font(.caption)
+                            .foregroundStyle(viewModel.emergencyStopActive ? .red : .secondary)
 
-                        Button("申请辅助功能权限") {
-                            viewModel.refreshDashboard(promptAccessibilityPermission: true)
-                        }
+                        HStack(spacing: 8) {
+                            Button("刷新任务与权限") {
+                                viewModel.refreshDashboard(promptAccessibilityPermission: false)
+                            }
+                            .keyboardShortcut("r", modifiers: [.command])
 
-                        Button("紧急停止") {
-                            viewModel.activateEmergencyStop(source: .uiButton)
-                        }
-                        .keyboardShortcut(".", modifiers: [.command, .shift])
-                        .buttonStyle(.borderedProminent)
-                        .tint(.red)
+                            Button("申请辅助功能权限") {
+                                viewModel.refreshDashboard(promptAccessibilityPermission: true)
+                            }
 
-                        Button("解除停止") {
-                            viewModel.releaseEmergencyStop()
+                            Button("紧急停止") {
+                                viewModel.activateEmergencyStop(source: .uiButton)
+                            }
+                            .keyboardShortcut(".", modifiers: [.command, .shift])
+                            .buttonStyle(.borderedProminent)
+                            .tint(.red)
+
+                            Button("解除停止") {
+                                viewModel.releaseEmergencyStop()
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(!viewModel.emergencyStopActive)
                         }
-                        .buttonStyle(.bordered)
-                        .disabled(!viewModel.emergencyStopActive)
                     }
                 }
-            }
 
-            GroupBox("模式切换") {
-                VStack(alignment: .leading, spacing: 12) {
-                    Picker(
-                        "运行模式",
-                        selection: Binding(
-                            get: { viewModel.currentMode },
-                            set: { viewModel.requestModeChange(to: $0) }
-                        )
-                    ) {
-                        ForEach(OpenStaffMode.allCases, id: \.self) { mode in
-                            Text(viewModel.modeDisplayName(for: mode)).tag(mode)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-
-                    Text("模式运行控制")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(OpenStaffMode.allCases, id: \.self) { mode in
-                            HStack(spacing: 10) {
-                                Text(viewModel.modeDisplayName(for: mode))
-                                    .font(.callout)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(mode.color)
-                                    .frame(width: 82, alignment: .leading)
-
-                                Button("开始") {
-                                    viewModel.startMode(mode)
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .tint(mode.color)
-                                .disabled(viewModel.currentMode == mode)
-
-                                Button("停止") {
-                                    viewModel.stopMode(mode)
-                                }
-                                .buttonStyle(.bordered)
-                                .disabled(!viewModel.canStopMode(mode))
-
-                                Spacer(minLength: 0)
-
-                                Text(viewModel.currentMode == mode ? "运行中" : "未运行")
-                                    .font(.caption)
-                                    .foregroundStyle(viewModel.currentMode == mode ? mode.color : .secondary)
+                GroupBox("模式切换") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Picker(
+                            "运行模式",
+                            selection: Binding(
+                                get: { viewModel.selectedMode },
+                                set: { viewModel.selectMode($0) }
+                            )
+                        ) {
+                            ForEach(OpenStaffMode.allCases, id: \.self) { mode in
+                                Text(viewModel.modeDisplayName(for: mode)).tag(mode)
                             }
                         }
-                    }
+                        .pickerStyle(.segmented)
+                        .disabled(viewModel.isAnyModeRunning)
 
-                    Text("切换守卫输入")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 8) {
-                        GridRow {
-                            Toggle("老师已确认", isOn: $viewModel.guardInputs.teacherConfirmed)
-                            Toggle("知识已就绪", isOn: $viewModel.guardInputs.learnedKnowledgeReady)
-                        }
-                        GridRow {
-                            Toggle("执行计划已就绪", isOn: $viewModel.guardInputs.executionPlanReady)
-                            Toggle("存在待确认建议", isOn: $viewModel.guardInputs.pendingAssistSuggestion)
-                        }
-                        GridRow {
-                            Toggle(
-                                "紧急停止已激活",
-                                isOn: Binding(
-                                    get: { viewModel.guardInputs.emergencyStopActive },
-                                    set: { isOn in
-                                        if isOn {
-                                            viewModel.activateEmergencyStop(source: .uiButton)
-                                        } else {
-                                            viewModel.releaseEmergencyStop()
-                                        }
-                                    }
-                                )
-                            )
-                            Spacer(minLength: 0)
-                        }
-                    }
-
-                    if let transitionMessage = viewModel.transitionMessage {
-                        Text(transitionMessage)
+                        Text("模式运行控制")
                             .font(.caption)
-                            .foregroundStyle(viewModel.lastTransitionAccepted ? .green : .red)
-                    }
-                }
-                .padding(.top, 4)
-            }
+                            .foregroundStyle(.secondary)
 
-            HStack(alignment: .top, spacing: 12) {
-                GroupBox("当前状态") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        LabeledContent("当前模式", value: viewModel.modeDisplayName(for: viewModel.currentMode))
-                        LabeledContent("状态码", value: viewModel.currentStatusCode)
-                        if !viewModel.currentCapabilities.isEmpty {
-                            LabeledContent("能力白名单", value: viewModel.currentCapabilities.joined(separator: ", "))
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(OpenStaffMode.allCases, id: \.self) { mode in
+                                HStack(spacing: 10) {
+                                    Text(viewModel.modeDisplayName(for: mode))
+                                        .font(.callout)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(mode.color)
+                                        .frame(width: 82, alignment: .leading)
+
+                                    Button(viewModel.isModeRunning(mode) ? "停止" : "开始") {
+                                        viewModel.toggleMode(mode)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .disabled(!viewModel.canToggleMode(mode))
+                                    .tint(viewModel.isModeRunning(mode) ? .red : mode.color)
+
+                                    Spacer(minLength: 0)
+
+                                    Text(viewModel.isModeRunning(mode) ? "运行中" : "未运行")
+                                        .font(.caption)
+                                        .foregroundStyle(viewModel.isModeRunning(mode) ? mode.color : .secondary)
+                                }
+                            }
                         }
-                        if !viewModel.unmetRequirementsText.isEmpty {
-                            LabeledContent("未满足守卫", value: viewModel.unmetRequirementsText)
+
+                        Text("切换守卫输入")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 8) {
+                            GridRow {
+                                Toggle("老师已确认", isOn: $viewModel.guardInputs.teacherConfirmed)
+                                Toggle("知识已就绪", isOn: $viewModel.guardInputs.learnedKnowledgeReady)
+                            }
+                            GridRow {
+                                Toggle("执行计划已就绪", isOn: $viewModel.guardInputs.executionPlanReady)
+                                Toggle("存在待确认建议", isOn: $viewModel.guardInputs.pendingAssistSuggestion)
+                            }
+                            GridRow {
+                                Toggle(
+                                    "紧急停止已激活",
+                                    isOn: Binding(
+                                        get: { viewModel.guardInputs.emergencyStopActive },
+                                        set: { isOn in
+                                            if isOn {
+                                                viewModel.activateEmergencyStop(source: .uiButton)
+                                            } else {
+                                                viewModel.releaseEmergencyStop()
+                                            }
+                                        }
+                                    )
+                                )
+                                Spacer(minLength: 0)
+                            }
+                        }
+
+                        if let transitionMessage = viewModel.transitionMessage {
+                            Text(transitionMessage)
+                                .font(.caption)
+                                .foregroundStyle(viewModel.lastTransitionAccepted ? .green : .red)
+                        }
+
+                        if let captureStatusText = viewModel.captureStatusText {
+                            Text(captureStatusText)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
-                    .font(.callout)
-                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 4)
                 }
 
-                GroupBox("权限状态") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        PermissionRow(
-                            title: "辅助功能权限",
-                            granted: viewModel.permissionSnapshot.accessibilityTrusted
-                        )
-                        PermissionRow(
-                            title: "数据目录可写",
-                            granted: viewModel.permissionSnapshot.dataDirectoryWritable
-                        )
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 4)
-                }
-            }
-
-            GroupBox("最近任务") {
-                if viewModel.recentTasks.isEmpty {
-                    Text("暂无最近任务记录。可先运行一次教学/辅助/学生流程后刷新。")
+                HStack(alignment: .top, spacing: 12) {
+                    GroupBox("当前状态") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            LabeledContent("当前模式", value: viewModel.modeStatusSummary)
+                            LabeledContent("状态码", value: viewModel.currentStatusCode)
+                            if !viewModel.currentCapabilities.isEmpty {
+                                LabeledContent("能力白名单", value: viewModel.currentCapabilities.joined(separator: ", "))
+                            }
+                            if !viewModel.unmetRequirementsText.isEmpty {
+                                LabeledContent("未满足守卫", value: viewModel.unmetRequirementsText)
+                            }
+                        }
                         .font(.callout)
-                        .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 4)
-                } else {
-                    List(viewModel.recentTasks) { task in
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(viewModel.modeDisplayName(for: task.mode))
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(task.mode.color)
-                                Text(task.taskId)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                                Text(OpenStaffDateFormatter.displayString(from: task.timestamp))
+                        .padding(.top, 4)
+                    }
+
+                    GroupBox("权限状态") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            PermissionRow(
+                                title: "辅助功能权限",
+                                granted: viewModel.permissionSnapshot.accessibilityTrusted
+                            )
+                            PermissionRow(
+                                title: "数据目录可写",
+                                granted: viewModel.permissionSnapshot.dataDirectoryWritable
+                            )
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 4)
+                    }
+                }
+
+                GroupBox("最近任务") {
+                    if viewModel.recentTasks.isEmpty {
+                        Text("暂无最近任务记录。可先运行一次教学/辅助/学生流程后刷新。")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 4)
+                    } else {
+                        List(viewModel.recentTasks) { task in
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Text(viewModel.modeDisplayName(for: task.mode))
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(task.mode.color)
+                                    Text(task.taskId)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text(OpenStaffDateFormatter.displayString(from: task.timestamp))
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Text(task.message)
+                                    .font(.callout)
+                                Text("status: \(task.status) · session: \(task.sessionId)")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                             }
-                            Text(task.message)
-                                .font(.callout)
-                            Text("status: \(task.status) · session: \(task.sessionId)")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                            .padding(.vertical, 2)
                         }
-                        .padding(.vertical, 2)
+                        .listStyle(.inset)
+                        .frame(minHeight: 260)
                     }
-                    .listStyle(.inset)
-                    .frame(minHeight: 260)
                 }
-            }
 
-            GroupBox("学习记录与知识浏览") {
+                GroupBox("学习记录与知识浏览") {
                 if viewModel.learningSessions.isEmpty {
                     Text("暂无学习会话数据。可先运行 capture/slice/knowledge，再点击刷新。")
                         .font(.callout)
@@ -450,7 +519,7 @@ struct OpenStaffDashboardView: View {
                 }
             }
 
-            GroupBox("审阅与反馈") {
+                GroupBox("审阅与反馈") {
                 if viewModel.executionLogs.isEmpty {
                     Text("暂无执行日志。可先运行 assist/student 流程后刷新。")
                         .font(.callout)
@@ -585,10 +654,12 @@ struct OpenStaffDashboardView: View {
                         .frame(minWidth: 520, minHeight: 260)
                     }
                 }
+                }
             }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
-        .padding(20)
-        .frame(minWidth: 1080, minHeight: 1120)
+        .frame(minWidth: 920, minHeight: 640)
         .task {
             viewModel.startSafetyControlsIfNeeded()
             viewModel.refreshDashboard(promptAccessibilityPermission: false)
@@ -693,6 +764,8 @@ final class EmergencyStopHotkeyMonitor {
 @MainActor
 final class OpenStaffDashboardViewModel: ObservableObject {
     @Published var currentMode: OpenStaffMode
+    @Published var selectedMode: OpenStaffMode
+    @Published private(set) var runningMode: OpenStaffMode?
     @Published var guardInputs = ModeGuardInput()
     @Published private(set) var transitionMessage: String?
     @Published private(set) var lastDecision: ModeTransitionDecision?
@@ -711,28 +784,64 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     @Published private(set) var emergencyStopActivatedAt: Date?
     @Published private(set) var emergencyStopSource: EmergencyStopSource?
     @Published private(set) var lastRefreshedAt: Date?
+    @Published private(set) var activeObservationSessionId: String?
+    @Published private(set) var capturedEventCount = 0
 
     private let logger = InMemoryOrchestratorStateLogger()
     private let stateMachine: ModeStateMachine
     private let sessionId: String
+    private let permissionSnapshotProvider: (Bool) -> PermissionSnapshot
     private var traceSequence = 0
     private var learningSnapshot = LearningSnapshot.empty
     private var executionReviewSnapshot = ExecutionReviewSnapshot.empty
     private var safetyControlsStarted = false
+    private var integratedWorkflowTask: Task<Void, Never>?
+    private let modeObservationCapture: any ModeObservationCaptureControlling
     private lazy var emergencyStopHotkeyMonitor = EmergencyStopHotkeyMonitor { [weak self] in
         DispatchQueue.main.async { [weak self] in
             self?.activateEmergencyStop(source: .globalHotkey)
         }
     }
 
-    init(initialMode: OpenStaffMode = .teaching) {
+    init(
+        initialMode: OpenStaffMode = .teaching,
+        modeObservationCapture: any ModeObservationCaptureControlling = ModeObservationCaptureService(),
+        permissionSnapshotProvider: @escaping (Bool) -> PermissionSnapshot = PermissionSnapshot.capture
+    ) {
         self.currentMode = initialMode
+        self.selectedMode = initialMode
+        self.runningMode = nil
         self.permissionSnapshot = .unknown
         self.recentTasks = []
         self.learningSessions = []
         self.executionLogs = []
+        self.activeObservationSessionId = nil
+        self.modeObservationCapture = modeObservationCapture
+        self.permissionSnapshotProvider = permissionSnapshotProvider
         self.stateMachine = ModeStateMachine(initialMode: initialMode, logger: logger)
         self.sessionId = "session-gui-\(UUID().uuidString.prefix(8).lowercased())"
+
+        self.modeObservationCapture.onFatalError = { [weak self] error in
+            DispatchQueue.main.async { [weak self] in
+                self?.handleObservationCaptureFailure(error)
+            }
+        }
+        self.modeObservationCapture.onEventCaptured = { [weak self] count in
+            DispatchQueue.main.async { [weak self] in
+                self?.capturedEventCount = count
+            }
+        }
+    }
+
+    var isAnyModeRunning: Bool {
+        runningMode != nil
+    }
+
+    var modeStatusSummary: String {
+        if let runningMode {
+            return "\(modeDisplayName(for: runningMode))（运行中）"
+        }
+        return "待机（已选择\(modeDisplayName(for: selectedMode))）"
     }
 
     var lastTransitionAccepted: Bool {
@@ -747,7 +856,8 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     }
 
     var currentCapabilities: [String] {
-        stateMachine.allowedCapabilities(for: currentMode).map(\.rawValue).sorted()
+        let mode = runningMode ?? selectedMode
+        return stateMachine.allowedCapabilities(for: mode).map(\.rawValue).sorted()
     }
 
     var unmetRequirementsText: String {
@@ -755,6 +865,14 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             return ""
         }
         return lastDecision.unmetRequirements.map(\.rawValue).joined(separator: ", ")
+    }
+
+    var captureStatusText: String? {
+        guard let runningMode, shouldObserveTeacherActions(for: runningMode) else {
+            return nil
+        }
+        let sessionLabel = activeObservationSessionId ?? sessionId
+        return "采集会话：\(sessionLabel) · 点击事件：\(capturedEventCount)"
     }
 
     var tasksForSelectedSession: [LearningTaskSummary] {
@@ -819,25 +937,91 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         let decision = stateMachine.transition(to: targetMode, context: context)
         lastDecision = decision
         currentMode = stateMachine.currentMode
+        if decision.accepted {
+            selectedMode = currentMode
+        }
         transitionMessage = decision.message
     }
 
+    func selectMode(_ mode: OpenStaffMode) {
+        selectedMode = mode
+    }
+
+    func isModeRunning(_ mode: OpenStaffMode) -> Bool {
+        runningMode == mode
+    }
+
+    func canToggleMode(_ mode: OpenStaffMode) -> Bool {
+        guard let runningMode else {
+            return true
+        }
+        return runningMode == mode
+    }
+
     func startMode(_ mode: OpenStaffMode) {
-        if currentMode == mode {
+        if let runningMode {
+            if runningMode == mode {
+                applySyntheticDecision(
+                    fromMode: mode,
+                    toMode: mode,
+                    accepted: true,
+                    status: .modeStable,
+                    message: "\(modeDisplayName(for: mode))已在运行。"
+                )
+                return
+            }
+
+            applySyntheticDecision(
+                fromMode: runningMode,
+                toMode: mode,
+                accepted: false,
+                status: .modeTransitionRejected,
+                errorCode: .transitionDenied,
+                message: "\(modeDisplayName(for: runningMode))正在运行，请先停止后再启动\(modeDisplayName(for: mode))。"
+            )
+            return
+        }
+
+        selectedMode = mode
+        if currentMode != mode {
+            requestModeChange(to: mode)
+            guard lastTransitionAccepted, currentMode == mode else {
+                return
+            }
+        } else {
             applySyntheticDecision(
                 fromMode: mode,
                 toMode: mode,
                 accepted: true,
                 status: .modeStable,
-                message: "\(modeDisplayName(for: mode))已在运行。"
+                message: "\(modeDisplayName(for: mode))已开始运行。"
+            )
+        }
+
+        runningMode = mode
+        do {
+            try startObservationCaptureIfNeeded(for: mode)
+        } catch {
+            runningMode = nil
+            applySyntheticDecision(
+                fromMode: mode,
+                toMode: mode,
+                accepted: false,
+                status: .modeTransitionRejected,
+                errorCode: .guardConditionFailed,
+                message: "\(modeDisplayName(for: mode))启动失败：\(error.localizedDescription)"
             )
             return
         }
-        requestModeChange(to: mode)
+
+        if transitionMessage == nil {
+            transitionMessage = "\(modeDisplayName(for: mode))已开始运行。"
+        }
+        startIntegratedWorkflowIfNeeded(for: mode)
     }
 
     func stopMode(_ mode: OpenStaffMode) {
-        guard currentMode == mode else {
+        guard runningMode == mode else {
             applySyntheticDecision(
                 fromMode: currentMode,
                 toMode: mode,
@@ -849,29 +1033,34 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             return
         }
 
-        if mode == .teaching {
-            applySyntheticDecision(
-                fromMode: .teaching,
-                toMode: .teaching,
-                accepted: true,
-                status: .modeStable,
-                message: "教学模式已停止，当前处于待机。"
-            )
-            return
-        }
+        let capturedTeachingSessionId = mode == .teaching ? activeObservationSessionId : nil
+        cancelIntegratedWorkflowTask()
+        stopObservationCapture()
+        runningMode = nil
+        selectedMode = mode
+        applySyntheticDecision(
+            fromMode: mode,
+            toMode: mode,
+            accepted: true,
+            status: .modeStable,
+            message: "\(modeDisplayName(for: mode))已停止。"
+        )
 
-        requestModeChange(to: .teaching)
-        if lastTransitionAccepted {
-            transitionMessage = "\(modeDisplayName(for: mode))已停止，已回到教学模式。"
+        if let capturedTeachingSessionId {
+            runTeachingPostProcessing(for: capturedTeachingSessionId)
         }
     }
 
-    func canStopMode(_ mode: OpenStaffMode) -> Bool {
-        currentMode == mode
+    func toggleMode(_ mode: OpenStaffMode) {
+        if isModeRunning(mode) {
+            stopMode(mode)
+        } else {
+            startMode(mode)
+        }
     }
 
     func refreshDashboard(promptAccessibilityPermission: Bool) {
-        permissionSnapshot = PermissionSnapshot.capture(promptAccessibilityPermission: promptAccessibilityPermission)
+        permissionSnapshot = permissionSnapshotProvider(promptAccessibilityPermission)
         recentTasks = RecentTaskRepository.loadRecentTasks(limit: 8)
         learningSnapshot = LearningRecordRepository.loadLearningSnapshot()
         learningSessions = learningSnapshot.sessions
@@ -943,6 +1132,12 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     }
 
     func activateEmergencyStop(source: EmergencyStopSource) {
+        if let runningMode {
+            self.runningMode = nil
+            transitionMessage = "安全控制：紧急停止已激活，\(modeDisplayName(for: runningMode))已停止。"
+        }
+        cancelIntegratedWorkflowTask()
+        stopObservationCapture()
         emergencyStopActive = true
         emergencyStopActivatedAt = Date()
         emergencyStopSource = source
@@ -960,6 +1155,171 @@ final class OpenStaffDashboardViewModel: ObservableObject {
 
         feedbackWriteSucceeded = true
         feedbackStatusMessage = "安全控制：紧急停止已解除。"
+    }
+
+    private func startObservationCaptureIfNeeded(for mode: OpenStaffMode) throws {
+        guard shouldObserveTeacherActions(for: mode) else {
+            stopObservationCapture()
+            transitionMessage = "\(modeDisplayName(for: mode))已开始运行。"
+            return
+        }
+
+        let snapshot = permissionSnapshotProvider(false)
+        permissionSnapshot = snapshot
+
+        guard snapshot.dataDirectoryWritable else {
+            throw DashboardCaptureStartupError.dataDirectoryNotWritable(OpenStaffWorkspacePaths.dataDirectory.path)
+        }
+
+        if modeObservationCapture.isRunning {
+            transitionMessage = "\(modeDisplayName(for: mode))已开始运行，正在记录点击事件（sessionId=\(activeObservationSessionId ?? sessionId)）。"
+            return
+        }
+
+        let captureSessionId = makeObservationSessionId(for: mode)
+        try modeObservationCapture.start(
+            sessionId: captureSessionId,
+            includeWindowContext: snapshot.accessibilityTrusted
+        )
+        activeObservationSessionId = captureSessionId
+        if snapshot.accessibilityTrusted {
+            transitionMessage = "\(modeDisplayName(for: mode))已开始运行，正在记录点击事件（sessionId=\(captureSessionId)）。"
+        } else {
+            let executablePath = ProcessInfo.processInfo.arguments.first ?? "unknown"
+            transitionMessage = "\(modeDisplayName(for: mode))已开始运行（降级采集）。当前未授予辅助功能权限，窗口标题/窗口 ID 不会记录。可在系统设置授权后点击“刷新任务与权限”。授权目标：\(executablePath)"
+        }
+    }
+
+    private func stopObservationCapture() {
+        modeObservationCapture.stop()
+        activeObservationSessionId = nil
+        capturedEventCount = 0
+    }
+
+    private func shouldObserveTeacherActions(for mode: OpenStaffMode) -> Bool {
+        stateMachine
+            .allowedCapabilities(for: mode)
+            .contains(.observeTeacherActions)
+    }
+
+    private func makeObservationSessionId(for mode: OpenStaffMode) -> String {
+        let timestamp = Date()
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        return "\(sessionId)-\(mode.rawValue)-\(formatter.string(from: timestamp))"
+    }
+
+    private func handleObservationCaptureFailure(_ error: Error) {
+        stopObservationCapture()
+        cancelIntegratedWorkflowTask()
+        if let runningMode, shouldObserveTeacherActions(for: runningMode) {
+            self.runningMode = nil
+        }
+        applySyntheticDecision(
+            fromMode: currentMode,
+            toMode: currentMode,
+            accepted: false,
+            status: .modeTransitionRejected,
+            errorCode: .guardConditionFailed,
+            message: "屏幕操作监控已停止：\(error.localizedDescription)"
+        )
+    }
+
+    private func startIntegratedWorkflowIfNeeded(for mode: OpenStaffMode) {
+        cancelIntegratedWorkflowTask()
+
+        switch mode {
+        case .teaching:
+            return
+        case .assist:
+            runAssistPostStartWorkflow()
+        case .student:
+            runStudentPostStartWorkflow()
+        }
+    }
+
+    private func runTeachingPostProcessing(for capturedSessionId: String) {
+        transitionMessage = "教学模式已停止，正在整理学习结果（切片 + 知识条目）..."
+        integratedWorkflowTask = Task.detached(priority: .userInitiated) {
+            let runner = IntegratedModeWorkflowRunner()
+            do {
+                let result = try runner.buildKnowledgeFromCapturedSession(sessionId: capturedSessionId)
+                await MainActor.run { [weak self] in
+                    guard let self else {
+                        return
+                    }
+                    self.transitionMessage = "教学模式整理完成：session=\(result.sessionId)，事件 \(result.rawEventCount) 条，任务切片 \(result.taskChunkCount) 条，知识条目 \(result.knowledgeItemCount) 条。"
+                    self.refreshDashboard(promptAccessibilityPermission: false)
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.transitionMessage = "教学模式整理失败：\(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func runAssistPostStartWorkflow() {
+        let workflowSessionId = activeObservationSessionId ?? sessionId
+        let emergencyStopActive = self.emergencyStopActive
+
+        transitionMessage = "辅助模式已启动，正在执行集成辅助流程..."
+        integratedWorkflowTask = Task.detached(priority: .userInitiated) {
+            let runner = IntegratedModeWorkflowRunner()
+            do {
+                let result = try runner.runAssistLoop(
+                    sessionId: workflowSessionId,
+                    emergencyStopActive: emergencyStopActive
+                )
+
+                await MainActor.run { [weak self] in
+                    guard let self else {
+                        return
+                    }
+                    self.transitionMessage = "辅助模式流程完成：\(result.message)"
+                    self.refreshDashboard(promptAccessibilityPermission: false)
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.transitionMessage = "辅助模式流程失败：\(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func runStudentPostStartWorkflow() {
+        let workflowSessionId = activeObservationSessionId ?? sessionId
+        let emergencyStopActive = self.emergencyStopActive
+
+        transitionMessage = "学生模式已启动，正在执行集成自主流程..."
+        integratedWorkflowTask = Task.detached(priority: .userInitiated) {
+            let runner = IntegratedModeWorkflowRunner()
+            do {
+                let result = try runner.runStudentLoop(
+                    sessionId: workflowSessionId,
+                    preferredGoal: nil,
+                    emergencyStopActive: emergencyStopActive
+                )
+
+                await MainActor.run { [weak self] in
+                    guard let self else {
+                        return
+                    }
+                    self.transitionMessage = "学生模式流程完成：\(result.message)"
+                    self.refreshDashboard(promptAccessibilityPermission: false)
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.transitionMessage = "学生模式流程失败：\(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func cancelIntegratedWorkflowTask() {
+        integratedWorkflowTask?.cancel()
+        integratedWorkflowTask = nil
     }
 
     private func applySyntheticDecision(
@@ -1890,12 +2250,20 @@ enum OpenStaffWorkspacePaths {
         dataDirectory.appendingPathComponent("knowledge", isDirectory: true)
     }
 
+    static var rawEventsDirectory: URL {
+        dataDirectory.appendingPathComponent("raw-events", isDirectory: true)
+    }
+
     static var taskChunksDirectory: URL {
         dataDirectory.appendingPathComponent("task-chunks", isDirectory: true)
     }
 
     static var feedbackDirectory: URL {
         dataDirectory.appendingPathComponent("feedback", isDirectory: true)
+    }
+
+    static var reportsDirectory: URL {
+        dataDirectory.appendingPathComponent("reports", isDirectory: true)
     }
 
     static func ensureDataDirectoryWritable() -> Bool {

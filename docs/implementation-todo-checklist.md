@@ -156,7 +156,7 @@
 - `scripts/skills/examples/*`（3 条示例输入）
 
 **验收标准**
-- [x] 至少 3 个示例任务成功转换并可被 OpenClaw 读取（`make skills-demo` + `make skills-validate-demo`）。
+- [x] 至少 3 个示例任务成功转换并可被 OpenClaw 读取（`make skills-sample` + `make skills-validate-sample`）。
 
 ---
 
@@ -246,18 +246,15 @@
 
 ### TODO 6.3 发布前检查
 - [x] 配置模板与文档完善。
-- [x] 演示数据与回归脚本。
+- [x] 回归脚本与发布文档完善。
 
 **输出物**
 - `config/release.example.yaml`
-- `config/demo.example.yaml`
 - `config/README.md`
 - `docs/user-manual.md`
-- `apps/macos/Sources/OpenStaffDemoCLI/OpenStaffDemoCLI.swift`
-- `scripts/release/build_demo_bundle.py`
 - `scripts/release/run_regression.py`
 - `scripts/release/README.md`
-- `Makefile`（`demo-build` / `demo-run` / `release-demo` / `release-regression` / `release-preflight`）
+- `Makefile`（`release-regression` / `release-preflight`）
 
 **验收标准（阶段 6）**
 - [x] 一键执行测试脚本可输出通过/失败摘要（`make test` / `python3 scripts/tests/run_all.py --suite all`）。

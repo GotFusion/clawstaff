@@ -1,0 +1,1 @@
+../OpenStaffKnowledgeBuilderCLI/KnowledgeSummaryGenerator.swift

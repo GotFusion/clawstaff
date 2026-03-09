@@ -276,7 +276,7 @@ struct StudentCLIOptions {
 
         if showHelp {
             return StudentCLIOptions(
-                goal: goal ?? "demo goal",
+                goal: goal ?? "default goal",
                 knowledgeInputPath: knowledgeInputPath ?? "core/knowledge/examples/knowledge-item.sample.json",
                 sessionId: sessionId,
                 taskId: taskId,
