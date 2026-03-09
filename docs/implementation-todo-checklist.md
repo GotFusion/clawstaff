@@ -238,6 +238,12 @@
 - [x] 集成测试：知识->转换->校验（mapper + validator 全链路）。
 - [x] E2E：三模式最小演示用例（模式契约闭环）。
 
+**输出物（补充）**
+- `tests/unit/test_validate_openclaw_skill.py`
+- `tests/integration/test_task_slicer_cli.py`
+- `tests/e2e/test_three_mode_cli_roundtrip.py`
+- `tests/swift_cli_test_utils.py`
+
 ### TODO 6.3 发布前检查
 - [ ] 配置模板与文档完善。
 - [ ] 演示数据与回归脚本。

@@ -8,6 +8,8 @@ __pycache__/
 .env.local
 
 # SwiftPM build artifacts
+.build/
+.swiftpm/
 apps/macos/.build/
 apps/macos/.swiftpm/
 

@@ -12,3 +12,7 @@
   - LLM 输出异常诊断。
   - 映射 fallback 规则。
   - KnowledgeItem 基础字段校验。
+- `test_validate_openclaw_skill.py`
+  - SKILL.md frontmatter/body 结构校验。
+  - 映射 JSON 与 frontmatter 一致性校验。
+  - frontmatter 解析异常分支校验。
