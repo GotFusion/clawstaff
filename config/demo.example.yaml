@@ -13,16 +13,8 @@ storage:
   feedbackDir: feedback
 
 logging:
-  level: info
+  level: debug
   format: json
-
-safety:
-  emergencyStopEnabled: true
-  blockedActionKeywords:
-    - "rm -rf"
-    - "删除"
-    - "支付"
-    - "重置系统"
 
 llm:
   provider: text

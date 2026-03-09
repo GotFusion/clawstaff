@@ -28,6 +28,9 @@ make test
 make test-unit
 make test-integration
 make test-e2e
+make release-demo
+make release-regression
+make release-preflight
 ```
 
 - `make build`：构建 `apps/macos` 最小壳应用。
@@ -49,6 +52,9 @@ make test-e2e
 - `make test-unit`：仅执行单元测试。
 - `make test-integration`：仅执行集成测试。
 - `make test-e2e`：仅执行 E2E 测试。
+- `make release-demo`：生成发布演示数据包（默认输出 `/tmp/openstaff-release-demo`）。
+- `make release-regression`：执行发布回归检查并输出报告。
+- `make release-preflight`：一键执行“演示数据打包 + 回归检查”。
 
 ## 目录概览
 

@@ -9,7 +9,7 @@ ASSIST_TARGET := OpenStaffAssistCLI
 STUDENT_TARGET := OpenStaffStudentCLI
 ARGS ?=
 
-.PHONY: build dev capture slice knowledge orchestrator assist student llm-prompts llm-validate llm-call llm-retry-demo skill-build skills-demo skills-validate-demo test test-unit test-integration test-e2e
+.PHONY: build dev capture slice knowledge orchestrator assist student llm-prompts llm-validate llm-call llm-retry-demo skill-build skills-demo skills-validate-demo test test-unit test-integration test-e2e release-demo release-regression release-preflight
 
 build:
 	swift build --package-path $(APP_PACKAGE_PATH)
@@ -71,3 +71,13 @@ test-integration:
 
 test-e2e:
 	python3 scripts/tests/run_all.py --suite e2e
+
+release-demo:
+	python3 scripts/release/build_demo_bundle.py --out-dir /tmp/openstaff-release-demo --overwrite
+
+release-regression:
+	python3 scripts/release/run_regression.py --suite all
+
+release-preflight:
+	python3 scripts/release/build_demo_bundle.py --out-dir /tmp/openstaff-release-preflight/demo --overwrite
+	python3 scripts/release/run_regression.py --output-root /tmp/openstaff-release-preflight/regression --suite all

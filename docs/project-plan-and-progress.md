@@ -125,15 +125,15 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成阶段 5.3 审阅与反馈：新增执行日志审阅区，支持日志详情查看与老师反馈入口（通过/驳回/修正），反馈落盘到 `data/feedback/{yyyy-mm-dd}/*.jsonl`。
 - 完成阶段 6.1 安全控制：执行层新增高风险关键词+正则拦截规则，支持紧急停止状态拦截；GUI 新增紧急停止按钮与全局快捷键（`Cmd+Shift+.`）。
 - 完成阶段 6.2 测试体系落地（补强）：在原有 schema/映射链路测试基础上，新增 `test_validate_openclaw_skill.py`、`test_task_slicer_cli.py`、`test_three_mode_cli_roundtrip.py`，把覆盖扩展到 `SKILL.md` 校验器、`OpenStaffTaskSlicerCLI` 切片策略，以及 `Orchestrator/Assist/Student` 三模式真实 CLI 闭环；统一入口仍为 `scripts/tests/run_all.py` 与 `make test*`。
+- 完成阶段 6.3 发布前检查：补齐配置模板（`config/release.example.yaml`、`config/demo.example.yaml`）与配置文档；新增 `scripts/release/build_demo_bundle.py`（演示数据包）与 `scripts/release/run_regression.py`（发布回归与 JSON 报告）；新增 `make release-demo` / `make release-regression` / `make release-preflight` 一键入口。
 
 ### 未开始
 - OpenClaw skills 执行联调。
 
 ### 下一步建议
-1. 开始阶段 6.3：补齐发布前检查（配置模板完善、演示数据、回归脚本）。
-2. API 可用后补充 `provider=openai` 联机验证（模型行为、限流参数、错误码映射）并补充 skill 端到端执行联调。
-3. 增加 `scripts/validation`：对 `data/raw-events/**/*.jsonl`、`data/task-chunks/**/*.json`、`data/knowledge/**/*.json`、`data/skills/**/*.json` 做 schema 快速校验。
-4. 在三模式 CLI 源码纳入当前工作区后，补充真实进程级 E2E 回放（教学->辅助->学生全链路）。
+1. API 可用后补充 `provider=openai` 联机验证（模型行为、限流参数、错误码映射）并补充 skill 端到端执行联调。
+2. 增加 `scripts/validation`：对 `data/raw-events/**/*.jsonl`、`data/task-chunks/**/*.json`、`data/knowledge/**/*.json`、`data/skills/**/*.json` 做 schema 快速校验。
+3. 补齐 GUI 端“一次完整教学->辅助->学生”无终端演示，以完成阶段 5 验收项。
 
 ---
 
