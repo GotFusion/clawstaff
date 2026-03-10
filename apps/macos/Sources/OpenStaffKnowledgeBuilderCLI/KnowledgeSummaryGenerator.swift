@@ -6,8 +6,9 @@ struct KnowledgeSummaryGenerator {
         let windowTitle = chunk.primaryContext.windowTitle ?? "未知窗口"
         let stepChain = buildStepChain(steps)
         let boundary = boundaryText(chunk.boundaryReason)
+        let replayStepCount = steps.count
 
-        return "在\(appName)（\(windowTitle)）中，步骤摘要：\(stepChain)。共 \(chunk.eventCount) 步，任务分段原因：\(boundary)。"
+        return "在\(appName)（\(windowTitle)）中，步骤摘要：\(stepChain)。共 \(replayStepCount) 步（原始事件 \(chunk.eventCount) 条），任务分段原因：\(boundary)。"
     }
 
     private func buildStepChain(_ steps: [KnowledgeStep]) -> String {
@@ -26,6 +27,9 @@ struct KnowledgeSummaryGenerator {
         }
         if instruction.contains("点击") {
             return "点击"
+        }
+        if instruction.contains("回车") {
+            return "回车"
         }
         if instruction.contains("输入") {
             return "输入"

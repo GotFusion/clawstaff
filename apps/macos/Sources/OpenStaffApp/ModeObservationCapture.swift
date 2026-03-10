@@ -9,7 +9,7 @@ enum DashboardCaptureStartupError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .accessibilityPermissionDenied(let executablePath):
-            return "缺少辅助功能权限，无法监控全局点击。请在 系统设置 > 隐私与安全性 > 辅助功能 中允许此可执行文件：\(executablePath)"
+            return "缺少辅助功能权限，无法监控全局点击/键盘事件。请在 系统设置 > 隐私与安全性 > 辅助功能 中允许此可执行文件：\(executablePath)"
         case .dataDirectoryNotWritable(let path):
             return "数据目录不可写：\(path)"
         }
@@ -68,7 +68,7 @@ final class ModeObservationCaptureService: ModeObservationCaptureControlling {
             outputRootDirectory: outputRootDirectory
         )
 
-        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown]
+        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown, .keyDown]
         guard let monitorToken = NSEvent.addGlobalMonitorForEvents(
             matching: mask,
             handler: { [weak self] event in
@@ -130,7 +130,8 @@ final class ModeObservationCaptureService: ModeObservationCaptureControlling {
                 y: Int(event.locationInWindow.y.rounded())
             ),
             contextSnapshot: contextResolver.snapshot(includeWindowContext: includeWindowContext),
-            modifiers: keyboardModifiers(from: event)
+            modifiers: keyboardModifiers(from: event),
+            keyboard: keyboardPayload(from: event, action: action)
         )
 
         do {
@@ -149,6 +150,8 @@ final class ModeObservationCaptureService: ModeObservationCaptureControlling {
             return event.clickCount >= 2 ? .doubleClick : .leftClick
         case .rightMouseDown:
             return .rightClick
+        case .keyDown:
+            return .keyDown
         default:
             return nil
         }
@@ -171,6 +174,18 @@ final class ModeObservationCaptureService: ModeObservationCaptureControlling {
         }
 
         return modifiers
+    }
+
+    private func keyboardPayload(from event: NSEvent, action: ModeObservationAction) -> ModeObservationKeyboardPayload? {
+        guard action == .keyDown else {
+            return nil
+        }
+        return ModeObservationKeyboardPayload(
+            keyCode: Int(event.keyCode),
+            characters: event.characters,
+            charactersIgnoringModifiers: event.charactersIgnoringModifiers,
+            isRepeat: event.isARepeat
+        )
     }
 
     private static func isValidSessionId(_ value: String) -> Bool {
@@ -352,6 +367,7 @@ private struct ModeObservationRawEvent: Codable {
     let pointer: ModeObservationPointer
     let contextSnapshot: ModeObservationContextSnapshot
     let modifiers: [ModeObservationModifier]
+    let keyboard: ModeObservationKeyboardPayload?
 
     init(
         eventId: String,
@@ -360,28 +376,41 @@ private struct ModeObservationRawEvent: Codable {
         action: ModeObservationAction,
         pointer: ModeObservationPointer,
         contextSnapshot: ModeObservationContextSnapshot,
-        modifiers: [ModeObservationModifier]
+        modifiers: [ModeObservationModifier],
+        keyboard: ModeObservationKeyboardPayload?
     ) {
         self.schemaVersion = "capture.raw.v0"
         self.eventId = eventId
         self.sessionId = sessionId
         self.timestamp = timestamp
-        self.source = .mouse
+        self.source = action.source
         self.action = action
         self.pointer = pointer
         self.contextSnapshot = contextSnapshot
         self.modifiers = modifiers
+        self.keyboard = keyboard
     }
 }
 
 private enum ModeObservationSource: String, Codable {
     case mouse
+    case keyboard
 }
 
-private enum ModeObservationAction: String, Codable {
+private enum ModeObservationAction: String, Codable, Equatable {
     case leftClick
     case rightClick
     case doubleClick
+    case keyDown
+
+    var source: ModeObservationSource {
+        switch self {
+        case .leftClick, .rightClick, .doubleClick:
+            return .mouse
+        case .keyDown:
+            return .keyboard
+        }
+    }
 }
 
 private enum ModeObservationModifier: String, Codable {
@@ -401,6 +430,13 @@ private struct ModeObservationPointer: Codable {
         self.y = y
         self.coordinateSpace = coordinateSpace
     }
+}
+
+private struct ModeObservationKeyboardPayload: Codable {
+    let keyCode: Int
+    let characters: String?
+    let charactersIgnoringModifiers: String?
+    let isRepeat: Bool
 }
 
 private struct ModeObservationContextSnapshot: Codable {
@@ -425,7 +461,7 @@ private enum ModeObservationCaptureError: LocalizedError {
         case .invalidSessionId(let sessionId):
             return "sessionId 不合法：\(sessionId)"
         case .globalMonitorUnavailable:
-            return "无法启动全局鼠标事件监听。"
+            return "无法启动全局鼠标/键盘事件监听。"
         case .storageWriteFailed(let error):
             return "写入采集事件失败：\(error.localizedDescription)"
         case .storageCloseFailed(let error):

@@ -12,6 +12,7 @@ public struct RawEvent: Codable, Equatable {
     public let pointer: PointerLocation
     public let contextSnapshot: ContextSnapshot
     public let modifiers: [KeyboardModifier]
+    public let keyboard: KeyboardEventPayload?
 
     public init(
         schemaVersion: String = "capture.raw.v0",
@@ -22,7 +23,8 @@ public struct RawEvent: Codable, Equatable {
         action: RawEventAction,
         pointer: PointerLocation,
         contextSnapshot: ContextSnapshot,
-        modifiers: [KeyboardModifier] = []
+        modifiers: [KeyboardModifier] = [],
+        keyboard: KeyboardEventPayload? = nil
     ) {
         self.schemaVersion = schemaVersion
         self.eventId = eventId
@@ -33,17 +35,29 @@ public struct RawEvent: Codable, Equatable {
         self.pointer = pointer
         self.contextSnapshot = contextSnapshot
         self.modifiers = modifiers
+        self.keyboard = keyboard
     }
 }
 
 public enum RawEventSource: String, Codable {
     case mouse
+    case keyboard
 }
 
 public enum RawEventAction: String, Codable {
     case leftClick
     case rightClick
     case doubleClick
+    case keyDown
+
+    public var source: RawEventSource {
+        switch self {
+        case .leftClick, .rightClick, .doubleClick:
+            return .mouse
+        case .keyDown:
+            return .keyboard
+        }
+    }
 }
 
 public enum KeyboardModifier: String, Codable {
@@ -51,6 +65,25 @@ public enum KeyboardModifier: String, Codable {
     case shift
     case option
     case control
+}
+
+public struct KeyboardEventPayload: Codable, Equatable {
+    public let keyCode: Int
+    public let characters: String?
+    public let charactersIgnoringModifiers: String?
+    public let isRepeat: Bool
+
+    public init(
+        keyCode: Int,
+        characters: String?,
+        charactersIgnoringModifiers: String?,
+        isRepeat: Bool
+    ) {
+        self.keyCode = keyCode
+        self.characters = characters
+        self.charactersIgnoringModifiers = charactersIgnoringModifiers
+        self.isRepeat = isRepeat
+    }
 }
 
 public struct PointerLocation: Codable, Equatable {

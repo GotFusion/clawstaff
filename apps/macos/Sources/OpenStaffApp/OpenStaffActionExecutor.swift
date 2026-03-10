@@ -184,6 +184,13 @@ enum OpenStaffActionExecutor {
               postShortcut(spec: pasteShortcut) else {
             return .failed("输入失败：无法发送粘贴快捷键。")
         }
+        if shouldPressReturnAfterInput(target: target, instruction: instruction) {
+            guard let returnShortcut = ShortcutSpec(raw: "return"),
+                  postShortcut(spec: returnShortcut) else {
+                return .failed("输入失败：文本已粘贴，但无法发送回车。")
+            }
+            return .succeeded("已执行 input：通过粘贴注入文本（\(text.count) chars）并回车")
+        }
         return .succeeded("已执行 input：通过粘贴注入文本（\(text.count) chars）")
     }
 
@@ -323,14 +330,100 @@ enum OpenStaffActionExecutor {
             }
         }
 
-        let lower = instruction.lowercased()
-        if lower.contains("command+shift+n") || lower.contains("cmd+shift+n") || lower.contains("⌘+⇧+n") {
-            return ShortcutSpec(raw: "command+shift+n")
+        if let normalized = normalizedShortcutExpression(from: instruction),
+           let spec = ShortcutSpec(raw: normalized) {
+            return spec
         }
-        if lower.contains("command+v") || lower.contains("cmd+v") || lower.contains("⌘+v") {
-            return ShortcutSpec(raw: "command+v")
+
+        if instruction.contains("回车") || instruction.lowercased().contains("return") || instruction.lowercased().contains("enter") {
+            return ShortcutSpec(raw: "return")
+        }
+        if instruction.lowercased().contains("tab") {
+            return ShortcutSpec(raw: "tab")
+        }
+        if instruction.lowercased().contains("escape") || instruction.lowercased().contains("esc") {
+            return ShortcutSpec(raw: "escape")
+        }
+        if instruction.contains("删除") || instruction.lowercased().contains("delete") || instruction.lowercased().contains("backspace") {
+            return ShortcutSpec(raw: "delete")
         }
         return nil
+    }
+
+    private static func normalizedShortcutExpression(from instruction: String) -> String? {
+        let patterns = [
+            #"(?:快捷键|shortcut)\s*[:：]?\s*([A-Za-z0-9⌘⇧⌥⌃+\s＋]+)"#,
+            #"([A-Za-z0-9⌘⇧⌥⌃]+(?:\s*[+＋]\s*[A-Za-z0-9⌘⇧⌥⌃]+)+)"#
+        ]
+
+        for pattern in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
+                  let match = regex.firstMatch(
+                      in: instruction,
+                      options: [],
+                      range: NSRange(location: 0, length: instruction.utf16.count)
+                  ),
+                  let range = Range(match.range(at: 1), in: instruction) else {
+                continue
+            }
+
+            let raw = String(instruction[range])
+            if let normalized = normalizeShortcutRawText(raw) {
+                return normalized
+            }
+        }
+
+        return nil
+    }
+
+    private static func normalizeShortcutRawText(_ raw: String) -> String? {
+        let replaced = raw
+            .replacingOccurrences(of: "＋", with: "+")
+            .replacingOccurrences(of: " ", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !replaced.isEmpty else {
+            return nil
+        }
+
+        let tokens = replaced.split(separator: "+").map { String($0) }
+        let normalizedTokens = tokens.compactMap(normalizeShortcutToken)
+        guard !normalizedTokens.isEmpty else {
+            return nil
+        }
+        return normalizedTokens.joined(separator: "+")
+    }
+
+    private static func normalizeShortcutToken(_ token: String) -> String? {
+        let raw = token
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(of: "键", with: "")
+        guard !raw.isEmpty else {
+            return nil
+        }
+
+        switch raw {
+        case "cmd", "command", "⌘":
+            return "command"
+        case "shift", "⇧":
+            return "shift"
+        case "option", "alt", "⌥":
+            return "option"
+        case "control", "ctrl", "⌃":
+            return "control"
+        case "return", "enter", "回车":
+            return "return"
+        case "tab":
+            return "tab"
+        case "esc", "escape":
+            return "escape"
+        case "delete", "backspace", "删除":
+            return "delete"
+        case "space", "空格":
+            return "space"
+        default:
+            return raw
+        }
     }
 
     private static func parseInputText(target: String, instruction: String) -> String? {
@@ -365,6 +458,32 @@ enum OpenStaffActionExecutor {
             return tail.isEmpty ? nil : tail
         }
         return nil
+    }
+
+    private static func shouldPressReturnAfterInput(target: String, instruction: String) -> Bool {
+        let lowerTarget = target.lowercased()
+        if lowerTarget.hasPrefix("text+return:") || lowerTarget.hasPrefix("text-enter:") {
+            return true
+        }
+
+        let lowerInstruction = instruction.lowercased()
+        let enterHints = [
+            "并回车",
+            "并按回车",
+            "并按下回车",
+            "后回车",
+            "并确认",
+            "press enter",
+            "press return"
+        ]
+        if enterHints.contains(where: { lowerInstruction.contains($0) }) {
+            return true
+        }
+
+        // fallback for simplified phrasing such as "输入xxx回车"
+        return lowerInstruction.contains("回车")
+            || lowerInstruction.contains("enter")
+            || lowerInstruction.contains("return")
     }
 
     private static func postShortcut(spec: ShortcutSpec) -> Bool {
@@ -443,9 +562,11 @@ enum OpenStaffActionExecutor {
         case "8": return 28
         case "9": return 25
         case "space": return 49
+        case "spacebar": return 49
         case "enter", "return": return 36
         case "tab": return 48
         case "esc", "escape": return 53
+        case "delete", "backspace": return 51
         default: return nil
         }
     }

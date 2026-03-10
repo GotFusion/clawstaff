@@ -42,7 +42,7 @@ final class MouseCaptureEngine {
     }
 
     func start() throws {
-        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown]
+        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown, .keyDown]
         guard let monitorToken = NSEvent.addGlobalMonitorForEvents(matching: mask, handler: handleEvent(_:)) else {
             throw CaptureEngineError.globalMonitorUnavailable
         }
@@ -70,14 +70,15 @@ final class MouseCaptureEngine {
             eventId: UUID().uuidString.lowercased(),
             sessionId: sessionId,
             timestamp: timestampFormatter.string(from: Date()),
-            source: .mouse,
+            source: action.source,
             action: action,
             pointer: PointerLocation(
                 x: Int(event.locationInWindow.x.rounded()),
                 y: Int(event.locationInWindow.y.rounded())
             ),
             contextSnapshot: contextResolver.snapshot(),
-            modifiers: keyboardModifiers(from: event)
+            modifiers: keyboardModifiers(from: event),
+            keyboard: keyboardPayload(from: event, action: action)
         )
 
         do {
@@ -127,6 +128,8 @@ final class MouseCaptureEngine {
             return event.clickCount >= 2 ? .doubleClick : .leftClick
         case .rightMouseDown:
             return .rightClick
+        case .keyDown:
+            return .keyDown
         default:
             return nil
         }
@@ -151,6 +154,18 @@ final class MouseCaptureEngine {
         return modifiers
     }
 
+    private func keyboardPayload(from event: NSEvent, action: RawEventAction) -> KeyboardEventPayload? {
+        guard action == .keyDown else {
+            return nil
+        }
+        return KeyboardEventPayload(
+            keyCode: Int(event.keyCode),
+            characters: event.characters,
+            charactersIgnoringModifiers: event.charactersIgnoringModifiers,
+            isRepeat: event.isARepeat
+        )
+    }
+
     private func encodeJSONLine(_ event: RawEvent) -> String? {
         guard let data = try? encoder.encode(event) else {
             return nil
@@ -168,7 +183,7 @@ enum CaptureEngineError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .globalMonitorUnavailable:
-            return "Failed to start global mouse monitor."
+            return "Failed to start global mouse/keyboard monitor."
         case .storageWriteFailed(let error):
             return "Failed to persist captured event: \(error.localizedDescription)"
         case .storageCloseFailed(let error):

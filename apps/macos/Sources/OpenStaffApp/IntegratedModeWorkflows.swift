@@ -49,7 +49,8 @@ final class IntegratedModeWorkflowRunner {
         )
 
         let knowledgeBuilder = KnowledgeItemBuilder()
-        let knowledgeItems = chunks.map { knowledgeBuilder.build(from: $0) }
+        let rawEventIndex = Dictionary(uniqueKeysWithValues: loaded.events.map { ($0.eventId, $0) })
+        let knowledgeItems = chunks.map { knowledgeBuilder.build(from: $0, rawEventIndex: rawEventIndex) }
         let knowledgeWriter = KnowledgeItemWriter(fileManager: fileManager)
         let knowledgeItemFilePaths = try knowledgeWriter.write(
             items: knowledgeItems,

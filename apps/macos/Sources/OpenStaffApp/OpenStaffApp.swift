@@ -347,7 +347,7 @@ struct OpenStaffDashboardView: View {
                                 Text(captureStatusText)
                                     .font(.callout)
                             } else {
-                                Text("当前没有运行需要采集屏幕点击事件的模式。")
+                                Text("当前没有运行需要采集屏幕操作事件的模式。")
                                     .font(.callout)
                                     .foregroundStyle(.secondary)
                             }
@@ -1182,7 +1182,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             return nil
         }
         let sessionLabel = activeObservationSessionId ?? sessionId
-        return "采集会话：\(sessionLabel) · 点击事件：\(capturedEventCount)"
+        return "采集会话：\(sessionLabel) · 原始事件：\(capturedEventCount)"
     }
 
     var tasksForSelectedSession: [LearningTaskSummary] {
@@ -1533,9 +1533,15 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                     emergencyStopActive: emergencyStopActive
                 )
                 await MainActor.run { [weak self] in
+                    let hasQualityWarnings = !result.qualityWarnings.isEmpty
+                    let warningText = result.qualityWarnings.joined(separator: "；")
                     self?.skillActionProcessing = false
-                    self?.skillActionSucceeded = true
-                    self?.skillActionStatusMessage = "技能运行完成：总步骤 \(result.totalSteps)，成功 \(result.succeededSteps)，失败 \(result.failedSteps)，阻塞 \(result.blockedSteps)。日志：\(result.logFilePath)"
+                    self?.skillActionSucceeded = !hasQualityWarnings
+                    if hasQualityWarnings {
+                        self?.skillActionStatusMessage = "技能执行完成（部分）：总步骤 \(result.totalSteps)，成功 \(result.succeededSteps)，失败 \(result.failedSteps)，阻塞 \(result.blockedSteps)。质量提示：\(warningText)。日志：\(result.logFilePath)"
+                    } else {
+                        self?.skillActionStatusMessage = "技能运行完成：总步骤 \(result.totalSteps)，成功 \(result.succeededSteps)，失败 \(result.failedSteps)，阻塞 \(result.blockedSteps)。日志：\(result.logFilePath)"
+                    }
                     self?.refreshDashboard(promptAccessibilityPermission: false)
                 }
             } catch {
@@ -1683,7 +1689,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         }
 
         if modeObservationCapture.isRunning {
-            transitionMessage = "\(modeDisplayName(for: mode))已开始运行，正在记录点击事件（sessionId=\(activeObservationSessionId ?? sessionId)）。"
+            transitionMessage = "\(modeDisplayName(for: mode))已开始运行，正在记录操作事件（sessionId=\(activeObservationSessionId ?? sessionId)）。"
             return
         }
 
@@ -1694,7 +1700,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         )
         activeObservationSessionId = captureSessionId
         if snapshot.accessibilityTrusted {
-            transitionMessage = "\(modeDisplayName(for: mode))已开始运行，正在记录点击事件（sessionId=\(captureSessionId)）。"
+            transitionMessage = "\(modeDisplayName(for: mode))已开始运行，正在记录操作事件（sessionId=\(captureSessionId)）。"
         } else {
             let executablePath = ProcessInfo.processInfo.arguments.first ?? "unknown"
             let debugHint: String
@@ -3047,6 +3053,7 @@ struct LearnedSkillRunResult {
     let failedSteps: Int
     let blockedSteps: Int
     let logFilePath: String
+    let qualityWarnings: [String]
 }
 
 enum LearnedSkillRepository {
@@ -3354,8 +3361,43 @@ enum LearnedSkillRunner {
             succeededSteps: succeededSteps,
             failedSteps: failedSteps,
             blockedSteps: blockedSteps,
-            logFilePath: latestLogURL.path
+            logFilePath: latestLogURL.path,
+            qualityWarnings: evaluateQualityWarnings(
+                payload: payload,
+                planSteps: planSteps,
+                eventCoordinateIndex: eventCoordinateIndex
+            )
         )
+    }
+
+    private static func evaluateQualityWarnings(
+        payload: LearnedSkillPayload,
+        planSteps: [LearnedSkillExecutionStep],
+        eventCoordinateIndex: [String: CGPoint]
+    ) -> [String] {
+        var warnings: [String] = []
+
+        if !payload.llmOutputAccepted {
+            warnings.append("LLM 输出未通过校验，当前技能由 fallback 规则生成。")
+        }
+
+        if planSteps.count <= 1 {
+            warnings.append("技能仅包含 \(planSteps.count) 步，覆盖度可能不足。")
+        }
+
+        let unknownTargetSteps = planSteps.filter {
+            $0.target.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || $0.target == "unknown"
+        }
+        if !unknownTargetSteps.isEmpty {
+            warnings.append("存在 \(unknownTargetSteps.count) 个步骤 target=unknown，执行可能只做坐标点击。")
+        }
+
+        if eventCoordinateIndex.count <= 2 {
+            warnings.append("教学会话仅采集到 \(eventCoordinateIndex.count) 条原始事件，难以复现完整任务。")
+        }
+
+        return warnings
     }
 
     private static func finalizeStepExecution(

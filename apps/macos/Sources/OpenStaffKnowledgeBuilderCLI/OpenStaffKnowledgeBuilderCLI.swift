@@ -19,7 +19,7 @@ struct OpenStaffKnowledgeBuilderCLI {
             )
 
             let builder = KnowledgeItemBuilder()
-            let items = loaded.chunks.map(builder.build(from:))
+            let items = loaded.chunks.map { builder.build(from: $0) }
 
             let writer = KnowledgeItemWriter()
             let outputFiles = try writer.write(

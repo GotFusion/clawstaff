@@ -20,7 +20,7 @@ final class TeachingModeCaptureTests: XCTestCase {
         XCTAssertEqual(viewModel.runningMode, .teaching)
         XCTAssertNotNil(viewModel.activeObservationSessionId)
         XCTAssertTrue(viewModel.transitionMessage?.contains("降级采集") == true)
-        XCTAssertTrue(viewModel.captureStatusText?.contains("点击事件：0") == true)
+        XCTAssertTrue(viewModel.captureStatusText?.contains("原始事件：0") == true)
 
         capture.emitCapturedCount(3)
         waitForMainQueue()

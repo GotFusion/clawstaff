@@ -105,11 +105,11 @@ struct KnowledgeItemBuilder {
         self.timestampFormatter = formatter
     }
 
-    func build(from chunk: TaskChunk) -> KnowledgeItem {
+    func build(from chunk: TaskChunk, rawEventIndex: [String: RawEvent] = [:]) -> KnowledgeItem {
         let knowledgeItemId = "ki-\(chunk.taskId)"
         let goal = "在 \(chunk.primaryContext.appName) 中复现任务 \(chunk.taskId) 的操作流程"
 
-        let steps = buildSteps(from: chunk)
+        let steps = buildSteps(from: chunk, rawEventIndex: rawEventIndex)
         let summary = summaryGenerator.generate(from: chunk, steps: steps)
         let context = KnowledgeContext(
             appName: chunk.primaryContext.appName,
@@ -155,7 +155,7 @@ struct KnowledgeItemBuilder {
         )
     }
 
-    private func buildSteps(from chunk: TaskChunk) -> [KnowledgeStep] {
+    private func buildSteps(from chunk: TaskChunk, rawEventIndex: [String: RawEvent]) -> [KnowledgeStep] {
         if chunk.eventIds.isEmpty {
             return [
                 KnowledgeStep(
@@ -166,14 +166,308 @@ struct KnowledgeItemBuilder {
             ]
         }
 
-        return chunk.eventIds.enumerated().map { index, eventId in
-            let stepId = String(format: "step-%03d", index + 1)
-            return KnowledgeStep(
-                stepId: stepId,
-                instruction: "执行第 \(index + 1) 步点击操作（源事件 \(eventId)）。",
-                sourceEventIds: [eventId]
+        var steps: [KnowledgeStep] = []
+        steps.reserveCapacity(chunk.eventIds.count)
+
+        var cursor = 0
+        while cursor < chunk.eventIds.count {
+            let eventId = chunk.eventIds[cursor]
+            let stepId = String(format: "step-%03d", steps.count + 1)
+
+            guard let event = rawEventIndex[eventId] else {
+                steps.append(
+                    KnowledgeStep(
+                        stepId: stepId,
+                        instruction: "执行第 \(steps.count + 1) 步操作（源事件 \(eventId)）。",
+                        sourceEventIds: [eventId]
+                    )
+                )
+                cursor += 1
+                continue
+            }
+
+            if event.action == .keyDown,
+               let keyboardStep = buildKeyboardStep(
+                    stepId: stepId,
+                    stepNumber: steps.count + 1,
+                    chunkEventIds: chunk.eventIds,
+                    startIndex: cursor,
+                    rawEventIndex: rawEventIndex
+               ) {
+                steps.append(keyboardStep.step)
+                cursor = keyboardStep.nextIndex
+                continue
+            }
+
+            steps.append(buildPointerStep(stepId: stepId, stepNumber: steps.count + 1, event: event))
+            cursor += 1
+        }
+
+        return steps
+    }
+
+    private func buildPointerStep(stepId: String, stepNumber: Int, event: RawEvent) -> KnowledgeStep {
+        let actionText: String
+        switch event.action {
+        case .leftClick:
+            actionText = "点击"
+        case .rightClick:
+            actionText = "右键点击"
+        case .doubleClick:
+            actionText = "双击点击"
+        case .keyDown:
+            actionText = "键盘操作"
+        }
+
+        return KnowledgeStep(
+            stepId: stepId,
+            instruction: "执行第 \(stepNumber) 步\(actionText)操作（x=\(event.pointer.x), y=\(event.pointer.y)，源事件 \(event.eventId)）。",
+            sourceEventIds: [event.eventId]
+        )
+    }
+
+    private func buildKeyboardStep(
+        stepId: String,
+        stepNumber: Int,
+        chunkEventIds: [String],
+        startIndex: Int,
+        rawEventIndex: [String: RawEvent]
+    ) -> (step: KnowledgeStep, nextIndex: Int)? {
+        guard startIndex < chunkEventIds.count,
+              let firstEvent = rawEventIndex[chunkEventIds[startIndex]],
+              firstEvent.action == .keyDown else {
+            return nil
+        }
+
+        if isShortcutEvent(firstEvent),
+           let shortcut = shortcutSpec(from: firstEvent) {
+            let instruction = "执行第 \(stepNumber) 步快捷键 \(shortcut)（源事件 \(firstEvent.eventId)）。"
+            return (
+                KnowledgeStep(stepId: stepId, instruction: instruction, sourceEventIds: [firstEvent.eventId]),
+                startIndex + 1
             )
         }
+
+        var cursor = startIndex
+        var sourceEventIds: [String] = []
+        var textBuffer = ""
+        var appendReturn = false
+
+        while cursor < chunkEventIds.count {
+            guard let current = rawEventIndex[chunkEventIds[cursor]],
+                  current.action == .keyDown,
+                  !isShortcutEvent(current),
+                  let token = keyboardToken(from: current) else {
+                break
+            }
+
+            sourceEventIds.append(current.eventId)
+            switch token {
+            case .printable(let value):
+                textBuffer.append(value)
+            case .space:
+                textBuffer.append(" ")
+            case .delete:
+                if !textBuffer.isEmpty {
+                    textBuffer.removeLast()
+                }
+            case .returnKey:
+                appendReturn = true
+                cursor += 1
+                break
+            case .tab:
+                if textBuffer.isEmpty {
+                    let instruction = "执行第 \(stepNumber) 步快捷键 tab（源事件 \(current.eventId)）。"
+                    return (
+                        KnowledgeStep(stepId: stepId, instruction: instruction, sourceEventIds: [current.eventId]),
+                        cursor + 1
+                    )
+                }
+                break
+            case .escape:
+                if textBuffer.isEmpty {
+                    let instruction = "执行第 \(stepNumber) 步快捷键 escape（源事件 \(current.eventId)）。"
+                    return (
+                        KnowledgeStep(stepId: stepId, instruction: instruction, sourceEventIds: [current.eventId]),
+                        cursor + 1
+                    )
+                }
+                break
+            }
+
+            if appendReturn {
+                break
+            }
+            cursor += 1
+        }
+
+        if !textBuffer.isEmpty {
+            let escaped = textBuffer.replacingOccurrences(of: "“", with: "\"")
+                .replacingOccurrences(of: "”", with: "\"")
+            let enterSuffix = appendReturn ? "并按回车" : ""
+            let instruction = "执行第 \(stepNumber) 步输入\"\(escaped)\"\(enterSuffix)（源事件 \(sourceEventIds.joined(separator: ", "))）。"
+            return (
+                KnowledgeStep(stepId: stepId, instruction: instruction, sourceEventIds: sourceEventIds),
+                max(cursor, startIndex + 1)
+            )
+        }
+
+        if appendReturn {
+            let instruction = "执行第 \(stepNumber) 步快捷键 return（源事件 \(sourceEventIds.joined(separator: ", "))）。"
+            return (
+                KnowledgeStep(stepId: stepId, instruction: instruction, sourceEventIds: sourceEventIds),
+                max(cursor, startIndex + 1)
+            )
+        }
+
+        if let shortcut = shortcutSpec(from: firstEvent) {
+            let instruction = "执行第 \(stepNumber) 步快捷键 \(shortcut)（源事件 \(firstEvent.eventId)）。"
+            return (
+                KnowledgeStep(stepId: stepId, instruction: instruction, sourceEventIds: [firstEvent.eventId]),
+                startIndex + 1
+            )
+        }
+
+        return nil
+    }
+
+    private func isShortcutEvent(_ event: RawEvent) -> Bool {
+        let modifiers = Set(event.modifiers)
+        return modifiers.contains(.command)
+            || modifiers.contains(.option)
+            || modifiers.contains(.control)
+    }
+
+    private func shortcutSpec(from event: RawEvent) -> String? {
+        guard event.action == .keyDown else {
+            return nil
+        }
+
+        let key = shortcutKey(from: event)
+        guard let key, !key.isEmpty else {
+            return nil
+        }
+
+        var tokens: [String] = []
+        let modifiers = Set(event.modifiers)
+        if modifiers.contains(.command) {
+            tokens.append("command")
+        }
+        if modifiers.contains(.shift) {
+            tokens.append("shift")
+        }
+        if modifiers.contains(.option) {
+            tokens.append("option")
+        }
+        if modifiers.contains(.control) {
+            tokens.append("control")
+        }
+        tokens.append(key)
+        return tokens.joined(separator: "+")
+    }
+
+    private func shortcutKey(from event: RawEvent) -> String? {
+        if let charactersIgnoringModifiers = event.keyboard?.charactersIgnoringModifiers,
+           !charactersIgnoringModifiers.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let normalized = normalizeShortcutKey(charactersIgnoringModifiers)
+            if !normalized.isEmpty {
+                return normalized
+            }
+        }
+
+        guard let keyCode = event.keyboard?.keyCode else {
+            return nil
+        }
+        switch keyCode {
+        case 36, 76: return "return"
+        case 48: return "tab"
+        case 53: return "escape"
+        case 51: return "delete"
+        case 49: return "space"
+        default: return nil
+        }
+    }
+
+    private func normalizeShortcutKey(_ raw: String) -> String {
+        if raw == "\r" || raw == "\n" {
+            return "return"
+        }
+        if raw == "\t" {
+            return "tab"
+        }
+        if raw == "\u{1B}" {
+            return "escape"
+        }
+        if raw == "\u{7F}" {
+            return "delete"
+        }
+        if raw == " " {
+            return "space"
+        }
+        if raw.count == 1 {
+            return raw.lowercased()
+        }
+        return raw.lowercased()
+    }
+
+    private enum KeyboardToken {
+        case printable(String)
+        case space
+        case returnKey
+        case tab
+        case escape
+        case delete
+    }
+
+    private func keyboardToken(from event: RawEvent) -> KeyboardToken? {
+        guard event.action == .keyDown else {
+            return nil
+        }
+
+        if let characters = event.keyboard?.characters,
+           let parsed = parseKeyboardTokenFromCharacters(characters) {
+            return parsed
+        }
+
+        if let charactersIgnoringModifiers = event.keyboard?.charactersIgnoringModifiers,
+           let parsed = parseKeyboardTokenFromCharacters(charactersIgnoringModifiers) {
+            return parsed
+        }
+
+        guard let keyCode = event.keyboard?.keyCode else {
+            return nil
+        }
+        switch keyCode {
+        case 36, 76: return .returnKey
+        case 48: return .tab
+        case 53: return .escape
+        case 51: return .delete
+        case 49: return .space
+        default: return nil
+        }
+    }
+
+    private func parseKeyboardTokenFromCharacters(_ raw: String) -> KeyboardToken? {
+        if raw == "\r" || raw == "\n" {
+            return .returnKey
+        }
+        if raw == "\t" {
+            return .tab
+        }
+        if raw == "\u{1B}" {
+            return .escape
+        }
+        if raw == "\u{7F}" {
+            return .delete
+        }
+        if raw == " " {
+            return .space
+        }
+
+        guard raw.count == 1 else {
+            return nil
+        }
+        return .printable(raw)
     }
 }
 
