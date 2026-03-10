@@ -58,43 +58,91 @@ def extract_json_from_text(text: str) -> Any:
     except json.JSONDecodeError:
         pass
 
-    fenced = re.search(r"```(?:json)?\s*(\{[\s\S]*?\})\s*```", text, flags=re.IGNORECASE)
-    if fenced:
-        return json.loads(fenced.group(1))
+    fenced_blocks = re.findall(
+        r"```(?:json)?\s*([\s\S]*?)\s*```", text, flags=re.IGNORECASE
+    )
+    for block in fenced_blocks:
+        candidate = block.strip()
+        if not candidate:
+            continue
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
 
-    candidate = extract_first_balanced_object(text)
-    if candidate is None:
-        raise ValueError("Cannot find JSON object in input text.")
-    return json.loads(candidate)
+    parsed_candidates: list[Any] = []
+    for candidate in extract_balanced_objects(text):
+        try:
+            parsed = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        parsed_candidates.append(parsed)
+        if (
+            isinstance(parsed, dict)
+            and parsed.get("schemaVersion") == "llm.knowledge-parse.v0"
+        ):
+            return parsed
+
+    if parsed_candidates:
+        return select_best_candidate(parsed_candidates)
+
+    raise ValueError("Cannot find valid JSON object in input text.")
 
 
-def extract_first_balanced_object(text: str) -> str | None:
-    starts = [i for i, ch in enumerate(text) if ch == "{"]
-    for start in starts:
-        depth = 0
-        in_string = False
-        escaping = False
-        for idx in range(start, len(text)):
-            ch = text[idx]
-            if in_string:
-                if escaping:
-                    escaping = False
-                elif ch == "\\":
-                    escaping = True
-                elif ch == '"':
-                    in_string = False
-                continue
+def extract_balanced_objects(text: str) -> list[str]:
+    objects: list[str] = []
+    depth = 0
+    start_index: int | None = None
+    in_string = False
+    escaping = False
 
-            if ch == '"':
-                in_string = True
-                continue
-            if ch == "{":
-                depth += 1
-            elif ch == "}":
-                depth -= 1
-                if depth == 0:
-                    return text[start : idx + 1]
-    return None
+    for idx, ch in enumerate(text):
+        if in_string:
+            if escaping:
+                escaping = False
+            elif ch == "\\":
+                escaping = True
+            elif ch == '"':
+                in_string = False
+            continue
+
+        if ch == '"':
+            in_string = True
+            continue
+
+        if ch == "{":
+            if depth == 0:
+                start_index = idx
+            depth += 1
+            continue
+
+        if ch == "}" and depth > 0:
+            depth -= 1
+            if depth == 0 and start_index is not None:
+                objects.append(text[start_index : idx + 1])
+                start_index = None
+
+    return objects
+
+
+def select_best_candidate(candidates: list[Any]) -> Any:
+    dict_candidates = [item for item in candidates if isinstance(item, dict)]
+    if not dict_candidates:
+        return candidates[0]
+
+    def score(payload: dict[str, Any]) -> int:
+        keys = set(payload.keys())
+        value = len(keys & TOP_LEVEL_KEYS)
+        if payload.get("schemaVersion") == "llm.knowledge-parse.v0":
+            value += 100
+        if "executionPlan" in payload:
+            value += 8
+        if "knowledgeItemId" in payload:
+            value += 3
+        return value
+
+    dict_candidates.sort(key=score, reverse=True)
+    return dict_candidates[0]
 
 
 def require_exact_keys(obj: Any, keys: set[str], path: str, errors: list[str]) -> None:

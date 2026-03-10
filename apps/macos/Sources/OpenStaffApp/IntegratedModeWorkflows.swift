@@ -19,6 +19,11 @@ struct TeachingSkillBuildResult {
 
 final class IntegratedModeWorkflowRunner {
     private let fileManager: FileManager
+    // Teaching pipeline prefers one task per start/stop session, and delegates noise filtering to LLM.
+    private let teachingSlicingPolicy = TaskSlicingPolicy(
+        idleGapSeconds: TimeInterval.greatestFiniteMagnitude,
+        splitOnContextSwitch: false
+    )
 
     init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
@@ -38,7 +43,7 @@ final class IntegratedModeWorkflowRunner {
             throw IntegratedWorkflowError.emptyCapturedEvents(sessionId: sessionId, dateKey: dateKey)
         }
 
-        let slicer = SessionTaskSlicer()
+        let slicer = SessionTaskSlicer(policy: teachingSlicingPolicy)
         let chunks = try slicer.slice(events: loaded.events, sessionId: sessionId)
 
         let chunkWriter = TaskChunkWriter(fileManager: fileManager)
@@ -97,7 +102,8 @@ final class IntegratedModeWorkflowRunner {
         使用方式：
         1. 复制下方完整内容到 ChatGPT（system + user prompt）。
         2. 要求 ChatGPT 仅返回 JSON 对象，不要额外解释文字。
-        3. 将 ChatGPT 返回内容粘贴回 OpenStaff 的“LLM 结果输入框”，点击“执行手动结果”。
+        3. 仅将 ChatGPT 的最终 JSON 结果粘贴回 OpenStaff 的“LLM 结果输入框”，点击“执行手动结果”。
+        4. 注意：不要把本“转换包”文本粘贴到结果输入框。
 
         \(promptBody)
         """
@@ -147,6 +153,11 @@ final class IntegratedModeWorkflowRunner {
         let normalizedOutput = llmOutputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedOutput.isEmpty else {
             throw IntegratedWorkflowError.manualLLMOutputEmpty
+        }
+        if normalizedOutput.contains("=== SYSTEM PROMPT ===")
+            || normalizedOutput.contains("=== USER PROMPT ===")
+            || normalizedOutput.contains("【OpenStaff 手动 ChatGPT 转换包】") {
+            throw IntegratedWorkflowError.manualLLMOutputLooksLikePromptPackage
         }
 
         let dateKey = OpenStaffDateFormatter.dayString(from: Date())
@@ -506,6 +517,7 @@ enum IntegratedWorkflowError: LocalizedError {
     case knowledgeItemPathMissing(String)
     case knowledgeItemReadFailed(String)
     case manualLLMOutputEmpty
+    case manualLLMOutputLooksLikePromptPackage
     case pythonRuntimeUnavailable
     case scriptMissing(String)
     case scriptExecutionFailed(script: String, exitCode: Int32, stderr: String)
@@ -530,6 +542,8 @@ enum IntegratedWorkflowError: LocalizedError {
             return "读取知识条目失败：\(path)"
         case .manualLLMOutputEmpty:
             return "手动粘贴的 LLM 结果为空，无法执行。"
+        case .manualLLMOutputLooksLikePromptPackage:
+            return "检测到你粘贴的是 OpenStaff 提示词包而非 ChatGPT 最终 JSON。请仅粘贴 ChatGPT 返回结果。"
         case .pythonRuntimeUnavailable:
             return "Python 运行时不可用（需可执行 python3）。"
         case .scriptMissing(let path):

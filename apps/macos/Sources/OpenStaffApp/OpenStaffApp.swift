@@ -1517,6 +1517,16 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             skillActionStatusMessage = "未找到技能，无法运行。"
             return
         }
+        guard skill.llmOutputAccepted else {
+            skillActionSucceeded = false
+            skillActionStatusMessage = "技能未通过 LLM 结构校验（当前为 fallback 结果），已禁止运行。请修正手动粘贴结果并重新生成技能。"
+            return
+        }
+        if let review = skill.review, review.decision == .rejected {
+            skillActionSucceeded = false
+            skillActionStatusMessage = "技能已被驳回，禁止运行。请修正后重新审核。"
+            return
+        }
         guard !skillActionProcessing else {
             return
         }
@@ -1943,9 +1953,13 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                     let acceptedDescription = result.llmOutputAccepted
                         ? "LLM 输出已通过校验"
                         : "LLM 输出未完全通过校验，已按 fallback 生成"
-                    let diagnosticDescription = result.diagnostics.isEmpty
-                        ? ""
-                        : "（诊断 \(result.diagnostics.count) 条）"
+                    let firstDiagnostic = result.diagnostics.first?.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let diagnosticDescription: String
+                    if let firstDiagnostic, !firstDiagnostic.isEmpty {
+                        diagnosticDescription = "（诊断 \(result.diagnostics.count) 条，首条：\(firstDiagnostic)）"
+                    } else {
+                        diagnosticDescription = result.diagnostics.isEmpty ? "" : "（诊断 \(result.diagnostics.count) 条）"
+                    }
                     self.teachingSkillStatusMessage = "手动结果执行完成：skill=\(result.skillName)，目录=\(result.skillDirectory.path)。\(acceptedDescription)\(diagnosticDescription)"
                     self.transitionMessage = "教学后处理完成：手动粘贴结果已转换为 OpenClaw Skill。"
                 }
@@ -2003,13 +2017,21 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         let workflowSessionId = activeObservationSessionId ?? sessionId
         let emergencyStopActive = self.emergencyStopActive
 
-        transitionMessage = "学生模式已启动，正在执行集成自主流程..."
+        refreshLearnedSkills()
+        guard let selectedSkill = selectAutoRunnableSkill(preferredSessionId: workflowSessionId) else {
+            transitionMessage = "学生模式已启动：未找到可自动执行的技能。要求：LLM 输出通过校验且未被驳回。请先在教学后处理中生成技能。"
+            return
+        }
+
+        transitionMessage = "学生模式已启动，正在自动执行技能：\(selectedSkill.skillName)..."
+        skillActionProcessing = true
+        skillActionSucceeded = true
+        skillActionStatusMessage = "学生模式自动执行：\(selectedSkill.skillName)..."
+
         integratedWorkflowTask = Task.detached(priority: .userInitiated) {
-            let runner = IntegratedModeWorkflowRunner()
             do {
-                let result = try runner.runStudentLoop(
-                    sessionId: workflowSessionId,
-                    preferredGoal: nil,
+                let result = try LearnedSkillRunner.run(
+                    skill: selectedSkill,
                     emergencyStopActive: emergencyStopActive
                 )
 
@@ -2017,15 +2039,99 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                     guard let self else {
                         return
                     }
-                    self.transitionMessage = "学生模式流程完成：\(result.message)"
+                    let hasQualityWarnings = !result.qualityWarnings.isEmpty
+                    let warningText = result.qualityWarnings.joined(separator: "；")
+                    self.skillActionProcessing = false
+                    self.skillActionSucceeded = !hasQualityWarnings
+                    if hasQualityWarnings {
+                        self.skillActionStatusMessage = "学生模式自动执行完成（部分）：总步骤 \(result.totalSteps)，成功 \(result.succeededSteps)，失败 \(result.failedSteps)，阻塞 \(result.blockedSteps)。质量提示：\(warningText)。日志：\(result.logFilePath)"
+                    } else {
+                        self.skillActionStatusMessage = "学生模式自动执行完成：总步骤 \(result.totalSteps)，成功 \(result.succeededSteps)，失败 \(result.failedSteps)，阻塞 \(result.blockedSteps)。日志：\(result.logFilePath)"
+                    }
+                    self.transitionMessage = "学生模式流程完成：已执行技能 \(selectedSkill.skillName)。"
                     self.refreshDashboard(promptAccessibilityPermission: false)
                 }
             } catch {
                 await MainActor.run { [weak self] in
+                    self?.skillActionProcessing = false
+                    self?.skillActionSucceeded = false
+                    self?.skillActionStatusMessage = "学生模式自动执行失败：\(error.localizedDescription)"
                     self?.transitionMessage = "学生模式流程失败：\(error.localizedDescription)"
+                    self?.refreshExecutorHelperPath()
                 }
             }
         }
+    }
+
+    private func selectAutoRunnableSkill(preferredSessionId: String) -> LearnedSkillSummary? {
+        let candidates = learnedSkillSnapshot.skills.filter { skill in
+            guard skill.llmOutputAccepted else {
+                return false
+            }
+            if let review = skill.review, review.decision == .rejected {
+                return false
+            }
+            return true
+        }
+        guard !candidates.isEmpty else {
+            return nil
+        }
+
+        let preferredSkillId = selectedLearnedSkillId
+        let prefixMatch = "\(preferredSessionId)-"
+        let sorted = candidates.sorted { lhs, rhs in
+            let lhsScore = autoRunScore(
+                skill: lhs,
+                preferredSkillId: preferredSkillId,
+                preferredSessionId: preferredSessionId,
+                prefixMatch: prefixMatch
+            )
+            let rhsScore = autoRunScore(
+                skill: rhs,
+                preferredSkillId: preferredSkillId,
+                preferredSessionId: preferredSessionId,
+                prefixMatch: prefixMatch
+            )
+            if lhsScore != rhsScore {
+                return lhsScore > rhsScore
+            }
+
+            let lhsDate = lhs.createdAt ?? Date.distantPast
+            let rhsDate = rhs.createdAt ?? Date.distantPast
+            if lhsDate != rhsDate {
+                return lhsDate > rhsDate
+            }
+            return lhs.skillName < rhs.skillName
+        }
+
+        return sorted.first
+    }
+
+    private func autoRunScore(
+        skill: LearnedSkillSummary,
+        preferredSkillId: String?,
+        preferredSessionId: String,
+        prefixMatch: String
+    ) -> Int {
+        var score = 0
+
+        if preferredSkillId == skill.id {
+            score += 1_000
+        }
+        if skill.sessionId == preferredSessionId {
+            score += 300
+        } else if skill.sessionId.hasPrefix(prefixMatch) {
+            score += 220
+        }
+
+        if let review = skill.review, review.decision == .approved {
+            score += 120
+        }
+        if skill.storageScope == .done {
+            score += 40
+        }
+
+        return score
     }
 
     private func cancelIntegratedWorkflowTask() {

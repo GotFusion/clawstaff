@@ -154,18 +154,57 @@ def validate_knowledge_item(knowledge_item: Any) -> list[str]:
     return errors
 
 
+def looks_like_knowledge_item(payload: Any) -> bool:
+    if not isinstance(payload, dict):
+        return False
+    keys = set(payload.keys())
+    required = {"goal", "summary", "constraints", "steps", "context"}
+    return required.issubset(keys)
+
+
+def looks_like_json_schema(payload: Any) -> bool:
+    if not isinstance(payload, dict):
+        return False
+    return "$schema" in payload and "properties" in payload
+
+
 def parse_llm_output(llm_path: Path) -> tuple[Any | None, list[str]]:
     text = read_text(llm_path)
     diagnostics: list[str] = []
+    prompt_package_markers = (
+        "【OpenStaff 手动 ChatGPT 转换包】" in text
+        and "=== SYSTEM PROMPT ===" in text
+        and "=== USER PROMPT ===" in text
+    )
 
     try:
         parsed = extract_json_from_text(text)
     except Exception as exc:
+        if prompt_package_markers:
+            diagnostics.append(
+                "检测到输入包含 OpenStaff 转换包提示词。请粘贴 ChatGPT 最终返回的 JSON，不要粘贴提示词包。"
+            )
         diagnostics.append(f"Failed to extract JSON from LLM output: {exc}")
         return None, diagnostics
 
+    if looks_like_knowledge_item(parsed):
+        diagnostics.append(
+            "检测到输入是 KnowledgeItem/提示词数据，而不是 ChatGPT 返回的结构化 JSON。"
+        )
+        return parsed, diagnostics
+
+    if looks_like_json_schema(parsed):
+        diagnostics.append(
+            "检测到输入是 JSON Schema，而不是 ChatGPT 返回的结构化 JSON。"
+        )
+        return parsed, diagnostics
+
     errors = validate_output(parsed)
     if errors:
+        if prompt_package_markers:
+            diagnostics.append(
+                "检测到输入包含 OpenStaff 转换包提示词。请确认结果框中仅保留 ChatGPT 输出 JSON。"
+            )
         diagnostics.extend([f"LLM output schema validation failed: {error}" for error in errors])
         return parsed, diagnostics
 
