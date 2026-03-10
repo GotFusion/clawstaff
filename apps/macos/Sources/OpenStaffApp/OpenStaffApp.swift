@@ -688,6 +688,106 @@ struct OpenStaffDashboardView: View {
                     .padding(.top, 4)
                 }
 
+                GroupBox("已学技能（运行 / 删除 / 审核）") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("当前执行后端：\(viewModel.executorBackendDescription)")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+
+                        if viewModel.usesHelperExecutorBackend {
+                            if let helperPath = viewModel.executorHelperPath,
+                               !helperPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text("当前正在使用的 helper 路径：\(helperPath)")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                            } else {
+                                Text("当前正在使用的 helper 路径：未激活（运行一次技能后显示）")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else {
+                            Text("权限要求：仅需为 OpenStaffApp 授予辅助功能权限。")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        if viewModel.learnedSkills.isEmpty {
+                            Text("暂无已学技能。请先完成一次教学后处理（API 或手动粘贴执行）。")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 4)
+                        } else {
+                            Table(
+                                viewModel.learnedSkills,
+                                selection: Binding(
+                                    get: { viewModel.selectedLearnedSkillId },
+                                    set: { viewModel.selectLearnedSkill($0) }
+                                )
+                            ) {
+                                TableColumn("技能名") { skill in
+                                    Text(skill.skillName)
+                                        .lineLimit(1)
+                                }
+                                TableColumn("任务") { skill in
+                                    Text(skill.taskId)
+                                        .lineLimit(1)
+                                }
+                                TableColumn("审核状态") { skill in
+                                    Text(skill.reviewStatusText)
+                                        .foregroundStyle(skill.isReviewed ? .green : .secondary)
+                                }
+                                TableColumn("来源") { skill in
+                                    Text(skill.storageScopeDisplayName)
+                                }
+                                TableColumn("操作") { skill in
+                                    HStack(spacing: 6) {
+                                        Button("运行") {
+                                            viewModel.runLearnedSkill(skill.id)
+                                        }
+                                        .buttonStyle(.borderedProminent)
+                                        .disabled(
+                                            viewModel.runningMode != .student
+                                            || viewModel.skillActionProcessing
+                                            || viewModel.emergencyStopActive
+                                        )
+
+                                        Button("删除") {
+                                            viewModel.deleteLearnedSkill(skill.id)
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .disabled(viewModel.skillActionProcessing)
+
+                                        Menu("审核") {
+                                            Button("通过") {
+                                                viewModel.reviewLearnedSkill(skill.id, decision: .approved)
+                                            }
+                                            Button("驳回") {
+                                                viewModel.reviewLearnedSkill(skill.id, decision: .rejected)
+                                            }
+                                        }
+                                        .disabled(viewModel.skillActionProcessing)
+                                    }
+                                }
+                            }
+                            .frame(minHeight: 260)
+
+                            Text("运行说明：仅在学生模式运行中可执行“运行”。")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        if let skillActionStatusMessage = viewModel.skillActionStatusMessage {
+                            Text(skillActionStatusMessage)
+                                .font(.caption)
+                                .foregroundStyle(viewModel.skillActionSucceeded ? .green : .red)
+                                .textSelection(.enabled)
+                        }
+                    }
+                    .padding(.top, 4)
+                }
+
                 GroupBox("审阅与反馈") {
                 if viewModel.executionLogs.isEmpty {
                     Text("暂无执行日志。可先运行 assist/student 流程后刷新。")
@@ -977,6 +1077,15 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     @Published private(set) var latestGeneratedSkillDirectoryPath: String?
     @Published private(set) var latestGeneratedSkillName: String?
     @Published private(set) var latestLLMOutputPath: String?
+    @Published private(set) var learnedSkills: [LearnedSkillSummary]
+    @Published var selectedLearnedSkillId: String?
+    @Published private(set) var selectedLearnedSkillReview: LearnedSkillReviewSummary?
+    @Published private(set) var skillActionStatusMessage: String?
+    @Published private(set) var skillActionSucceeded = true
+    @Published private(set) var skillActionProcessing = false
+    @Published private(set) var executorBackendDescription: String
+    @Published private(set) var usesHelperExecutorBackend: Bool
+    @Published private(set) var executorHelperPath: String?
 
     private let logger = InMemoryOrchestratorStateLogger()
     private let stateMachine: ModeStateMachine
@@ -985,6 +1094,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     private var traceSequence = 0
     private var learningSnapshot = LearningSnapshot.empty
     private var executionReviewSnapshot = ExecutionReviewSnapshot.empty
+    private var learnedSkillSnapshot = LearnedSkillSnapshot.empty
     private var safetyControlsStarted = false
     private var integratedWorkflowTask: Task<Void, Never>?
     private let modeObservationCapture: any ModeObservationCaptureControlling
@@ -1006,6 +1116,15 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         self.recentTasks = []
         self.learningSessions = []
         self.executionLogs = []
+        self.learnedSkills = []
+        let backend = OpenStaffActionExecutor.backend
+        self.executorBackendDescription = backend.displayName
+        self.usesHelperExecutorBackend = backend == .helper
+        if backend == .helper {
+            self.executorHelperPath = OpenStaffExecutorXPCClient.shared.currentHelperExecutablePath()
+        } else {
+            self.executorHelperPath = nil
+        }
         self.activeObservationSessionId = nil
         self.modeObservationCapture = modeObservationCapture
         self.permissionSnapshotProvider = permissionSnapshotProvider
@@ -1085,6 +1204,13 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             return nil
         }
         return executionReviewSnapshot.logById[selectedExecutionLogId]
+    }
+
+    var selectedLearnedSkill: LearnedSkillSummary? {
+        guard let selectedLearnedSkillId else {
+            return nil
+        }
+        return learnedSkillSnapshot.skillsById[selectedLearnedSkillId]
     }
 
     var emergencyStopStatusText: String {
@@ -1355,6 +1481,8 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         learningSessions = learningSnapshot.sessions
         reconcileLearningSelection()
         refreshExecutionReview()
+        refreshLearnedSkills()
+        refreshExecutorHelperPath()
         lastRefreshedAt = Date()
     }
 
@@ -1371,6 +1499,99 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         selectedExecutionLogId = logId
         feedbackStatusMessage = nil
         refreshSelectedLogFeedback()
+    }
+
+    func selectLearnedSkill(_ skillId: String?) {
+        selectedLearnedSkillId = skillId
+        refreshSelectedSkillReview()
+    }
+
+    func runLearnedSkill(_ skillId: String) {
+        guard runningMode == .student else {
+            skillActionSucceeded = false
+            skillActionStatusMessage = "请先启动学生模式，再运行技能。"
+            return
+        }
+        guard let skill = learnedSkillSnapshot.skillsById[skillId] else {
+            skillActionSucceeded = false
+            skillActionStatusMessage = "未找到技能，无法运行。"
+            return
+        }
+        guard !skillActionProcessing else {
+            return
+        }
+
+        skillActionProcessing = true
+        skillActionSucceeded = true
+        skillActionStatusMessage = "正在运行技能：\(skill.skillName)..."
+        let emergencyStopActive = self.emergencyStopActive
+
+        Task.detached(priority: .userInitiated) {
+            do {
+                let result = try LearnedSkillRunner.run(
+                    skill: skill,
+                    emergencyStopActive: emergencyStopActive
+                )
+                await MainActor.run { [weak self] in
+                    self?.skillActionProcessing = false
+                    self?.skillActionSucceeded = true
+                    self?.skillActionStatusMessage = "技能运行完成：总步骤 \(result.totalSteps)，成功 \(result.succeededSteps)，失败 \(result.failedSteps)，阻塞 \(result.blockedSteps)。日志：\(result.logFilePath)"
+                    self?.refreshDashboard(promptAccessibilityPermission: false)
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.skillActionProcessing = false
+                    self?.skillActionSucceeded = false
+                    self?.skillActionStatusMessage = "运行技能失败：\(error.localizedDescription)"
+                    self?.refreshExecutorHelperPath()
+                }
+            }
+        }
+    }
+
+    func deleteLearnedSkill(_ skillId: String) {
+        guard let skill = learnedSkillSnapshot.skillsById[skillId] else {
+            skillActionSucceeded = false
+            skillActionStatusMessage = "未找到技能，无法删除。"
+            return
+        }
+
+        do {
+            try LearnedSkillRepository.deleteSkillDirectory(at: skill.skillDirectoryURL)
+            skillActionSucceeded = true
+            skillActionStatusMessage = "已删除技能：\(skill.skillName)"
+            refreshLearnedSkills()
+        } catch {
+            skillActionSucceeded = false
+            skillActionStatusMessage = "删除技能失败：\(error.localizedDescription)"
+        }
+    }
+
+    func reviewLearnedSkill(_ skillId: String, decision: LearnedSkillReviewDecision) {
+        guard let skill = learnedSkillSnapshot.skillsById[skillId] else {
+            skillActionSucceeded = false
+            skillActionStatusMessage = "未找到技能，无法审核。"
+            return
+        }
+
+        let entry = LearnedSkillReviewWriteEntry(
+            reviewId: "skill-review-\(UUID().uuidString.lowercased())",
+            timestamp: OpenStaffDateFormatter.iso8601String(from: Date()),
+            skillId: skill.id,
+            skillName: skill.skillName,
+            decision: decision,
+            skillDirectoryPath: skill.skillDirectoryPath
+        )
+
+        do {
+            try LearnedSkillReviewWriter.append(entry)
+            skillActionSucceeded = true
+            skillActionStatusMessage = "已审核技能：\(skill.skillName)（\(decision.displayName)）"
+            refreshLearnedSkills()
+        } catch {
+            skillActionSucceeded = false
+            skillActionStatusMessage = "审核技能失败：\(error.localizedDescription)"
+        }
     }
 
     func submitTeacherFeedback(decision: TeacherFeedbackDecision) {
@@ -1662,6 +1883,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                     self.latestLLMOutputPath = result.llmOutputPath.path
                     self.teachingSkillProcessing = false
                     self.teachingSkillStatusSucceeded = true
+                    self.refreshLearnedSkills()
 
                     let acceptedDescription = result.llmOutputAccepted
                         ? "LLM 输出已通过校验"
@@ -1710,6 +1932,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                     self.manualLLMResultInput = ""
                     self.teachingSkillProcessing = false
                     self.teachingSkillStatusSucceeded = true
+                    self.refreshLearnedSkills()
 
                     let acceptedDescription = result.llmOutputAccepted
                         ? "LLM 输出已通过校验"
@@ -1869,6 +2092,42 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             return
         }
         latestFeedbackForSelectedLog = executionReviewSnapshot.latestFeedbackByLogId[selectedExecutionLogId]
+    }
+
+    private func refreshLearnedSkills() {
+        learnedSkillSnapshot = LearnedSkillRepository.loadSnapshot()
+        learnedSkills = learnedSkillSnapshot.skills
+        reconcileLearnedSkillSelection()
+        refreshSelectedSkillReview()
+    }
+
+    private func reconcileLearnedSkillSelection() {
+        let skillIds = Set(learnedSkills.map(\.id))
+        if let selectedLearnedSkillId, !skillIds.contains(selectedLearnedSkillId) {
+            self.selectedLearnedSkillId = nil
+        }
+        if self.selectedLearnedSkillId == nil {
+            self.selectedLearnedSkillId = learnedSkills.first?.id
+        }
+    }
+
+    private func refreshSelectedSkillReview() {
+        guard let selectedLearnedSkillId else {
+            selectedLearnedSkillReview = nil
+            return
+        }
+        selectedLearnedSkillReview = learnedSkillSnapshot.latestReviewBySkillId[selectedLearnedSkillId]
+    }
+
+    private func refreshExecutorHelperPath() {
+        let backend = OpenStaffActionExecutor.backend
+        executorBackendDescription = backend.displayName
+        usesHelperExecutorBackend = backend == .helper
+        if usesHelperExecutorBackend {
+            executorHelperPath = OpenStaffExecutorXPCClient.shared.currentHelperExecutablePath()
+        } else {
+            executorHelperPath = nil
+        }
     }
 }
 
@@ -2704,6 +2963,623 @@ private struct TeacherFeedbackReadRecord: Decodable {
     let logEntryId: String
 }
 
+enum LearnedSkillStorageScope: String {
+    case pending
+    case done
+
+    var displayName: String {
+        switch self {
+        case .pending:
+            return "pending"
+        case .done:
+            return "done"
+        }
+    }
+}
+
+enum LearnedSkillReviewDecision: String, Codable {
+    case approved
+    case rejected
+
+    var displayName: String {
+        switch self {
+        case .approved:
+            return "已通过"
+        case .rejected:
+            return "已驳回"
+        }
+    }
+}
+
+struct LearnedSkillReviewSummary {
+    let decision: LearnedSkillReviewDecision
+    let timestamp: Date
+}
+
+struct LearnedSkillSummary: Identifiable {
+    let id: String
+    let skillName: String
+    let taskId: String
+    let sessionId: String
+    let knowledgeItemId: String
+    let skillDirectoryPath: String
+    let skillJSONPath: String
+    let storageScope: LearnedSkillStorageScope
+    let llmOutputAccepted: Bool
+    let createdAt: Date?
+    let review: LearnedSkillReviewSummary?
+
+    var isReviewed: Bool {
+        review != nil
+    }
+
+    var reviewStatusText: String {
+        guard let review else {
+            return "未审核"
+        }
+        return "\(review.decision.displayName) @ \(OpenStaffDateFormatter.displayString(from: review.timestamp))"
+    }
+
+    var storageScopeDisplayName: String {
+        storageScope.displayName
+    }
+
+    var skillDirectoryURL: URL {
+        URL(fileURLWithPath: skillDirectoryPath, isDirectory: true)
+    }
+
+    var skillJSONURL: URL {
+        URL(fileURLWithPath: skillJSONPath, isDirectory: false)
+    }
+}
+
+struct LearnedSkillSnapshot {
+    let skills: [LearnedSkillSummary]
+    let skillsById: [String: LearnedSkillSummary]
+    let latestReviewBySkillId: [String: LearnedSkillReviewSummary]
+
+    static let empty = LearnedSkillSnapshot(skills: [], skillsById: [:], latestReviewBySkillId: [:])
+}
+
+struct LearnedSkillRunResult {
+    let totalSteps: Int
+    let succeededSteps: Int
+    let failedSteps: Int
+    let blockedSteps: Int
+    let logFilePath: String
+}
+
+enum LearnedSkillRepository {
+    private static let decoder = JSONDecoder()
+
+    static func loadSnapshot() -> LearnedSkillSnapshot {
+        let reviewBySkillId = LearnedSkillReviewRepository.loadLatestBySkillId()
+        let pendingSkills = loadSkills(
+            under: OpenStaffWorkspacePaths.skillsPendingDirectory,
+            storageScope: .pending,
+            reviewBySkillId: reviewBySkillId
+        )
+        let doneSkills = loadSkills(
+            under: OpenStaffWorkspacePaths.skillsDoneDirectory,
+            storageScope: .done,
+            reviewBySkillId: reviewBySkillId
+        )
+        let merged = (pendingSkills + doneSkills).sorted { lhs, rhs in
+            let lhsDate = lhs.createdAt ?? Date.distantPast
+            let rhsDate = rhs.createdAt ?? Date.distantPast
+            if lhsDate == rhsDate {
+                return lhs.skillName < rhs.skillName
+            }
+            return lhsDate > rhsDate
+        }
+
+        var byId: [String: LearnedSkillSummary] = [:]
+        byId.reserveCapacity(merged.count)
+        for skill in merged {
+            byId[skill.id] = skill
+        }
+
+        return LearnedSkillSnapshot(
+            skills: merged,
+            skillsById: byId,
+            latestReviewBySkillId: reviewBySkillId
+        )
+    }
+
+    static func deleteSkillDirectory(at directory: URL) throws {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: directory.path) else {
+            return
+        }
+        try fileManager.removeItem(at: directory)
+    }
+
+    private static func loadSkills(
+        under root: URL,
+        storageScope: LearnedSkillStorageScope,
+        reviewBySkillId: [String: LearnedSkillReviewSummary]
+    ) -> [LearnedSkillSummary] {
+        let fileManager = FileManager.default
+        var isDirectory: ObjCBool = false
+        guard fileManager.fileExists(atPath: root.path, isDirectory: &isDirectory), isDirectory.boolValue else {
+            return []
+        }
+
+        let folders: [URL]
+        do {
+            folders = try fileManager.contentsOfDirectory(
+                at: root,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsHiddenFiles]
+            )
+        } catch {
+            return []
+        }
+
+        var skills: [LearnedSkillSummary] = []
+        skills.reserveCapacity(folders.count)
+
+        for folder in folders {
+            let values = try? folder.resourceValues(forKeys: [.isDirectoryKey])
+            guard values?.isDirectory == true else {
+                continue
+            }
+
+            let payloadURL = folder.appendingPathComponent("openstaff-skill.json", isDirectory: false)
+            guard fileManager.fileExists(atPath: payloadURL.path),
+                  let data = try? Data(contentsOf: payloadURL),
+                  let payload = try? decoder.decode(LearnedSkillPayload.self, from: data) else {
+                continue
+            }
+
+            let skillId = "\(storageScope.rawValue)|\(folder.path)"
+            let summary = LearnedSkillSummary(
+                id: skillId,
+                skillName: payload.skillName,
+                taskId: payload.taskId,
+                sessionId: payload.sessionId,
+                knowledgeItemId: payload.knowledgeItemId,
+                skillDirectoryPath: folder.path,
+                skillJSONPath: payloadURL.path,
+                storageScope: storageScope,
+                llmOutputAccepted: payload.llmOutputAccepted,
+                createdAt: OpenStaffDateFormatter.date(from: payload.createdAt),
+                review: reviewBySkillId[skillId]
+            )
+            skills.append(summary)
+        }
+
+        return skills
+    }
+}
+
+enum LearnedSkillReviewWriter {
+    private static let encoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        return encoder
+    }()
+
+    static func append(_ entry: LearnedSkillReviewWriteEntry) throws {
+        let directory = OpenStaffWorkspacePaths.skillsReviewDirectory
+            .appendingPathComponent(OpenStaffDateFormatter.dayString(from: Date()), isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let fileURL = directory.appendingPathComponent("skill-review.jsonl", isDirectory: false)
+        var payload = try encoder.encode(entry)
+        payload.append(0x0A)
+
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            let handle = try FileHandle(forWritingTo: fileURL)
+            try handle.seekToEnd()
+            try handle.write(contentsOf: payload)
+            try handle.close()
+        } else {
+            try payload.write(to: fileURL, options: .atomic)
+        }
+    }
+}
+
+enum LearnedSkillReviewRepository {
+    private static let decoder = JSONDecoder()
+
+    static func loadLatestBySkillId() -> [String: LearnedSkillReviewSummary] {
+        let files = listFiles(withExtension: "jsonl", under: OpenStaffWorkspacePaths.skillsReviewDirectory)
+        guard !files.isEmpty else {
+            return [:]
+        }
+
+        var latestBySkillId: [String: LearnedSkillReviewSummary] = [:]
+        latestBySkillId.reserveCapacity(64)
+
+        for file in files {
+            guard let content = try? String(contentsOf: file, encoding: .utf8) else {
+                continue
+            }
+            for line in content.split(whereSeparator: \.isNewline) {
+                guard let data = line.data(using: .utf8),
+                      let record = try? decoder.decode(LearnedSkillReviewReadRecord.self, from: data),
+                      let timestamp = OpenStaffDateFormatter.date(from: record.timestamp) else {
+                    continue
+                }
+
+                let summary = LearnedSkillReviewSummary(
+                    decision: record.decision,
+                    timestamp: timestamp
+                )
+
+                if let existing = latestBySkillId[record.skillId] {
+                    if summary.timestamp >= existing.timestamp {
+                        latestBySkillId[record.skillId] = summary
+                    }
+                } else {
+                    latestBySkillId[record.skillId] = summary
+                }
+            }
+        }
+
+        return latestBySkillId
+    }
+
+    private static func listFiles(withExtension pathExtension: String, under root: URL) -> [URL] {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: root.path) else {
+            return []
+        }
+        guard let enumerator = fileManager.enumerator(
+            at: root,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return []
+        }
+
+        var files: [URL] = []
+        for case let fileURL as URL in enumerator where fileURL.pathExtension == pathExtension {
+            files.append(fileURL)
+        }
+        return files
+    }
+}
+
+enum LearnedSkillRunner {
+    static func run(
+        skill: LearnedSkillSummary,
+        emergencyStopActive: Bool
+    ) throws -> LearnedSkillRunResult {
+        let data: Data
+        do {
+            data = try Data(contentsOf: skill.skillJSONURL)
+        } catch {
+            throw LearnedSkillRunnerError.skillPayloadReadFailed(skill.skillJSONPath)
+        }
+
+        let payload: LearnedSkillPayload
+        do {
+            payload = try JSONDecoder().decode(LearnedSkillPayload.self, from: data)
+        } catch {
+            throw LearnedSkillRunnerError.skillPayloadDecodeFailed(skill.skillJSONPath)
+        }
+
+        let planSteps = payload.mappedOutput.executionPlan.steps
+        guard !planSteps.isEmpty else {
+            throw LearnedSkillRunnerError.skillStepEmpty(payload.skillName)
+        }
+
+        let traceId = "trace-skill-ui-run-\(UUID().uuidString.lowercased())"
+        let executor = StudentSkillExecutor()
+        let context = StudentExecutionContext(
+            traceId: traceId,
+            sessionId: payload.sessionId,
+            taskId: payload.taskId,
+            dryRun: false,
+            emergencyStopActive: emergencyStopActive
+        )
+        let eventCoordinateIndex = loadEventCoordinateIndex(sessionId: payload.sessionId)
+        let logWriter = StudentLoopLogWriter(logsRootDirectory: OpenStaffWorkspacePaths.logsDirectory)
+        var latestLogURL = try logWriter.write(
+            StudentLoopLogEntry(
+                timestamp: OpenStaffDateFormatter.iso8601String(from: Date()),
+                traceId: traceId,
+                sessionId: payload.sessionId,
+                taskId: payload.taskId,
+                component: "student.skill.single-run",
+                status: StudentLoopStatusCode.executionStarted.rawValue,
+                message: "Manual UI run started for skill \(payload.skillName).",
+                skillId: payload.skillName
+            )
+        )
+
+        var succeededSteps = 0
+        var failedSteps = 0
+        var blockedSteps = 0
+
+        for (index, step) in planSteps.enumerated() {
+            let plannedStep = StudentPlannedStep(
+                planStepId: String(format: "single-step-%03d", index + 1),
+                skillId: "\(payload.skillName)-\(step.stepId)",
+                instruction: step.instruction,
+                sourceKnowledgeItemId: payload.knowledgeItemId,
+                sourceStepId: step.stepId,
+                confidence: payload.mappedOutput.confidence
+            )
+
+            let executionResult = executor.execute(
+                step: plannedStep,
+                stepIndex: index,
+                context: context
+            )
+            let finalized = finalizeStepExecution(
+                base: executionResult,
+                step: step,
+                contextBundleId: payload.mappedOutput.context.appBundleId,
+                eventCoordinateIndex: eventCoordinateIndex
+            )
+
+            let statusCode: String
+            switch finalized.status {
+            case .succeeded:
+                statusCode = StudentLoopStatusCode.executionCompleted.rawValue
+                succeededSteps += 1
+            case .failed:
+                statusCode = StudentLoopStatusCode.executionFailed.rawValue
+                failedSteps += 1
+            case .blocked:
+                statusCode = StudentLoopStatusCode.executionFailed.rawValue
+                blockedSteps += 1
+            }
+
+            latestLogURL = try logWriter.write(
+                StudentLoopLogEntry(
+                    timestamp: OpenStaffDateFormatter.iso8601String(from: Date()),
+                    traceId: traceId,
+                    sessionId: payload.sessionId,
+                    taskId: payload.taskId,
+                    component: "student.skill.single-run",
+                    status: statusCode,
+                    errorCode: finalized.errorCode?.rawValue,
+                    message: finalized.output,
+                    skillId: plannedStep.skillId,
+                    planStepId: plannedStep.planStepId
+                )
+            )
+
+            if finalized.status != .succeeded {
+                break
+            }
+        }
+
+        return LearnedSkillRunResult(
+            totalSteps: planSteps.count,
+            succeededSteps: succeededSteps,
+            failedSteps: failedSteps,
+            blockedSteps: blockedSteps,
+            logFilePath: latestLogURL.path
+        )
+    }
+
+    private static func finalizeStepExecution(
+        base: StudentStepExecutionResult,
+        step: LearnedSkillExecutionStep,
+        contextBundleId: String,
+        eventCoordinateIndex: [String: CGPoint]
+    ) -> StudentStepExecutionResult {
+        guard base.status == .succeeded else {
+            return base
+        }
+
+        switch performAction(
+            step: step,
+            contextBundleId: contextBundleId,
+            eventCoordinateIndex: eventCoordinateIndex
+        ) {
+        case .succeeded(let output):
+            return StudentStepExecutionResult(
+                planStepId: base.planStepId,
+                skillId: base.skillId,
+                status: .succeeded,
+                startedAt: base.startedAt,
+                finishedAt: OpenStaffDateFormatter.iso8601String(from: Date()),
+                output: output,
+                errorCode: nil
+            )
+        case .failed(let output):
+            return StudentStepExecutionResult(
+                planStepId: base.planStepId,
+                skillId: base.skillId,
+                status: .failed,
+                startedAt: base.startedAt,
+                finishedAt: OpenStaffDateFormatter.iso8601String(from: Date()),
+                output: output,
+                errorCode: .executionFailed
+            )
+        case .blocked(let output):
+            return StudentStepExecutionResult(
+                planStepId: base.planStepId,
+                skillId: base.skillId,
+                status: .blocked,
+                startedAt: base.startedAt,
+                finishedAt: OpenStaffDateFormatter.iso8601String(from: Date()),
+                output: output,
+                errorCode: .blockedAction
+            )
+        }
+    }
+
+    private static func performAction(
+        step: LearnedSkillExecutionStep,
+        contextBundleId: String,
+        eventCoordinateIndex: [String: CGPoint]
+    ) -> LearnedSkillActionResult {
+        let fallbackCoordinate = fallbackCoordinateFromSourceEvents(step.sourceEventIds, index: eventCoordinateIndex)
+        return OpenStaffActionExecutor.executeAction(
+            actionType: step.actionType,
+            target: step.target,
+            instruction: step.instruction,
+            contextBundleId: contextBundleId,
+            fallbackCoordinate: fallbackCoordinate
+        )
+    }
+
+    private static func fallbackCoordinateFromSourceEvents(
+        _ sourceEventIds: [String],
+        index: [String: CGPoint]
+    ) -> CGPoint? {
+        for sourceEventId in sourceEventIds {
+            if let point = index[sourceEventId] {
+                return point
+            }
+        }
+        return nil
+    }
+
+    private static func loadEventCoordinateIndex(sessionId: String) -> [String: CGPoint] {
+        let root = OpenStaffWorkspacePaths.rawEventsDirectory
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: root.path) else {
+            return [:]
+        }
+        guard let enumerator = fileManager.enumerator(
+            at: root,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return [:]
+        }
+
+        let decoder = JSONDecoder()
+        var index: [String: CGPoint] = [:]
+        index.reserveCapacity(128)
+
+        for case let fileURL as URL in enumerator where fileURL.pathExtension == "jsonl" {
+            let fileName = fileURL.lastPathComponent
+            if !isLikelySessionRawFile(fileName: fileName, sessionId: sessionId) {
+                continue
+            }
+
+            guard let content = try? String(contentsOf: fileURL, encoding: .utf8) else {
+                continue
+            }
+            for line in content.split(whereSeparator: \.isNewline) {
+                guard let data = line.data(using: .utf8),
+                      let event = try? decoder.decode(RawEvent.self, from: data),
+                      event.sessionId == sessionId else {
+                    continue
+                }
+                index[event.eventId] = CGPoint(
+                    x: Double(event.pointer.x),
+                    y: Double(event.pointer.y)
+                )
+            }
+        }
+
+        return index
+    }
+
+    private static func isLikelySessionRawFile(fileName: String, sessionId: String) -> Bool {
+        if fileName == "\(sessionId).jsonl" {
+            return true
+        }
+        if fileName.hasPrefix("\(sessionId)-r"), fileName.hasSuffix(".jsonl") {
+            return true
+        }
+        return false
+    }
+}
+
+enum LearnedSkillRunnerError: LocalizedError {
+    case skillPayloadReadFailed(String)
+    case skillPayloadDecodeFailed(String)
+    case skillStepEmpty(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .skillPayloadReadFailed(let path):
+            return "读取技能文件失败：\(path)"
+        case .skillPayloadDecodeFailed(let path):
+            return "解析技能文件失败：\(path)"
+        case .skillStepEmpty(let skillName):
+            return "技能 \(skillName) 不包含可执行步骤。"
+        }
+    }
+}
+
+struct LearnedSkillReviewWriteEntry: Codable {
+    let schemaVersion: String
+    let reviewId: String
+    let timestamp: String
+    let reviewerRole: String
+    let skillId: String
+    let skillName: String
+    let decision: LearnedSkillReviewDecision
+    let skillDirectoryPath: String
+    let note: String?
+
+    init(
+        reviewId: String,
+        timestamp: String,
+        skillId: String,
+        skillName: String,
+        decision: LearnedSkillReviewDecision,
+        skillDirectoryPath: String,
+        note: String? = nil
+    ) {
+        self.schemaVersion = "learned.skill.review.v0"
+        self.reviewId = reviewId
+        self.timestamp = timestamp
+        self.reviewerRole = "teacher"
+        self.skillId = skillId
+        self.skillName = skillName
+        self.decision = decision
+        self.skillDirectoryPath = skillDirectoryPath
+        self.note = note
+    }
+}
+
+private struct LearnedSkillReviewReadRecord: Decodable {
+    let skillId: String
+    let timestamp: String
+    let decision: LearnedSkillReviewDecision
+}
+
+private struct LearnedSkillPayload: Decodable {
+    let skillName: String
+    let knowledgeItemId: String
+    let taskId: String
+    let sessionId: String
+    let llmOutputAccepted: Bool
+    let createdAt: String
+    let mappedOutput: LearnedSkillMappedOutput
+}
+
+private struct LearnedSkillMappedOutput: Decodable {
+    let context: LearnedSkillContext
+    let executionPlan: LearnedSkillExecutionPlan
+    let confidence: Double
+}
+
+private struct LearnedSkillContext: Decodable {
+    let appBundleId: String
+}
+
+private struct LearnedSkillExecutionPlan: Decodable {
+    let steps: [LearnedSkillExecutionStep]
+}
+
+private struct LearnedSkillExecutionStep: Decodable {
+    let stepId: String
+    let actionType: String
+    let instruction: String
+    let target: String
+    let sourceEventIds: [String]
+}
+
+enum LearnedSkillActionResult {
+    case succeeded(String)
+    case failed(String)
+    case blocked(String)
+}
+
 enum OpenStaffWorkspacePaths {
     static var repositoryRoot: URL {
         let environment = ProcessInfo.processInfo.environment
@@ -2833,6 +3709,10 @@ enum OpenStaffWorkspacePaths {
         dataDirectory.appendingPathComponent("reports", isDirectory: true)
     }
 
+    static var runtimeDirectory: URL {
+        dataDirectory.appendingPathComponent("runtime", isDirectory: true)
+    }
+
     static var llmDirectory: URL {
         dataDirectory.appendingPathComponent("llm", isDirectory: true)
     }
@@ -2859,6 +3739,12 @@ enum OpenStaffWorkspacePaths {
         dataDirectory
             .appendingPathComponent("skills", isDirectory: true)
             .appendingPathComponent("done", isDirectory: true)
+    }
+
+    static var skillsReviewDirectory: URL {
+        dataDirectory
+            .appendingPathComponent("skills", isDirectory: true)
+            .appendingPathComponent("reviews", isDirectory: true)
     }
 
     static func ensureDataDirectoryWritable() -> Bool {
