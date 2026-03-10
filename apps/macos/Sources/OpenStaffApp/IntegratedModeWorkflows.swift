@@ -6,6 +6,15 @@ struct IntegratedTeachingWorkflowResult {
     let rawEventCount: Int
     let taskChunkCount: Int
     let knowledgeItemCount: Int
+    let knowledgeItemFilePaths: [URL]
+}
+
+struct TeachingSkillBuildResult {
+    let skillDirectory: URL
+    let skillName: String
+    let llmOutputAccepted: Bool
+    let diagnostics: [String]
+    let llmOutputPath: URL
 }
 
 final class IntegratedModeWorkflowRunner {
@@ -42,7 +51,7 @@ final class IntegratedModeWorkflowRunner {
         let knowledgeBuilder = KnowledgeItemBuilder()
         let knowledgeItems = chunks.map { knowledgeBuilder.build(from: $0) }
         let knowledgeWriter = KnowledgeItemWriter(fileManager: fileManager)
-        _ = try knowledgeWriter.write(
+        let knowledgeItemFilePaths = try knowledgeWriter.write(
             items: knowledgeItems,
             dateKey: dateKey,
             knowledgeRootDirectory: OpenStaffWorkspacePaths.knowledgeDirectory
@@ -53,7 +62,103 @@ final class IntegratedModeWorkflowRunner {
             dateKey: dateKey,
             rawEventCount: loaded.events.count,
             taskChunkCount: chunks.count,
-            knowledgeItemCount: knowledgeItems.count
+            knowledgeItemCount: knowledgeItems.count,
+            knowledgeItemFilePaths: knowledgeItemFilePaths
+        )
+    }
+
+    func renderManualPromptPreview(knowledgeItemPath: URL) throws -> String {
+        let item = try loadKnowledgeItem(at: knowledgeItemPath)
+        let rendered = try runPythonScript(
+            relativeScriptPath: "scripts/llm/render_knowledge_prompts.py",
+            arguments: [
+                "--knowledge-item",
+                knowledgeItemPath.path
+            ]
+        )
+
+        let promptBody = rendered.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !promptBody.isEmpty else {
+            throw IntegratedWorkflowError.scriptExecutionFailed(
+                script: "render_knowledge_prompts.py",
+                exitCode: rendered.terminationStatus,
+                stderr: "提示词输出为空。"
+            )
+        }
+
+        return """
+        【OpenStaff 手动 ChatGPT 转换包】
+        - sessionId: \(item.sessionId)
+        - taskId: \(item.taskId)
+        - knowledgeItemId: \(item.knowledgeItemId)
+        - knowledgeFile: \(knowledgeItemPath.path)
+
+        使用方式：
+        1. 复制下方完整内容到 ChatGPT（system + user prompt）。
+        2. 要求 ChatGPT 仅返回 JSON 对象，不要额外解释文字。
+        3. 将 ChatGPT 返回内容粘贴回 OpenStaff 的“LLM 结果输入框”，点击“执行手动结果”。
+
+        \(promptBody)
+        """
+    }
+
+    func buildSkillUsingOpenAIAdapter(
+        knowledgeItemPath: URL,
+        model: String
+    ) throws -> TeachingSkillBuildResult {
+        _ = try loadKnowledgeItem(at: knowledgeItemPath)
+        let dateKey = OpenStaffDateFormatter.dayString(from: Date())
+        let baseName = sanitizedOutputBaseName(for: knowledgeItemPath)
+
+        let llmOutputDirectory = OpenStaffWorkspacePaths.llmOutputDirectory
+            .appendingPathComponent(dateKey, isDirectory: true)
+        try fileManager.createDirectory(at: llmOutputDirectory, withIntermediateDirectories: true)
+        let llmOutputPath = llmOutputDirectory.appendingPathComponent("\(baseName)-llm-output.json", isDirectory: false)
+        let llmErrorReportPath = llmOutputDirectory.appendingPathComponent("\(baseName)-llm-error-report.json", isDirectory: false)
+
+        _ = try runPythonScript(
+            relativeScriptPath: "scripts/llm/chatgpt_adapter.py",
+            arguments: [
+                "--provider",
+                "openai",
+                "--model",
+                model,
+                "--knowledge-item",
+                knowledgeItemPath.path,
+                "--output",
+                llmOutputPath.path,
+                "--error-report",
+                llmErrorReportPath.path
+            ]
+        )
+
+        return try buildSkillFromLLMOutputFile(
+            knowledgeItemPath: knowledgeItemPath,
+            llmOutputPath: llmOutputPath
+        )
+    }
+
+    func buildSkillFromManualLLMOutput(
+        knowledgeItemPath: URL,
+        llmOutputText: String
+    ) throws -> TeachingSkillBuildResult {
+        _ = try loadKnowledgeItem(at: knowledgeItemPath)
+        let normalizedOutput = llmOutputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedOutput.isEmpty else {
+            throw IntegratedWorkflowError.manualLLMOutputEmpty
+        }
+
+        let dateKey = OpenStaffDateFormatter.dayString(from: Date())
+        let baseName = sanitizedOutputBaseName(for: knowledgeItemPath)
+        let manualOutputDirectory = OpenStaffWorkspacePaths.llmManualDirectory
+            .appendingPathComponent(dateKey, isDirectory: true)
+        try fileManager.createDirectory(at: manualOutputDirectory, withIntermediateDirectories: true)
+        let manualOutputPath = manualOutputDirectory.appendingPathComponent("\(baseName)-manual-llm-output.txt", isDirectory: false)
+        try normalizedOutput.write(to: manualOutputPath, atomically: true, encoding: .utf8)
+
+        return try buildSkillFromLLMOutputFile(
+            knowledgeItemPath: knowledgeItemPath,
+            llmOutputPath: manualOutputPath
         )
     }
 
@@ -265,6 +370,130 @@ final class IntegratedModeWorkflowRunner {
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter.string(from: Date())
     }
+
+    private func buildSkillFromLLMOutputFile(
+        knowledgeItemPath: URL,
+        llmOutputPath: URL
+    ) throws -> TeachingSkillBuildResult {
+        let dateKey = OpenStaffDateFormatter.dayString(from: Date())
+        let baseName = sanitizedOutputBaseName(for: knowledgeItemPath)
+        let reportDirectory = OpenStaffWorkspacePaths.llmReportDirectory
+            .appendingPathComponent(dateKey, isDirectory: true)
+        try fileManager.createDirectory(at: reportDirectory, withIntermediateDirectories: true)
+        let mapperReportPath = reportDirectory.appendingPathComponent("\(baseName)-skill-map-report.json", isDirectory: false)
+
+        _ = try runPythonScript(
+            relativeScriptPath: "scripts/skills/openclaw_skill_mapper.py",
+            arguments: [
+                "--knowledge-item",
+                knowledgeItemPath.path,
+                "--llm-output",
+                llmOutputPath.path,
+                "--skills-root",
+                OpenStaffWorkspacePaths.skillsPendingDirectory.path,
+                "--overwrite",
+                "--report",
+                mapperReportPath.path
+            ]
+        )
+
+        let reportData: Data
+        do {
+            reportData = try Data(contentsOf: mapperReportPath)
+        } catch {
+            throw IntegratedWorkflowError.skillMapperReportMissing(mapperReportPath.path)
+        }
+
+        let report: SkillMapperReport
+        do {
+            report = try JSONDecoder().decode(SkillMapperReport.self, from: reportData)
+        } catch {
+            throw IntegratedWorkflowError.skillMapperReportInvalid(mapperReportPath.path)
+        }
+
+        return TeachingSkillBuildResult(
+            skillDirectory: URL(fileURLWithPath: report.skillDir, isDirectory: true),
+            skillName: report.skillName,
+            llmOutputAccepted: report.llmOutputAccepted,
+            diagnostics: report.diagnostics,
+            llmOutputPath: llmOutputPath
+        )
+    }
+
+    private func runPythonScript(
+        relativeScriptPath: String,
+        arguments: [String]
+    ) throws -> PythonScriptExecutionResult {
+        let scriptURL = OpenStaffWorkspacePaths.repositoryRoot.appendingPathComponent(relativeScriptPath, isDirectory: false)
+        guard fileManager.fileExists(atPath: scriptURL.path) else {
+            throw IntegratedWorkflowError.scriptMissing(scriptURL.path)
+        }
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        process.arguments = ["python3", scriptURL.path] + arguments
+        process.currentDirectoryURL = OpenStaffWorkspacePaths.repositoryRoot
+
+        let stdoutPipe = Pipe()
+        let stderrPipe = Pipe()
+        process.standardOutput = stdoutPipe
+        process.standardError = stderrPipe
+
+        do {
+            try process.run()
+        } catch {
+            throw IntegratedWorkflowError.pythonRuntimeUnavailable
+        }
+
+        process.waitUntilExit()
+
+        let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+        let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+        let stdout = String(data: stdoutData, encoding: .utf8) ?? ""
+        let stderr = String(data: stderrData, encoding: .utf8) ?? ""
+        let status = process.terminationStatus
+        guard status == 0 else {
+            let failureMessage = [stderr.trimmingCharacters(in: .whitespacesAndNewlines), stdout.trimmingCharacters(in: .whitespacesAndNewlines)]
+                .filter { !$0.isEmpty }
+                .joined(separator: " | ")
+            throw IntegratedWorkflowError.scriptExecutionFailed(
+                script: relativeScriptPath,
+                exitCode: status,
+                stderr: failureMessage.isEmpty ? "未知错误" : failureMessage
+            )
+        }
+
+        return PythonScriptExecutionResult(
+            terminationStatus: status,
+            stdout: stdout,
+            stderr: stderr
+        )
+    }
+
+    private func loadKnowledgeItem(at path: URL) throws -> KnowledgeItem {
+        var isDirectory: ObjCBool = false
+        guard fileManager.fileExists(atPath: path.path, isDirectory: &isDirectory), !isDirectory.boolValue else {
+            throw IntegratedWorkflowError.knowledgeItemPathMissing(path.path)
+        }
+
+        do {
+            let data = try Data(contentsOf: path)
+            return try JSONDecoder().decode(KnowledgeItem.self, from: data)
+        } catch {
+            throw IntegratedWorkflowError.knowledgeItemReadFailed(path.path)
+        }
+    }
+
+    private func sanitizedOutputBaseName(for knowledgeItemPath: URL) -> String {
+        let rawName = knowledgeItemPath.deletingPathExtension().lastPathComponent
+        let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
+        let sanitized = rawName.unicodeScalars
+            .map { scalar -> String in
+                allowed.contains(scalar) ? String(scalar) : "-"
+            }
+            .joined()
+        return sanitized.isEmpty ? "openstaff-task" : sanitized
+    }
 }
 
 enum IntegratedWorkflowError: LocalizedError {
@@ -273,6 +502,14 @@ enum IntegratedWorkflowError: LocalizedError {
     case emptyCapturedEvents(sessionId: String, dateKey: String)
     case knowledgeDirectoryMissing(String)
     case knowledgeNotFound
+    case knowledgeItemPathMissing(String)
+    case knowledgeItemReadFailed(String)
+    case manualLLMOutputEmpty
+    case pythonRuntimeUnavailable
+    case scriptMissing(String)
+    case scriptExecutionFailed(script: String, exitCode: Int32, stderr: String)
+    case skillMapperReportMissing(String)
+    case skillMapperReportInvalid(String)
 
     var errorDescription: String? {
         switch self {
@@ -286,6 +523,36 @@ enum IntegratedWorkflowError: LocalizedError {
             return "知识目录不存在：\(path)"
         case .knowledgeNotFound:
             return "未找到可用于辅助/学生模式的知识条目。"
+        case .knowledgeItemPathMissing(let path):
+            return "知识条目文件不存在：\(path)"
+        case .knowledgeItemReadFailed(let path):
+            return "读取知识条目失败：\(path)"
+        case .manualLLMOutputEmpty:
+            return "手动粘贴的 LLM 结果为空，无法执行。"
+        case .pythonRuntimeUnavailable:
+            return "Python 运行时不可用（需可执行 python3）。"
+        case .scriptMissing(let path):
+            return "脚本不存在：\(path)"
+        case .scriptExecutionFailed(let script, let exitCode, let stderr):
+            return "脚本执行失败：\(script)（exit=\(exitCode)）\(stderr)"
+        case .skillMapperReportMissing(let path):
+            return "未找到 skill 映射报告：\(path)"
+        case .skillMapperReportInvalid(let path):
+            return "解析 skill 映射报告失败：\(path)"
         }
     }
+}
+
+private struct PythonScriptExecutionResult {
+    let terminationStatus: Int32
+    let stdout: String
+    let stderr: String
+}
+
+private struct SkillMapperReport: Decodable {
+    let status: String
+    let skillDir: String
+    let skillName: String
+    let llmOutputAccepted: Bool
+    let diagnostics: [String]
 }

@@ -571,6 +571,123 @@ struct OpenStaffDashboardView: View {
                 }
             }
 
+                GroupBox("教学后处理（LLM / Skill）") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Picker(
+                            "转换方式",
+                            selection: Binding(
+                                get: { viewModel.teachingSkillGenerationMethod },
+                                set: { viewModel.selectTeachingSkillGenerationMethod($0) }
+                            )
+                        ) {
+                            ForEach(TeachingSkillGenerationMethod.allCases, id: \.self) { method in
+                                Text(viewModel.teachingSkillGenerationMethodDisplayName(for: method)).tag(method)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .disabled(viewModel.teachingSkillProcessing)
+
+                        if let target = viewModel.latestTeachingKnowledgeTarget {
+                            Text("当前知识目标：\(target.knowledgeItemId) · \(target.taskId) · \(target.sessionId)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text("知识文件：\(target.knowledgeItemPath.path)")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .textSelection(.enabled)
+                        } else {
+                            Text("暂无可用知识目标。请先运行一次教学模式并停止。")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        switch viewModel.teachingSkillGenerationMethod {
+                        case .api:
+                            HStack(spacing: 8) {
+                                Button("执行自动 API 转换") {
+                                    viewModel.runTeachingSkillGenerationWithAPI()
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .disabled(viewModel.latestTeachingKnowledgeTarget == nil || viewModel.teachingSkillProcessing)
+
+                                Text("将调用 ChatGPT API 自动完成：解析知识 -> 生成 OpenClaw Skill。")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        case .manual:
+                            HStack(spacing: 8) {
+                                Button("生成提示词") {
+                                    viewModel.prepareManualPromptForLatestKnowledge()
+                                }
+                                .buttonStyle(.bordered)
+                                .disabled(viewModel.latestTeachingKnowledgeTarget == nil || viewModel.teachingSkillProcessing)
+
+                                Button("复制提示词与数据") {
+                                    viewModel.copyManualPromptPreviewToClipboard()
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .disabled(!viewModel.canCopyManualPromptPreview || viewModel.teachingSkillProcessing)
+                            }
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("提示词预览（复制后粘贴到 ChatGPT）")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                TextEditor(
+                                    text: Binding(
+                                        get: { viewModel.manualPromptPreviewText },
+                                        set: { _ in }
+                                    )
+                                )
+                                .font(.system(.caption, design: .monospaced))
+                                .frame(minHeight: 190)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                                )
+                            }
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("LLM 结果输入（粘贴 ChatGPT 返回内容）")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                TextEditor(text: $viewModel.manualLLMResultInput)
+                                    .font(.system(.caption, design: .monospaced))
+                                    .frame(minHeight: 130)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                                    )
+                                Button("执行手动结果") {
+                                    viewModel.executeManualTeachingResult()
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .disabled(!viewModel.canExecuteManualLLMResult || viewModel.teachingSkillProcessing)
+                            }
+                        }
+
+                        if let skillPath = viewModel.latestGeneratedSkillDirectoryPath,
+                           let skillName = viewModel.latestGeneratedSkillName {
+                            Text("最近生成 Skill：\(skillName) @ \(skillPath)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .textSelection(.enabled)
+                        }
+                        if let llmOutputPath = viewModel.latestLLMOutputPath {
+                            Text("最近 LLM 输出文件：\(llmOutputPath)")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .textSelection(.enabled)
+                        }
+                        if let teachingSkillStatusMessage = viewModel.teachingSkillStatusMessage {
+                            Text(teachingSkillStatusMessage)
+                                .font(.caption)
+                                .foregroundStyle(viewModel.teachingSkillStatusSucceeded ? .green : .red)
+                        }
+                    }
+                    .padding(.top, 4)
+                }
+
                 GroupBox("审阅与反馈") {
                 if viewModel.executionLogs.isEmpty {
                     Text("暂无执行日志。可先运行 assist/student 流程后刷新。")
@@ -751,6 +868,18 @@ enum EmergencyStopSource {
     }
 }
 
+enum TeachingSkillGenerationMethod: String, CaseIterable {
+    case api
+    case manual
+}
+
+struct TeachingKnowledgeTarget {
+    let sessionId: String
+    let taskId: String
+    let knowledgeItemId: String
+    let knowledgeItemPath: URL
+}
+
 final class EmergencyStopHotkeyMonitor {
     private let handler: () -> Void
     private var globalMonitorToken: Any?
@@ -838,6 +967,16 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     @Published private(set) var lastRefreshedAt: Date?
     @Published private(set) var activeObservationSessionId: String?
     @Published private(set) var capturedEventCount = 0
+    @Published var teachingSkillGenerationMethod: TeachingSkillGenerationMethod = .manual
+    @Published private(set) var latestTeachingKnowledgeTarget: TeachingKnowledgeTarget?
+    @Published private(set) var manualPromptPreviewText = ""
+    @Published var manualLLMResultInput = ""
+    @Published private(set) var teachingSkillStatusMessage: String?
+    @Published private(set) var teachingSkillStatusSucceeded = true
+    @Published private(set) var teachingSkillProcessing = false
+    @Published private(set) var latestGeneratedSkillDirectoryPath: String?
+    @Published private(set) var latestGeneratedSkillName: String?
+    @Published private(set) var latestLLMOutputPath: String?
 
     private let logger = InMemoryOrchestratorStateLogger()
     private let stateMachine: ModeStateMachine
@@ -958,6 +1097,26 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         return "紧急停止：已激活（\(sourceText) @ \(activatedAt)）"
     }
 
+    var canCopyManualPromptPreview: Bool {
+        !manualPromptPreviewText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var canExecuteManualLLMResult: Bool {
+        guard latestTeachingKnowledgeTarget != nil else {
+            return false
+        }
+        return !manualLLMResultInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    func teachingSkillGenerationMethodDisplayName(for method: TeachingSkillGenerationMethod) -> String {
+        switch method {
+        case .api:
+            return "自动 API"
+        case .manual:
+            return "手动粘贴"
+        }
+    }
+
     func modeDisplayName(for mode: OpenStaffMode) -> String {
         switch mode {
         case .teaching:
@@ -997,6 +1156,66 @@ final class OpenStaffDashboardViewModel: ObservableObject {
 
     func selectMode(_ mode: OpenStaffMode) {
         selectedMode = mode
+    }
+
+    func selectTeachingSkillGenerationMethod(_ method: TeachingSkillGenerationMethod) {
+        teachingSkillGenerationMethod = method
+        if method == .manual,
+           let target = latestTeachingKnowledgeTarget,
+           manualPromptPreviewText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+           !teachingSkillProcessing {
+            runManualPromptRender(for: target)
+        }
+    }
+
+    func prepareManualPromptForLatestKnowledge() {
+        guard let target = latestTeachingKnowledgeTarget else {
+            teachingSkillStatusSucceeded = false
+            teachingSkillStatusMessage = "暂无可用知识条目，请先完成一次教学模式并停止。"
+            return
+        }
+        runManualPromptRender(for: target)
+    }
+
+    func runTeachingSkillGenerationWithAPI() {
+        guard let target = latestTeachingKnowledgeTarget else {
+            teachingSkillStatusSucceeded = false
+            teachingSkillStatusMessage = "暂无可用知识条目，请先完成一次教学模式并停止。"
+            return
+        }
+        runOpenAIAdapterSkillGeneration(for: target)
+    }
+
+    func executeManualTeachingResult() {
+        guard let target = latestTeachingKnowledgeTarget else {
+            teachingSkillStatusSucceeded = false
+            teachingSkillStatusMessage = "暂无可执行的知识条目。"
+            return
+        }
+
+        let normalized = manualLLMResultInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else {
+            teachingSkillStatusSucceeded = false
+            teachingSkillStatusMessage = "请先粘贴 ChatGPT 返回的 JSON 结果。"
+            return
+        }
+
+        runManualSkillGeneration(for: target, manualOutputText: normalized)
+    }
+
+    func copyManualPromptPreviewToClipboard() {
+        let normalized = manualPromptPreviewText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else {
+            teachingSkillStatusSucceeded = false
+            teachingSkillStatusMessage = "提示词预览为空，无法复制。"
+            return
+        }
+
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(normalized, forType: .string)
+        teachingSkillStatusSucceeded = true
+        teachingSkillStatusMessage = "提示词与必要数据已复制，可粘贴到 ChatGPT。"
     }
 
     func isModeRunning(_ mode: OpenStaffMode) -> Bool {
@@ -1208,6 +1427,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         }
         cancelIntegratedWorkflowTask()
         stopObservationCapture()
+        teachingSkillProcessing = false
         emergencyStopActive = true
         emergencyStopActivatedAt = Date()
         emergencyStopSource = source
@@ -1256,7 +1476,13 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             transitionMessage = "\(modeDisplayName(for: mode))已开始运行，正在记录点击事件（sessionId=\(captureSessionId)）。"
         } else {
             let executablePath = ProcessInfo.processInfo.arguments.first ?? "unknown"
-            transitionMessage = "\(modeDisplayName(for: mode))已开始运行（降级采集）。当前未授予辅助功能权限，窗口标题/窗口 ID 不会记录。可在系统设置授权后点击“刷新任务与权限”。授权目标：\(executablePath)"
+            let debugHint: String
+            if executablePath.contains("/DerivedData/") {
+                debugHint = "（检测到 Xcode 调试路径：请在系统设置中同时勾选 Xcode 与 OpenStaffApp，授权后重启 App 再刷新。）"
+            } else {
+                debugHint = ""
+            }
+            transitionMessage = "\(modeDisplayName(for: mode))已开始运行（降级采集）。当前未授予辅助功能权限，窗口标题/窗口 ID 不会记录。可在系统设置授权后点击“刷新任务与权限”。授权目标：\(executablePath)\(debugHint)"
         }
     }
 
@@ -1321,13 +1547,199 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                     }
                     self.transitionMessage = "教学模式整理完成：session=\(result.sessionId)，事件 \(result.rawEventCount) 条，任务切片 \(result.taskChunkCount) 条，知识条目 \(result.knowledgeItemCount) 条。"
                     self.refreshDashboard(promptAccessibilityPermission: false)
+                    self.handleTeachingPostProcessingResult(result)
                 }
             } catch {
                 await MainActor.run { [weak self] in
                     self?.transitionMessage = "教学模式整理失败：\(error.localizedDescription)"
+                    self?.teachingSkillProcessing = false
+                    self?.teachingSkillStatusSucceeded = false
+                    self?.teachingSkillStatusMessage = "教学模式整理失败：\(error.localizedDescription)"
                 }
             }
         }
+    }
+
+    private func handleTeachingPostProcessingResult(_ result: IntegratedTeachingWorkflowResult) {
+        guard let target = resolveTeachingKnowledgeTarget(from: result.knowledgeItemFilePaths) else {
+            teachingSkillProcessing = false
+            teachingSkillStatusSucceeded = false
+            teachingSkillStatusMessage = "教学模式已完成知识整理，但未找到可用于 LLM 转换的知识条目文件。"
+            return
+        }
+
+        latestTeachingKnowledgeTarget = target
+        manualPromptPreviewText = ""
+        manualLLMResultInput = ""
+        latestGeneratedSkillDirectoryPath = nil
+        latestGeneratedSkillName = nil
+        latestLLMOutputPath = nil
+        teachingSkillStatusMessage = nil
+        teachingSkillStatusSucceeded = true
+
+        switch teachingSkillGenerationMethod {
+        case .api:
+            runOpenAIAdapterSkillGeneration(for: target)
+        case .manual:
+            runManualPromptRender(for: target)
+        }
+    }
+
+    private func resolveTeachingKnowledgeTarget(from knowledgeItemFilePaths: [URL]) -> TeachingKnowledgeTarget? {
+        let sortedPaths = knowledgeItemFilePaths.sorted { lhs, rhs in
+            lhs.lastPathComponent < rhs.lastPathComponent
+        }
+
+        let decoder = JSONDecoder()
+        for path in sortedPaths.reversed() {
+            guard let data = try? Data(contentsOf: path),
+                  let item = try? decoder.decode(KnowledgeItem.self, from: data) else {
+                continue
+            }
+            return TeachingKnowledgeTarget(
+                sessionId: item.sessionId,
+                taskId: item.taskId,
+                knowledgeItemId: item.knowledgeItemId,
+                knowledgeItemPath: path
+            )
+        }
+        return nil
+    }
+
+    private func runManualPromptRender(for target: TeachingKnowledgeTarget) {
+        cancelIntegratedWorkflowTask()
+        teachingSkillProcessing = true
+        teachingSkillStatusSucceeded = true
+        teachingSkillStatusMessage = "正在生成手动提示词..."
+        transitionMessage = "教学后处理：正在渲染手动提示词。"
+
+        integratedWorkflowTask = Task.detached(priority: .userInitiated) {
+            let runner = IntegratedModeWorkflowRunner()
+            do {
+                let preview = try runner.renderManualPromptPreview(knowledgeItemPath: target.knowledgeItemPath)
+                await MainActor.run { [weak self] in
+                    guard let self else {
+                        return
+                    }
+                    self.manualPromptPreviewText = preview
+                    self.teachingSkillProcessing = false
+                    self.teachingSkillStatusSucceeded = true
+                    self.teachingSkillStatusMessage = "手动提示词已生成，可复制到 ChatGPT。"
+                    self.transitionMessage = "教学后处理已就绪：请复制提示词并粘贴 ChatGPT，收到结果后回填执行。"
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.teachingSkillProcessing = false
+                    self?.teachingSkillStatusSucceeded = false
+                    self?.teachingSkillStatusMessage = "生成手动提示词失败：\(error.localizedDescription)"
+                    self?.transitionMessage = "教学后处理失败：\(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func runOpenAIAdapterSkillGeneration(for target: TeachingKnowledgeTarget) {
+        cancelIntegratedWorkflowTask()
+        teachingSkillProcessing = true
+        teachingSkillStatusSucceeded = true
+        teachingSkillStatusMessage = "正在调用 ChatGPT API 并生成 OpenClaw Skill..."
+        transitionMessage = "教学后处理：自动 API 转换进行中..."
+
+        let model = resolvedOpenAIModelName()
+        integratedWorkflowTask = Task.detached(priority: .userInitiated) {
+            let runner = IntegratedModeWorkflowRunner()
+            do {
+                let result = try runner.buildSkillUsingOpenAIAdapter(
+                    knowledgeItemPath: target.knowledgeItemPath,
+                    model: model
+                )
+                await MainActor.run { [weak self] in
+                    guard let self else {
+                        return
+                    }
+                    self.latestGeneratedSkillDirectoryPath = result.skillDirectory.path
+                    self.latestGeneratedSkillName = result.skillName
+                    self.latestLLMOutputPath = result.llmOutputPath.path
+                    self.teachingSkillProcessing = false
+                    self.teachingSkillStatusSucceeded = true
+
+                    let acceptedDescription = result.llmOutputAccepted
+                        ? "LLM 输出已通过校验"
+                        : "LLM 输出未完全通过校验，已按 fallback 生成"
+                    let diagnosticDescription = result.diagnostics.isEmpty
+                        ? ""
+                        : "（诊断 \(result.diagnostics.count) 条）"
+                    self.teachingSkillStatusMessage = "自动 API 转换完成：skill=\(result.skillName)，目录=\(result.skillDirectory.path)。\(acceptedDescription)\(diagnosticDescription)"
+                    self.transitionMessage = "教学后处理完成：已生成 OpenClaw Skill（\(result.skillName)）。"
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.teachingSkillProcessing = false
+                    self?.teachingSkillStatusSucceeded = false
+                    self?.teachingSkillStatusMessage = "自动 API 转换失败：\(error.localizedDescription)"
+                    self?.transitionMessage = "教学后处理失败：\(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func runManualSkillGeneration(
+        for target: TeachingKnowledgeTarget,
+        manualOutputText: String
+    ) {
+        cancelIntegratedWorkflowTask()
+        teachingSkillProcessing = true
+        teachingSkillStatusSucceeded = true
+        teachingSkillStatusMessage = "正在执行手动结果并生成 OpenClaw Skill..."
+        transitionMessage = "教学后处理：正在执行手动粘贴结果..."
+
+        integratedWorkflowTask = Task.detached(priority: .userInitiated) {
+            let runner = IntegratedModeWorkflowRunner()
+            do {
+                let result = try runner.buildSkillFromManualLLMOutput(
+                    knowledgeItemPath: target.knowledgeItemPath,
+                    llmOutputText: manualOutputText
+                )
+                await MainActor.run { [weak self] in
+                    guard let self else {
+                        return
+                    }
+                    self.latestGeneratedSkillDirectoryPath = result.skillDirectory.path
+                    self.latestGeneratedSkillName = result.skillName
+                    self.latestLLMOutputPath = result.llmOutputPath.path
+                    self.manualLLMResultInput = ""
+                    self.teachingSkillProcessing = false
+                    self.teachingSkillStatusSucceeded = true
+
+                    let acceptedDescription = result.llmOutputAccepted
+                        ? "LLM 输出已通过校验"
+                        : "LLM 输出未完全通过校验，已按 fallback 生成"
+                    let diagnosticDescription = result.diagnostics.isEmpty
+                        ? ""
+                        : "（诊断 \(result.diagnostics.count) 条）"
+                    self.teachingSkillStatusMessage = "手动结果执行完成：skill=\(result.skillName)，目录=\(result.skillDirectory.path)。\(acceptedDescription)\(diagnosticDescription)"
+                    self.transitionMessage = "教学后处理完成：手动粘贴结果已转换为 OpenClaw Skill。"
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.teachingSkillProcessing = false
+                    self?.teachingSkillStatusSucceeded = false
+                    self?.teachingSkillStatusMessage = "执行手动结果失败：\(error.localizedDescription)"
+                    self?.transitionMessage = "教学后处理失败：\(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func resolvedOpenAIModelName() -> String {
+        let environment = ProcessInfo.processInfo.environment
+        if let override = environment["OPENSTAFF_OPENAI_MODEL"] {
+            let normalized = override.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !normalized.isEmpty {
+                return normalized
+            }
+        }
+        return "gpt-4.1-mini"
     }
 
     private func runAssistPostStartWorkflow() {
@@ -1484,8 +1896,16 @@ struct PermissionSnapshot {
 
 struct AccessibilityPermissionChecker {
     func isTrusted(prompt: Bool) -> Bool {
+        if AXIsProcessTrusted() {
+            return true
+        }
+
+        guard prompt else {
+            return false
+        }
+
         let promptKey = "AXTrustedCheckOptionPrompt"
-        let options = [promptKey: prompt] as CFDictionary
+        let options = [promptKey: true] as CFDictionary
         return AXIsProcessTrustedWithOptions(options)
     }
 }
@@ -2289,23 +2709,100 @@ enum OpenStaffWorkspacePaths {
         let environment = ProcessInfo.processInfo.environment
         if let override = environment["OPENSTAFF_WORKSPACE_ROOT"],
            !override.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return URL(fileURLWithPath: override, isDirectory: true)
+            let overrideRoot = URL(fileURLWithPath: override, isDirectory: true)
+            if isWorkspaceRootCandidate(overrideRoot) {
+                return overrideRoot
+            }
         }
 
         let fileManager = FileManager.default
-        var candidate = URL(fileURLWithPath: fileManager.currentDirectoryPath, isDirectory: true)
-
-        for _ in 0..<8 {
-            let dataPath = candidate.appendingPathComponent("data", isDirectory: true).path
-            let docsPath = candidate.appendingPathComponent("docs", isDirectory: true).path
-            if fileManager.fileExists(atPath: dataPath),
-               fileManager.fileExists(atPath: docsPath) {
-                return candidate
+        let seeds = workspaceRootSearchSeeds(fileManager: fileManager)
+        for seed in seeds {
+            if let matched = findWorkspaceRoot(startingAt: seed, maxDepth: 16, fileManager: fileManager) {
+                return matched
             }
-            candidate.deleteLastPathComponent()
         }
 
         return URL(fileURLWithPath: fileManager.currentDirectoryPath, isDirectory: true)
+    }
+
+    private static func workspaceRootSearchSeeds(fileManager: FileManager) -> [URL] {
+        let environment = ProcessInfo.processInfo.environment
+        var seeds: [URL] = [
+            URL(fileURLWithPath: fileManager.currentDirectoryPath, isDirectory: true)
+        ]
+
+        if let srcRoot = environment["SRCROOT"],
+           !srcRoot.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            seeds.append(URL(fileURLWithPath: srcRoot, isDirectory: true))
+        }
+
+        if let projectDir = environment["PROJECT_DIR"],
+           !projectDir.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            seeds.append(URL(fileURLWithPath: projectDir, isDirectory: true))
+        }
+
+        // Compile-time source path is reliable when app runs from DerivedData.
+        let sourceDirectory = URL(fileURLWithPath: #filePath, isDirectory: false)
+            .deletingLastPathComponent()
+        seeds.append(sourceDirectory)
+
+        if let executablePath = ProcessInfo.processInfo.arguments.first,
+           !executablePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let executableDirectory = URL(fileURLWithPath: executablePath, isDirectory: false)
+                .deletingLastPathComponent()
+            seeds.append(executableDirectory)
+        }
+
+        if let bundleExecutableDirectory = Bundle.main.executableURL?.deletingLastPathComponent() {
+            seeds.append(bundleExecutableDirectory)
+        }
+
+        var unique: [URL] = []
+        var seen: Set<String> = []
+        for seed in seeds {
+            let key = seed.standardizedFileURL.path
+            if seen.insert(key).inserted {
+                unique.append(seed)
+            }
+        }
+        return unique
+    }
+
+    private static func findWorkspaceRoot(
+        startingAt start: URL,
+        maxDepth: Int,
+        fileManager: FileManager
+    ) -> URL? {
+        var candidate = start
+
+        for _ in 0...maxDepth {
+            if isWorkspaceRootCandidate(candidate, fileManager: fileManager) {
+                return candidate
+            }
+            let parent = candidate.deletingLastPathComponent()
+            if parent.path == candidate.path {
+                break
+            }
+            candidate = parent
+        }
+
+        return nil
+    }
+
+    private static func isWorkspaceRootCandidate(
+        _ candidate: URL,
+        fileManager: FileManager = .default
+    ) -> Bool {
+        let dataPath = candidate.appendingPathComponent("data", isDirectory: true).path
+        let docsPath = candidate.appendingPathComponent("docs", isDirectory: true).path
+        let promptScriptPath = candidate
+            .appendingPathComponent("scripts/llm/render_knowledge_prompts.py", isDirectory: false)
+            .path
+
+        return fileManager.fileExists(atPath: dataPath)
+            && fileManager.fileExists(atPath: docsPath)
+            && fileManager.fileExists(atPath: promptScriptPath)
     }
 
     static var dataDirectory: URL {
@@ -2334,6 +2831,34 @@ enum OpenStaffWorkspacePaths {
 
     static var reportsDirectory: URL {
         dataDirectory.appendingPathComponent("reports", isDirectory: true)
+    }
+
+    static var llmDirectory: URL {
+        dataDirectory.appendingPathComponent("llm", isDirectory: true)
+    }
+
+    static var llmOutputDirectory: URL {
+        llmDirectory.appendingPathComponent("outputs", isDirectory: true)
+    }
+
+    static var llmManualDirectory: URL {
+        llmDirectory.appendingPathComponent("manual", isDirectory: true)
+    }
+
+    static var llmReportDirectory: URL {
+        llmDirectory.appendingPathComponent("reports", isDirectory: true)
+    }
+
+    static var skillsPendingDirectory: URL {
+        dataDirectory
+            .appendingPathComponent("skills", isDirectory: true)
+            .appendingPathComponent("pending", isDirectory: true)
+    }
+
+    static var skillsDoneDirectory: URL {
+        dataDirectory
+            .appendingPathComponent("skills", isDirectory: true)
+            .appendingPathComponent("done", isDirectory: true)
     }
 
     static func ensureDataDirectoryWritable() -> Bool {
