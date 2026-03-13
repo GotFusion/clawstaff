@@ -18,17 +18,26 @@
 
 ### 1) 引入 `SemanticTarget`
 
-定义独立共享契约 `SemanticTarget`，字段固定为：
+定义独立共享契约 `SemanticTarget`，核心字段为：
 
 - `locatorType`
 - `appBundleId`
 - `windowTitlePattern`
+- `windowSignature`
 - `elementRole`
 - `elementTitle`
 - `elementIdentifier`
+- `axPath`
+- `textAnchor`
+- `imageAnchor`
 - `boundingRect`
 - `confidence`
 - `source`
+
+说明：
+
+- `windowSignature / axPath / textAnchor / imageAnchor` 均为可选字段，用于承载不同 locator 的专属 payload。
+- 旧数据缺省这些字段时，仍按同一 `schemaVersion` 兼容读取。
 
 其中 `locatorType` 的优先级约定为：
 
@@ -55,7 +64,13 @@
 - `source = capture`
 - `confidence = 0.24`
 
-这满足了“任意点击事件同时保留坐标与至少一个语义候选”的最低要求。
+阶段 7.3 起，知识构建链路可以在已有数组上继续追加：
+
+- `textAnchor`
+- `imageAnchor`
+- 后续补齐采集链路后的 `axPath`
+
+这满足了“任意点击事件同时保留坐标与至少一个语义候选”的最低要求，并允许解析器按优先级递进尝试。
 
 ### 4) 兼容策略
 

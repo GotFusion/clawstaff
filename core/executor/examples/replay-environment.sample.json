@@ -1,0 +1,67 @@
+{
+  "capturedAt": "2026-03-13T20:00:00+08:00",
+  "appName": "Safari",
+  "appBundleId": "com.apple.Safari",
+  "windowTitle": "OpenStaff - GitHub",
+  "windowId": "1452",
+  "windowSignature": {
+    "signature": "85f12b0ea9d0487157f73dcb",
+    "signatureVersion": "window-v1",
+    "normalizedTitle": "openstaff - github",
+    "role": "AXWindow",
+    "subrole": "AXStandardWindow",
+    "sizeBucket": "14x9"
+  },
+  "focusedElement": {
+    "axPath": "AXWindow/AXGroup[0]/AXButton[0]",
+    "role": "AXButton",
+    "subrole": null,
+    "title": "Pull requests",
+    "identifier": "unified-tab-bar.pull-requests",
+    "descriptionText": "打开 Pull requests 标签页",
+    "helpText": "在当前仓库中查看 Pull requests",
+    "boundingRect": {
+      "x": 820,
+      "y": 498,
+      "width": 110,
+      "height": 36,
+      "coordinateSpace": "screen"
+    }
+  },
+  "visibleElements": [
+    {
+      "axPath": "AXWindow/AXGroup[0]/AXButton[0]",
+      "role": "AXButton",
+      "subrole": null,
+      "title": "Pull requests",
+      "identifier": "unified-tab-bar.pull-requests",
+      "descriptionText": "打开 Pull requests 标签页",
+      "helpText": "在当前仓库中查看 Pull requests",
+      "boundingRect": {
+        "x": 820,
+        "y": 498,
+        "width": 110,
+        "height": 36,
+        "coordinateSpace": "screen"
+      }
+    },
+    {
+      "axPath": "AXWindow/AXGroup[0]/AXLink[1]",
+      "role": "AXLink",
+      "subrole": null,
+      "title": "Issues",
+      "identifier": "repo-nav.issues",
+      "descriptionText": "打开仓库 Issues 列表",
+      "helpText": "查看当前仓库的 Issues",
+      "boundingRect": {
+        "x": 888,
+        "y": 582,
+        "width": 74,
+        "height": 30,
+        "coordinateSpace": "screen"
+      }
+    }
+  ],
+  "screenshotAnchors": [],
+  "captureDiagnostics": []
+}

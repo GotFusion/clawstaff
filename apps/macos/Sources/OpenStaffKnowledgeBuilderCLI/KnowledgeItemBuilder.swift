@@ -235,6 +235,7 @@ struct KnowledgeItemBuilder {
 
     private func semanticTargets(for event: RawEvent) -> [SemanticTarget] {
         var targets: [SemanticTarget] = []
+        let windowSignature = event.contextSnapshot.windowSignature?.signature
 
         if let focusedElement = event.contextSnapshot.focusedElement,
            focusedElement.role != nil
@@ -251,11 +252,51 @@ struct KnowledgeItemBuilder {
                     locatorType: .roleAndTitle,
                     appBundleId: event.contextSnapshot.appBundleId,
                     windowTitlePattern: SemanticTarget.exactWindowTitlePattern(for: event.contextSnapshot.windowTitle),
+                    windowSignature: windowSignature,
                     elementRole: focusedElement.role ?? focusedElement.subrole,
                     elementTitle: elementTitle,
                     elementIdentifier: focusedElement.identifier,
                     boundingRect: focusedElement.boundingRect,
                     confidence: 0.68,
+                    source: .capture
+                )
+            )
+
+            if let textAnchor = elementTitle?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !textAnchor.isEmpty {
+                targets.append(
+                    SemanticTarget(
+                        locatorType: .textAnchor,
+                        appBundleId: event.contextSnapshot.appBundleId,
+                        windowTitlePattern: SemanticTarget.exactWindowTitlePattern(for: event.contextSnapshot.windowTitle),
+                        windowSignature: windowSignature,
+                        elementRole: focusedElement.role ?? focusedElement.subrole,
+                        elementTitle: elementTitle,
+                        elementIdentifier: focusedElement.identifier,
+                        textAnchor: textAnchor,
+                        boundingRect: focusedElement.boundingRect,
+                        confidence: 0.56,
+                        source: .capture
+                    )
+                )
+            }
+        }
+
+        if let screenshotAnchor = event.contextSnapshot.screenshotAnchors.first(where: { $0.phase == .before }) {
+            targets.append(
+                SemanticTarget(
+                    locatorType: .imageAnchor,
+                    appBundleId: event.contextSnapshot.appBundleId,
+                    windowTitlePattern: SemanticTarget.exactWindowTitlePattern(for: event.contextSnapshot.windowTitle),
+                    windowSignature: windowSignature,
+                    imageAnchor: SemanticImageAnchor(
+                        pixelHash: screenshotAnchor.pixelHash,
+                        averageLuma: screenshotAnchor.averageLuma,
+                        sampleWidth: screenshotAnchor.sampleSize.width,
+                        sampleHeight: screenshotAnchor.sampleSize.height
+                    ),
+                    boundingRect: screenshotAnchor.boundingRect,
+                    confidence: 0.44,
                     source: .capture
                 )
             )
@@ -265,6 +306,7 @@ struct KnowledgeItemBuilder {
             SemanticTarget.coordinateFallback(
                 appBundleId: event.contextSnapshot.appBundleId,
                 windowTitle: event.contextSnapshot.windowTitle,
+                windowSignature: windowSignature,
                 coordinate: event.pointer
             )
         )

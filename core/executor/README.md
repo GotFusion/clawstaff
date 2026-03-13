@@ -13,6 +13,12 @@
   - 高风险关键词 + 正则规则拦截。
   - 紧急停止状态拦截（`emergencyStopActive`）。
   - 指定步骤失败模拟（用于闭环验证）。
+- `SemanticTargetResolver.swift`：阶段 7.3 语义定位解析器，支持
+  `axPath -> roleAndTitle -> textAnchor -> imageAnchor -> coordinateFallback`
+  的优先级解析与结构化失败原因。
+- `ReplayVerifier.swift`：阶段 7.3 dry-run 回放验证器，对 `KnowledgeItem`
+  做“不执行危险动作、只验证能否找到目标”的离线/实时校验。
+- `replay-verifier-v0.md`：回放验证模型、状态码与 CLI 约定。
 
 ## 后续实现
 - 执行回滚与中断机制。

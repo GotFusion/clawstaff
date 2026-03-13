@@ -32,6 +32,13 @@
       ],
       "minLength": 1
     },
+    "windowSignature": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 8
+    },
     "elementRole": {
       "type": [
         "string",
@@ -52,6 +59,30 @@
         "null"
       ],
       "minLength": 1
+    },
+    "axPath": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "textAnchor": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "imageAnchor": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/imageAnchor"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "boundingRect": {
       "oneOf": [
@@ -108,6 +139,39 @@
           "enum": [
             "screen"
           ]
+        }
+      }
+    },
+    "imageAnchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pixelHash",
+        "averageLuma"
+      ],
+      "properties": {
+        "pixelHash": {
+          "type": "string",
+          "minLength": 8
+        },
+        "averageLuma": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sampleWidth": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "sampleHeight": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
         }
       }
     }

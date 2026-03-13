@@ -11,6 +11,7 @@ make dev
 make capture
 make slice
 make knowledge
+make replay-verify
 ```
 
 ## Build
@@ -27,6 +28,7 @@ make build
 - `Sources/OpenStaffCaptureCLI/`: Phase 1.3 capture CLI (permission check, click capture, context snapshot, JSONL persistence + rotation).
 - `Sources/OpenStaffTaskSlicerCLI/`: Phase 2.1 task slicer CLI (session events -> TaskChunk files).
 - `Sources/OpenStaffKnowledgeBuilderCLI/`: Phase 2.2 knowledge builder CLI (TaskChunk -> KnowledgeItem).
+- `Sources/OpenStaffReplayVerifyCLI/`: Phase 7.3 replay verify CLI (KnowledgeItem -> dry-run semantic resolution report).
 
 ## Capture CLI
 
@@ -73,6 +75,18 @@ make knowledge ARGS="--session-id session-20260307-a1 --json"
 
 Knowledge items are written to:
 - `data/knowledge/{yyyy-mm-dd}/{taskId}.json`
+
+## Replay Verify CLI
+
+```bash
+# Verify sample knowledge against an offline snapshot
+make replay-verify ARGS="--knowledge core/knowledge/examples/knowledge-item.sample.json --snapshot core/executor/examples/replay-environment.sample.json --json"
+
+# Verify a real knowledge file against the current frontmost app/window
+make replay-verify ARGS="--knowledge data/knowledge/2026-03-13/task-session-20260313-a1-001.json"
+```
+
+Exit code `2` means at least one step degraded to coordinate fallback or failed semantic resolution.
 
 ## GUI Status (Phase 6.1)
 

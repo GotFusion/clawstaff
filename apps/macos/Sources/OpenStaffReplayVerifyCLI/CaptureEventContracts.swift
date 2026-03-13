@@ -1,0 +1,1 @@
+../../../../core/contracts/CaptureEventContracts.swift

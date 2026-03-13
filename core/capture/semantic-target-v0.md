@@ -15,7 +15,11 @@
 - `locatorType`：`axPath` / `roleAndTitle` / `textAnchor` / `imageAnchor` / `coordinateFallback`
 - `appBundleId`：目标所在应用
 - `windowTitlePattern`：窗口标题匹配模式，便于回放时先筛窗口
+- `windowSignature`：可选窗口稳定签名，用于避免同名窗口误命中
 - `elementRole` / `elementTitle` / `elementIdentifier`：元素级语义属性
+- `axPath`：可选 AX 树路径，供 `axPath` locator 使用
+- `textAnchor`：可选文本锚点，供 `textAnchor` locator 使用
+- `imageAnchor`：可选轻量截图指纹（hash / averageLuma），供 `imageAnchor` locator 使用
 - `boundingRect`：候选目标在屏幕坐标系下的矩形范围
 - `confidence`：0~1 置信度
 - `source`：`capture` / `inferred` / `repaired`
@@ -34,16 +38,20 @@
 
 ## 4. v0 产出规则
 
-阶段 7.2 接入焦点元素上下文后，v0 的新增约定为：
+阶段 7.2 ~ 7.3 接入焦点元素与截图上下文后，v0 的新增约定为：
 
 - 若能从 `contextSnapshot.focusedElement` 读取到 `role/title/identifier`，优先生成一个 `roleAndTitle` 候选。
+- 若能读取到元素可读文本（`title / description / help`），追加一个 `textAnchor` 候选。
+- 若能读取到操作前 `screenshotAnchors.before`，追加一个 `imageAnchor` 候选。
+- `axPath` 由解析器和回放验证器支持；当采集链路后续补齐 AX 路径时，可直接写入同一模型。
 - 若采集不到焦点元素，继续仅落 `coordinateFallback`。
 
-当前阶段尚未补齐 AX path 与文本锚点，因此基础保证仍为：
+当前阶段的基础保证仍为：
 
 - 每个点击步骤都生成一个 `coordinateFallback` 候选。
 - `appBundleId` 直接来自采集上下文。
 - `windowTitlePattern` 使用窗口标题的精确正则转义形式。
+- `windowSignature` 若可用则一并落盘，供回放阶段先校验窗口。
 - `boundingRect` 使用点击点扩展出的 `1x1` 屏幕矩形。
 - `source=capture`
 - `confidence=0.24`

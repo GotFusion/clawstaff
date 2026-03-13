@@ -106,13 +106,53 @@ final class KeyboardKnowledgeBuilderTests: XCTestCase {
         let target = try XCTUnwrap(item.steps.first?.target)
 
         XCTAssertEqual(target.preferredLocatorType, .roleAndTitle)
-        XCTAssertEqual(target.semanticTargets.count, 2)
+        XCTAssertEqual(target.semanticTargets.count, 3)
         XCTAssertEqual(target.semanticTargets[0].locatorType, .roleAndTitle)
         XCTAssertEqual(target.semanticTargets[0].elementRole, "AXButton")
         XCTAssertEqual(target.semanticTargets[0].elementTitle, "Open")
         XCTAssertEqual(target.semanticTargets[0].elementIdentifier, "finder.open-button")
         XCTAssertEqual(target.semanticTargets[0].confidence, 0.68, accuracy: 0.001)
-        XCTAssertEqual(target.semanticTargets[1].locatorType, .coordinateFallback)
+        XCTAssertEqual(target.semanticTargets[1].locatorType, .textAnchor)
+        XCTAssertEqual(target.semanticTargets[1].textAnchor, "Open")
+        XCTAssertEqual(target.semanticTargets[2].locatorType, .coordinateFallback)
+    }
+
+    func testBuildPointerStepAddsImageAnchorWhenScreenshotAnchorExists() throws {
+        let screenshotAnchor = ScreenshotAnchor(
+            phase: .before,
+            boundingRect: SemanticBoundingRect(
+                x: 296,
+                y: 216,
+                width: 48,
+                height: 48,
+                coordinateSpace: .screen
+            ),
+            sampleSize: ScreenshotAnchorSampleSize(width: 96, height: 96),
+            pixelHash: "abc123def456",
+            averageLuma: 0.642
+        )
+        let chunk = makeChunk(eventIds: ["m1"], eventCount: 1)
+        let rawEventIndex: [String: RawEvent] = [
+            "m1": makeMouseClickEvent(
+                eventId: "m1",
+                x: 320,
+                y: 240,
+                screenshotAnchors: [screenshotAnchor]
+            )
+        ]
+
+        let builder = KnowledgeItemBuilder()
+        let item = builder.build(from: chunk, rawEventIndex: rawEventIndex)
+        let target = try XCTUnwrap(item.steps.first?.target)
+        let imageAnchorTarget = try XCTUnwrap(target.semanticTargets.first(where: { $0.locatorType == .imageAnchor }))
+        let imageAnchor = try XCTUnwrap(imageAnchorTarget.imageAnchor)
+
+        XCTAssertEqual(imageAnchor.pixelHash, "abc123def456")
+        XCTAssertEqual(imageAnchor.averageLuma, 0.642, accuracy: 0.001)
+        XCTAssertEqual(imageAnchor.sampleWidth, 96)
+        XCTAssertEqual(imageAnchor.sampleHeight, 96)
+        let boundingRect = try XCTUnwrap(imageAnchorTarget.boundingRect)
+        XCTAssertEqual(boundingRect.width, 48, accuracy: 0.001)
     }
 
     func testNormalizedEventDecodesLegacyCoordinateOnlyTarget() throws {
@@ -245,7 +285,12 @@ final class KeyboardKnowledgeBuilderTests: XCTestCase {
         )
     }
 
-    private func makeMouseClickEvent(eventId: String, x: Int, y: Int) -> RawEvent {
+    private func makeMouseClickEvent(
+        eventId: String,
+        x: Int,
+        y: Int,
+        screenshotAnchors: [ScreenshotAnchor] = []
+    ) -> RawEvent {
         RawEvent(
             eventId: eventId,
             sessionId: "session-test",
@@ -258,7 +303,8 @@ final class KeyboardKnowledgeBuilderTests: XCTestCase {
                 appBundleId: "com.test.app",
                 windowTitle: "Main",
                 windowId: "1",
-                isFrontmost: true
+                isFrontmost: true,
+                screenshotAnchors: screenshotAnchors
             )
         )
     }

@@ -6,10 +6,11 @@ SLICE_TARGET := OpenStaffTaskSlicerCLI
 KNOWLEDGE_TARGET := OpenStaffKnowledgeBuilderCLI
 ORCHESTRATOR_TARGET := OpenStaffOrchestratorCLI
 ASSIST_TARGET := OpenStaffAssistCLI
+REPLAY_VERIFY_TARGET := OpenStaffReplayVerifyCLI
 STUDENT_TARGET := OpenStaffStudentCLI
 ARGS ?=
 
-.PHONY: build dev xcode-open capture slice knowledge orchestrator assist student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample test test-unit test-integration test-e2e release-regression release-preflight
+.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample test test-unit test-integration test-e2e release-regression release-preflight
 
 build:
 	swift build --package-path $(APP_PACKAGE_PATH)
@@ -35,6 +36,9 @@ orchestrator:
 
 assist:
 	swift run --package-path $(APP_PACKAGE_PATH) $(ASSIST_TARGET) $(ARGS)
+
+replay-verify:
+	swift run --package-path $(APP_PACKAGE_PATH) $(REPLAY_VERIFY_TARGET) $(ARGS)
 
 student:
 	swift run --package-path $(APP_PACKAGE_PATH) $(STUDENT_TARGET) $(ARGS)
