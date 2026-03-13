@@ -216,6 +216,10 @@ public struct StudentLoopLogEntry: Codable, Equatable, Sendable {
     public let planId: String?
     public let skillId: String?
     public let planStepId: String?
+    public let skillName: String?
+    public let skillDirectoryPath: String?
+    public let sourceKnowledgeItemId: String?
+    public let sourceStepId: String?
 
     public init(
         timestamp: String,
@@ -228,7 +232,11 @@ public struct StudentLoopLogEntry: Codable, Equatable, Sendable {
         message: String,
         planId: String? = nil,
         skillId: String? = nil,
-        planStepId: String? = nil
+        planStepId: String? = nil,
+        skillName: String? = nil,
+        skillDirectoryPath: String? = nil,
+        sourceKnowledgeItemId: String? = nil,
+        sourceStepId: String? = nil
     ) {
         self.timestamp = timestamp
         self.traceId = traceId
@@ -241,5 +249,9 @@ public struct StudentLoopLogEntry: Codable, Equatable, Sendable {
         self.planId = planId
         self.skillId = skillId
         self.planStepId = planStepId
+        self.skillName = skillName
+        self.skillDirectoryPath = skillDirectoryPath
+        self.sourceKnowledgeItemId = sourceKnowledgeItemId
+        self.sourceStepId = sourceStepId
     }
 }

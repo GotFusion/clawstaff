@@ -1,7 +1,7 @@
 # OpenStaff 用户使用说明书
 
-版本：v0.6.4  
-更新时间：2026-03-10
+版本：v0.6.5  
+更新时间：2026-03-14
 
 ## 1. 产品简介
 
@@ -84,11 +84,34 @@ make assist ARGS="--knowledge-item core/knowledge/examples/knowledge-item.sample
 推荐方式（已集成到 OpenStaff App）：
 - 选择“学生模式”并点击“开始”。
 - App 会直接执行“规划 -> 执行 -> 审阅报告写入”。
+- 在“状态工作台 -> 审阅与反馈”选中对应执行日志后，可直接看到：
+  - 老师原始步骤
+  - 当前 skill 步骤
+  - 本次实际执行结果
+- 若执行失败，可直接点击 `修复 locator` 或 `重新示教`，系统会同时保存老师反馈与 skill repair request。
 
 兼容调试命令：
 ```bash
 make student ARGS="--goal 在 Safari 中复现点击流程 --knowledge core/knowledge/examples/knowledge-item.sample.json"
 ```
+
+### 3.4 审阅台闭环（Review Desk）
+适用场景：学生模式 skill 执行失败、OpenClaw 运行失败、老师需要快速判定是否接受结果。
+
+推荐方式（已集成到 OpenStaff App）：
+1. 打开“状态工作台 -> 审阅与反馈”。  
+2. 在左侧执行日志列表中选中目标日志。  
+3. 在右侧查看“三栏对照”：老师原始步骤 / 当前 skill 步骤 / 本次实际执行结果。  
+4. 根据判断点击：
+   - `通过`
+   - `驳回`
+   - `修复 locator`
+   - `重新示教`
+5. 如有需要，在备注框写明失败原因、线索或示教意图。  
+
+说明：
+- `修复 locator` / `重新示教` 会同时写入 `data/feedback/{yyyy-mm-dd}/*.jsonl` 与 `data/skills/repairs/{yyyy-mm-dd}/skill-repair.jsonl`。
+- 若日志未成功关联到 skill，上述两个修复按钮会自动禁用。
 
 ## 4. LLM 与 Skill 工作流
 

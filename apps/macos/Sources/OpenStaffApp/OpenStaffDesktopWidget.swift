@@ -71,6 +71,22 @@ final class OpenStaffDesktopWidgetViewModel: NSObject, ObservableObject {
     private let autoRefreshEnabled: Bool
     private var refreshTimer: Timer?
     private var refreshTimerTarget: DesktopWidgetRefreshTimerTarget?
+    private let executionReviewStore = ExecutionReviewStore(
+        logsRootDirectory: OpenStaffWorkspacePaths.logsDirectory,
+        feedbackRootDirectory: OpenStaffWorkspacePaths.feedbackDirectory,
+        reportsRootDirectory: OpenStaffWorkspacePaths.reportsDirectory,
+        knowledgeRootDirectory: OpenStaffWorkspacePaths.knowledgeDirectory,
+        skillRoots: [
+            ExecutionReviewSkillRoot(
+                scopeId: LearnedSkillStorageScope.pending.rawValue,
+                directory: OpenStaffWorkspacePaths.skillsPendingDirectory
+            ),
+            ExecutionReviewSkillRoot(
+                scopeId: LearnedSkillStorageScope.done.rawValue,
+                directory: OpenStaffWorkspacePaths.skillsDoneDirectory
+            )
+        ]
+    )
 
     init(autoRefreshEnabled: Bool = true) {
         self.autoRefreshEnabled = autoRefreshEnabled
@@ -87,7 +103,7 @@ final class OpenStaffDesktopWidgetViewModel: NSObject, ObservableObject {
 
     func refresh() {
         let recentTasks = RecentTaskRepository.loadRecentTasks(limit: 32)
-        let executionLogs = ExecutionReviewRepository.loadExecutionSnapshot(limit: 240).logs
+        let executionLogs = executionReviewStore.loadExecutionSnapshot(limit: 240).logs
 
         updateBriefTasks(from: recentTasks)
         timelineTasks = buildTimelineTasks(executionLogs: executionLogs, fallbackTasks: recentTasks)
