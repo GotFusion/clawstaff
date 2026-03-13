@@ -1,0 +1,840 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.manifest.v0",
+  "benchmarkId": "personal-desktop-v20260314",
+  "generatedAt": "2026-03-14T01:54:11+08:00",
+  "benchmarkRoot": "data/benchmarks/personal-desktop",
+  "catalogPath": "data/benchmarks/personal-desktop/catalog.json",
+  "skipOpenClaw": false,
+  "totalCases": 22,
+  "passedCases": 22,
+  "failedCases": [],
+  "categoryCounts": {
+    "browser-operations": 7,
+    "daily-office": 2,
+    "developer-tools": 12,
+    "file-organization": 1
+  },
+  "cases": [
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-001-xcode-package-navigation-a",
+      "taskId": "task-session-gui-023212a2-teaching-20260310-202613-001",
+      "sessionId": "session-gui-023212a2-teaching-20260310-202613",
+      "category": "developer-tools",
+      "title": "Xcode Package.swift 导航链路 A",
+      "passed": true,
+      "source": {
+        "appName": "Xcode",
+        "windowTitle": "macos — Package.swift",
+        "goal": "在 Xcode 中复现任务 task-session-gui-023212a2-teaching-20260310-202613-001 的操作流程",
+        "knowledgeStepCount": 6,
+        "rawEventCount": 19
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-001-xcode-package-navigation-a/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-001-xcode-package-navigation-a/benchmark-pdb-001-xcode-package-navigation-a",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-001-xcode-package-navigation-a/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-001-xcode-package-navigation-a/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-001-xcode-package-navigation-a/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-001-xcode-package-navigation-a/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 0,
+        "skillPreflightStatus": "needs_teacher_confirmation",
+        "expectedExecutionStatus": "succeeded",
+        "executionStatus": "succeeded",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "xcode",
+        "package-swift",
+        "navigation"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-002-xcode-package-navigation-b",
+      "taskId": "task-session-gui-0cacb6a5-teaching-20260310-204532-001",
+      "sessionId": "session-gui-0cacb6a5-teaching-20260310-204532",
+      "category": "developer-tools",
+      "title": "Xcode Package.swift 导航链路 B",
+      "passed": true,
+      "source": {
+        "appName": "Xcode",
+        "windowTitle": "macos — Package.swift",
+        "goal": "在 Xcode 中复现任务 task-session-gui-0cacb6a5-teaching-20260310-204532-001 的操作流程",
+        "knowledgeStepCount": 6,
+        "rawEventCount": 19
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/benchmark-pdb-002-xcode-package-navigation-b",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 0,
+        "skillPreflightStatus": "needs_teacher_confirmation",
+        "expectedExecutionStatus": "succeeded",
+        "executionStatus": "succeeded",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "xcode",
+        "package-swift",
+        "navigation"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-003-xcode-package-navigation-c",
+      "taskId": "task-session-gui-25d0d2ed-teaching-20260310-204424-001",
+      "sessionId": "session-gui-25d0d2ed-teaching-20260310-204424",
+      "category": "developer-tools",
+      "title": "Xcode Package.swift 深度导航",
+      "passed": true,
+      "source": {
+        "appName": "Xcode",
+        "windowTitle": "macos — Package.swift",
+        "goal": "在 Xcode 中复现任务 task-session-gui-25d0d2ed-teaching-20260310-204424-001 的操作流程",
+        "knowledgeStepCount": 8,
+        "rawEventCount": 24
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/benchmark-pdb-003-xcode-package-navigation-c",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 0,
+        "skillPreflightStatus": "needs_teacher_confirmation",
+        "expectedExecutionStatus": "succeeded",
+        "executionStatus": "succeeded",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "xcode",
+        "package-swift",
+        "navigation"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-004-xcode-focus",
+      "taskId": "task-session-gui-4214a172-teaching-20260310-142748-001",
+      "sessionId": "session-gui-4214a172-teaching-20260310-142748",
+      "category": "developer-tools",
+      "title": "Xcode 前台聚焦",
+      "passed": true,
+      "source": {
+        "appName": "Xcode",
+        "windowTitle": "",
+        "goal": "在 Xcode 中复现任务 task-session-gui-4214a172-teaching-20260310-142748-001 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 3
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/benchmark-pdb-004-xcode-focus",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "xcode",
+        "focus"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-005-safari-window-switch",
+      "taskId": "task-session-gui-4214a172-teaching-20260310-142748-002",
+      "sessionId": "session-gui-4214a172-teaching-20260310-142748",
+      "category": "browser-operations",
+      "title": "Safari 窗口切换",
+      "passed": true,
+      "source": {
+        "appName": "Safari浏览器",
+        "windowTitle": "",
+        "goal": "在 Safari浏览器 中复现任务 task-session-gui-4214a172-teaching-20260310-142748-002 的操作流程",
+        "knowledgeStepCount": 2,
+        "rawEventCount": 3
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/benchmark-pdb-005-safari-window-switch",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "safari",
+        "window-switch"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-006-vscode-focus",
+      "taskId": "task-session-gui-4589dbd7-teaching-20260310-143404-001",
+      "sessionId": "session-gui-4589dbd7-teaching-20260310-143404",
+      "category": "developer-tools",
+      "title": "VS Code 前台聚焦",
+      "passed": true,
+      "source": {
+        "appName": "Code",
+        "windowTitle": "",
+        "goal": "在 Code 中复现任务 task-session-gui-4589dbd7-teaching-20260310-143404-001 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 21
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/benchmark-pdb-006-vscode-focus",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "vscode",
+        "focus"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-007-qq-chat-navigation",
+      "taskId": "task-session-gui-4589dbd7-teaching-20260310-143404-002",
+      "sessionId": "session-gui-4589dbd7-teaching-20260310-143404",
+      "category": "daily-office",
+      "title": "QQ 聊天窗口导航",
+      "passed": true,
+      "source": {
+        "appName": "QQ",
+        "windowTitle": "",
+        "goal": "在 QQ 中复现任务 task-session-gui-4589dbd7-teaching-20260310-143404-002 的操作流程",
+        "knowledgeStepCount": 20,
+        "rawEventCount": 21
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/benchmark-pdb-007-qq-chat-navigation",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "qq",
+        "chat",
+        "office"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-008-codex-focus-a",
+      "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-001",
+      "sessionId": "session-gui-5c113c56-teaching-20260310-144428",
+      "category": "developer-tools",
+      "title": "Codex 会话聚焦 A",
+      "passed": true,
+      "source": {
+        "appName": "Codex",
+        "windowTitle": "Codex",
+        "goal": "在 Codex 中复现任务 task-session-gui-5c113c56-teaching-20260310-144428-001 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 3
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/benchmark-pdb-008-codex-focus-a",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "codex",
+        "focus"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-009-safari-start-page-a",
+      "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-002",
+      "sessionId": "session-gui-5c113c56-teaching-20260310-144428",
+      "category": "browser-operations",
+      "title": "Safari 起始页操作 A",
+      "passed": true,
+      "source": {
+        "appName": "Safari浏览器",
+        "windowTitle": "个人 — 起始页",
+        "goal": "在 Safari浏览器 中复现任务 task-session-gui-5c113c56-teaching-20260310-144428-002 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 3
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/benchmark-pdb-009-safari-start-page-a",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "safari",
+        "start-page"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-010-safari-baidu-a",
+      "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-003",
+      "sessionId": "session-gui-5c113c56-teaching-20260310-144428",
+      "category": "browser-operations",
+      "title": "Safari 百度页操作 A",
+      "passed": true,
+      "source": {
+        "appName": "Safari浏览器",
+        "windowTitle": "个人 — 百度一下，你就知道",
+        "goal": "在 Safari浏览器 中复现任务 task-session-gui-5c113c56-teaching-20260310-144428-003 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 3
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-010-safari-baidu-a/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-010-safari-baidu-a/benchmark-pdb-010-safari-baidu-a",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-010-safari-baidu-a/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-010-safari-baidu-a/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-010-safari-baidu-a/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-010-safari-baidu-a/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "safari",
+        "baidu"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-011-finder-window-navigation",
+      "taskId": "task-session-gui-8ec4947b-teaching-20260310-202519-001",
+      "sessionId": "session-gui-8ec4947b-teaching-20260310-202519",
+      "category": "file-organization",
+      "title": "访达窗口文件导航",
+      "passed": true,
+      "source": {
+        "appName": "访达",
+        "windowTitle": "",
+        "goal": "在 访达 中复现任务 task-session-gui-8ec4947b-teaching-20260310-202519-001 的操作流程",
+        "knowledgeStepCount": 3,
+        "rawEventCount": 16
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/benchmark-pdb-011-finder-window-navigation",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 0,
+        "skillPreflightStatus": "needs_teacher_confirmation",
+        "expectedExecutionStatus": "succeeded",
+        "executionStatus": "succeeded",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "finder",
+        "files",
+        "navigation"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-012-codex-focus-b",
+      "taskId": "task-session-gui-b250e7f9-teaching-20260310-155114-001",
+      "sessionId": "session-gui-b250e7f9-teaching-20260310-155114",
+      "category": "developer-tools",
+      "title": "Codex 会话聚焦 B",
+      "passed": true,
+      "source": {
+        "appName": "Codex",
+        "windowTitle": "Codex",
+        "goal": "在 Codex 中复现任务 task-session-gui-b250e7f9-teaching-20260310-155114-001 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 1
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/benchmark-pdb-012-codex-focus-b",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "codex",
+        "focus"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-013-system-settings-navigation",
+      "taskId": "task-session-gui-b3e503cf-teaching-20260310-164817-001",
+      "sessionId": "session-gui-b3e503cf-teaching-20260310-164817",
+      "category": "daily-office",
+      "title": "系统设置面板导航",
+      "passed": true,
+      "source": {
+        "appName": "系统设置",
+        "windowTitle": "",
+        "goal": "在 系统设置 中复现任务 task-session-gui-b3e503cf-teaching-20260310-164817-001 的操作流程",
+        "knowledgeStepCount": 3,
+        "rawEventCount": 3
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/benchmark-pdb-013-system-settings-navigation",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "system-settings",
+        "office",
+        "navigation"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-014-xcode-focus-b",
+      "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-001",
+      "sessionId": "session-gui-f03aebb3-teaching-20260310-160325",
+      "category": "developer-tools",
+      "title": "Xcode 前台聚焦 B",
+      "passed": true,
+      "source": {
+        "appName": "Xcode",
+        "windowTitle": "",
+        "goal": "在 Xcode 中复现任务 task-session-gui-f03aebb3-teaching-20260310-160325-001 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 2
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/benchmark-pdb-014-xcode-focus-b",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "xcode",
+        "focus"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-015-safari-focus",
+      "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-002",
+      "sessionId": "session-gui-f03aebb3-teaching-20260310-160325",
+      "category": "browser-operations",
+      "title": "Safari 前台聚焦",
+      "passed": true,
+      "source": {
+        "appName": "Safari浏览器",
+        "windowTitle": "",
+        "goal": "在 Safari浏览器 中复现任务 task-session-gui-f03aebb3-teaching-20260310-160325-002 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 2
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/benchmark-pdb-015-safari-focus",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "safari",
+        "focus"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-016-xcode-package-single-click",
+      "taskId": "task-session-gui-f23128c2-teaching-20260310-145427-001",
+      "sessionId": "session-gui-f23128c2-teaching-20260310-145427",
+      "category": "developer-tools",
+      "title": "Xcode Package.swift 单击路径",
+      "passed": true,
+      "source": {
+        "appName": "Xcode",
+        "windowTitle": "macos — Package.swift",
+        "goal": "在 Xcode 中复现任务 task-session-gui-f23128c2-teaching-20260310-145427-001 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 2
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/benchmark-pdb-016-xcode-package-single-click",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "xcode",
+        "package-swift",
+        "single-click"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-017-safari-start-page-b",
+      "taskId": "task-session-gui-f23128c2-teaching-20260310-145427-002",
+      "sessionId": "session-gui-f23128c2-teaching-20260310-145427",
+      "category": "browser-operations",
+      "title": "Safari 起始页操作 B",
+      "passed": true,
+      "source": {
+        "appName": "Safari浏览器",
+        "windowTitle": "个人 — 起始页",
+        "goal": "在 Safari浏览器 中复现任务 task-session-gui-f23128c2-teaching-20260310-145427-002 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 2
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-017-safari-start-page-b/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-017-safari-start-page-b/benchmark-pdb-017-safari-start-page-b",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-017-safari-start-page-b/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-017-safari-start-page-b/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-017-safari-start-page-b/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-017-safari-start-page-b/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "failed",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 1,
+        "skillPreflightStatus": "failed",
+        "expectedExecutionStatus": "blocked",
+        "executionStatus": "blocked",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "safari",
+        "start-page"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-018-xcode-focus-c",
+      "taskId": "task-session-gui-fb6a7c30-teaching-20260310-201227-001",
+      "sessionId": "session-gui-fb6a7c30-teaching-20260310-201227",
+      "category": "developer-tools",
+      "title": "Xcode 前台聚焦 C",
+      "passed": true,
+      "source": {
+        "appName": "Xcode",
+        "windowTitle": "",
+        "goal": "在 Xcode 中复现任务 task-session-gui-fb6a7c30-teaching-20260310-201227-001 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 1
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/benchmark-pdb-018-xcode-focus-c",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 0,
+        "skillPreflightStatus": "needs_teacher_confirmation",
+        "expectedExecutionStatus": "succeeded",
+        "executionStatus": "succeeded",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "xcode",
+        "focus"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-019-xcode-focus-d",
+      "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-001",
+      "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+      "category": "developer-tools",
+      "title": "Xcode 前台聚焦 D",
+      "passed": true,
+      "source": {
+        "appName": "Xcode",
+        "windowTitle": "",
+        "goal": "在 Xcode 中复现任务 task-session-gui-fff3b655-teaching-20260310-201407-001 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 16
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-019-xcode-focus-d/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-019-xcode-focus-d/benchmark-pdb-019-xcode-focus-d",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-019-xcode-focus-d/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-019-xcode-focus-d/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-019-xcode-focus-d/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-019-xcode-focus-d/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 0,
+        "skillPreflightStatus": "needs_teacher_confirmation",
+        "expectedExecutionStatus": "succeeded",
+        "executionStatus": "succeeded",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "xcode",
+        "focus"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-020-safari-start-page-c",
+      "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-002",
+      "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+      "category": "browser-operations",
+      "title": "Safari 起始页操作 C",
+      "passed": true,
+      "source": {
+        "appName": "Safari浏览器",
+        "windowTitle": "个人 — 起始页",
+        "goal": "在 Safari浏览器 中复现任务 task-session-gui-fff3b655-teaching-20260310-201407-002 的操作流程",
+        "knowledgeStepCount": 1,
+        "rawEventCount": 16
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/benchmark-pdb-020-safari-start-page-c",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 0,
+        "skillPreflightStatus": "needs_teacher_confirmation",
+        "expectedExecutionStatus": "succeeded",
+        "executionStatus": "succeeded",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "safari",
+        "start-page"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-021-safari-baidu-b",
+      "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-003",
+      "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+      "category": "browser-operations",
+      "title": "Safari 百度页操作 B",
+      "passed": true,
+      "source": {
+        "appName": "Safari浏览器",
+        "windowTitle": "个人 — 百度一下，你就知道",
+        "goal": "在 Safari浏览器 中复现任务 task-session-gui-fff3b655-teaching-20260310-201407-003 的操作流程",
+        "knowledgeStepCount": 2,
+        "rawEventCount": 16
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 0,
+        "skillPreflightStatus": "needs_teacher_confirmation",
+        "expectedExecutionStatus": "succeeded",
+        "executionStatus": "succeeded",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "safari",
+        "baidu"
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+      "caseId": "pdb-022-xcode-double-step",
+      "taskId": "task-session-gui-199fd65f-teaching-20260311-173758-001",
+      "sessionId": "session-gui-199fd65f-teaching-20260311-173758",
+      "category": "developer-tools",
+      "title": "Xcode 双步导航",
+      "passed": true,
+      "source": {
+        "appName": "Xcode",
+        "windowTitle": "",
+        "goal": "在 Xcode 中复现任务 task-session-gui-199fd65f-teaching-20260311-173758-001 的操作流程",
+        "knowledgeStepCount": 2,
+        "rawEventCount": 2
+      },
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/source-record.json",
+        "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/benchmark-pdb-022-xcode-double-step",
+        "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/skill-preflight.json",
+        "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/execution-result.json",
+        "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/review-result.json",
+        "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/case-report.json"
+      },
+      "results": {
+        "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+        "skillMapperExitCode": 0,
+        "skillPreflightExitCode": 0,
+        "skillPreflightStatus": "needs_teacher_confirmation",
+        "expectedExecutionStatus": "succeeded",
+        "executionStatus": "succeeded",
+        "reviewDecision": "approved"
+      },
+      "tags": [
+        "xcode",
+        "double-step"
+      ]
+    }
+  ]
+}

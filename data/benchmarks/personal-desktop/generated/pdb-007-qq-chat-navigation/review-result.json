@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.review.v0",
+  "caseId": "pdb-007-qq-chat-navigation",
+  "taskId": "task-session-gui-4589dbd7-teaching-20260310-143404-002",
+  "sessionId": "session-gui-4589dbd7-teaching-20260310-143404",
+  "category": "daily-office",
+  "title": "QQ 聊天窗口导航",
+  "reviewedAt": "2026-03-14T01:54:09+08:00",
+  "reviewer": "benchmark-regression",
+  "decision": "approved",
+  "passed": true,
+  "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked",
+  "notes": [],
+  "artifacts": {
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/benchmark-pdb-007-qq-chat-navigation",
+    "expectedPreflightStatus": "failed",
+    "preflightStatus": "failed",
+    "expectedExecutionStatus": "blocked",
+    "executionStatus": "blocked",
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/logs/2026-03-13/session-gui-4589dbd7-teaching-20260310-143404-openclaw.log"
+  }
+}

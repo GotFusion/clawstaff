@@ -1,0 +1,199 @@
+{
+  "schemaVersion": "openstaff.openclaw-skill.v1",
+  "skillName": "benchmark-pdb-011-finder-window-navigation",
+  "knowledgeItemId": "ki-task-session-gui-8ec4947b-teaching-20260310-202519-001",
+  "taskId": "task-session-gui-8ec4947b-teaching-20260310-202519-001",
+  "sessionId": "session-gui-8ec4947b-teaching-20260310-202519",
+  "source": {
+    "knowledgeItemPath": "data/knowledge/2026-03-10/task-session-gui-8ec4947b-teaching-20260310-202519-001.json",
+    "llmOutputPath": "scripts/skills/examples/llm-output.sample.terminal-invalid.txt"
+  },
+  "provenance": {
+    "knowledge": {
+      "knowledgeItemId": "ki-task-session-gui-8ec4947b-teaching-20260310-202519-001",
+      "knowledgeSchemaVersion": "knowledge.item.v0",
+      "taskId": "task-session-gui-8ec4947b-teaching-20260310-202519-001",
+      "sessionId": "session-gui-8ec4947b-teaching-20260310-202519",
+      "knowledgeCreatedAt": "2026-03-10T12:25:34.620Z",
+      "knowledgeGeneratorVersion": "rule-v0"
+    },
+    "sourceTrace": {
+      "taskChunkSchemaVersion": "knowledge.task-chunk.v0",
+      "startTimestamp": "2026-03-10T12:25:21.639Z",
+      "endTimestamp": "2026-03-10T12:25:30.748Z",
+      "eventCount": 16,
+      "boundaryReason": "sessionEnd"
+    },
+    "skillBuild": {
+      "skillName": "benchmark-pdb-011-finder-window-navigation",
+      "skillSchemaVersion": "openstaff.openclaw-skill.v1",
+      "skillGeneratorVersion": "openstaff-skill-mapper-v1",
+      "generatedAt": "2026-03-14T01:54:09+08:00",
+      "repairVersion": 0,
+      "llmOutputAccepted": false
+    },
+    "stepMappings": [
+      {
+        "skillStepId": "step-001",
+        "knowledgeStepId": "step-001",
+        "instruction": "执行第 1 步点击操作（x=543, y=30，源事件 536208db-4a5d-4c4a-9776-20ef4e24f940）。",
+        "sourceEventIds": [
+          "536208db-4a5d-4c4a-9776-20ef4e24f940"
+        ],
+        "preferredLocatorType": "coordinateFallback",
+        "coordinate": {
+          "x": 543,
+          "y": 30,
+          "coordinateSpace": "screen"
+        },
+        "semanticTargets": [
+          {
+            "locatorType": "coordinateFallback",
+            "appBundleId": "com.apple.finder",
+            "boundingRect": {
+              "x": 543,
+              "y": 30,
+              "width": 1,
+              "height": 1,
+              "coordinateSpace": "screen"
+            },
+            "confidence": 0.24,
+            "source": "skill-mapper-fallback"
+          }
+        ]
+      },
+      {
+        "skillStepId": "step-002",
+        "knowledgeStepId": "step-002",
+        "instruction": "执行第 2 步输入\"www.baidu.com\"并按回车（源事件 f35460e1-5168-4527-99ae-740eef79b927, 2bee0fa6-b25c-496a-9846-9bf21f405822, 109361ba-0216-4d46-8915-2143cbb05c5d, dbb83705-0c4b-43d6-8135-8569dc8adf41, 7b2b0a01-0e4d-4373-9827-51faed5d38ee, e850337e-3631-4e18-acd9-50ecd1b1db15, a73d4a84-e26e-4fb2-aadf-02e993b42fcb, b69ec096-235b-4da4-bb1b-9541d1a8fa4d, 4d6e21fd-e686-4eca-941b-75c0ff6bc764, 3c31fbb8-bd1a-45f4-b6f0-6a3ee902958d, 0c78b289-5300-41c9-83db-fedcd52148d9, 98c5da65-693f-4fef-bc47-466af2761b98, e5d8593c-267b-4565-85dc-d85785a7e62f, 3582360b-2f5a-4ab5-b2b3-49038ae1414b）。",
+        "sourceEventIds": [
+          "f35460e1-5168-4527-99ae-740eef79b927",
+          "2bee0fa6-b25c-496a-9846-9bf21f405822",
+          "109361ba-0216-4d46-8915-2143cbb05c5d",
+          "dbb83705-0c4b-43d6-8135-8569dc8adf41",
+          "7b2b0a01-0e4d-4373-9827-51faed5d38ee",
+          "e850337e-3631-4e18-acd9-50ecd1b1db15",
+          "a73d4a84-e26e-4fb2-aadf-02e993b42fcb",
+          "b69ec096-235b-4da4-bb1b-9541d1a8fa4d",
+          "4d6e21fd-e686-4eca-941b-75c0ff6bc764",
+          "3c31fbb8-bd1a-45f4-b6f0-6a3ee902958d",
+          "0c78b289-5300-41c9-83db-fedcd52148d9",
+          "98c5da65-693f-4fef-bc47-466af2761b98",
+          "e5d8593c-267b-4565-85dc-d85785a7e62f",
+          "3582360b-2f5a-4ab5-b2b3-49038ae1414b"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-003",
+        "knowledgeStepId": "step-003",
+        "instruction": "执行第 3 步点击操作（x=39, y=972，源事件 95dddaef-b572-41aa-a033-f389e819971f）。",
+        "sourceEventIds": [
+          "95dddaef-b572-41aa-a033-f389e819971f"
+        ],
+        "preferredLocatorType": "coordinateFallback",
+        "coordinate": {
+          "x": 39,
+          "y": 972,
+          "coordinateSpace": "screen"
+        },
+        "semanticTargets": [
+          {
+            "locatorType": "coordinateFallback",
+            "appBundleId": "com.apple.finder",
+            "boundingRect": {
+              "x": 39,
+              "y": 972,
+              "width": 1,
+              "height": 1,
+              "coordinateSpace": "screen"
+            },
+            "confidence": 0.24,
+            "source": "skill-mapper-fallback"
+          }
+        ]
+      }
+    ]
+  },
+  "mappedOutput": {
+    "objective": "在 访达 中复现任务 task-session-gui-8ec4947b-teaching-20260310-202519-001 的操作流程",
+    "context": {
+      "appName": "访达",
+      "appBundleId": "com.apple.finder",
+      "windowTitle": null
+    },
+    "executionPlan": {
+      "requiresTeacherConfirmation": true,
+      "steps": [
+        {
+          "stepId": "step-001",
+          "actionType": "click",
+          "instruction": "执行第 1 步点击操作（x=543, y=30，源事件 536208db-4a5d-4c4a-9776-20ef4e24f940）。",
+          "target": "coordinate:543,30",
+          "sourceEventIds": [
+            "536208db-4a5d-4c4a-9776-20ef4e24f940"
+          ]
+        },
+        {
+          "stepId": "step-002",
+          "actionType": "input",
+          "instruction": "执行第 2 步输入\"www.baidu.com\"并按回车（源事件 f35460e1-5168-4527-99ae-740eef79b927, 2bee0fa6-b25c-496a-9846-9bf21f405822, 109361ba-0216-4d46-8915-2143cbb05c5d, dbb83705-0c4b-43d6-8135-8569dc8adf41, 7b2b0a01-0e4d-4373-9827-51faed5d38ee, e850337e-3631-4e18-acd9-50ecd1b1db15, a73d4a84-e26e-4fb2-aadf-02e993b42fcb, b69ec096-235b-4da4-bb1b-9541d1a8fa4d, 4d6e21fd-e686-4eca-941b-75c0ff6bc764, 3c31fbb8-bd1a-45f4-b6f0-6a3ee902958d, 0c78b289-5300-41c9-83db-fedcd52148d9, 98c5da65-693f-4fef-bc47-466af2761b98, e5d8593c-267b-4565-85dc-d85785a7e62f, 3582360b-2f5a-4ab5-b2b3-49038ae1414b）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "f35460e1-5168-4527-99ae-740eef79b927",
+            "2bee0fa6-b25c-496a-9846-9bf21f405822",
+            "109361ba-0216-4d46-8915-2143cbb05c5d",
+            "dbb83705-0c4b-43d6-8135-8569dc8adf41",
+            "7b2b0a01-0e4d-4373-9827-51faed5d38ee",
+            "e850337e-3631-4e18-acd9-50ecd1b1db15",
+            "a73d4a84-e26e-4fb2-aadf-02e993b42fcb",
+            "b69ec096-235b-4da4-bb1b-9541d1a8fa4d",
+            "4d6e21fd-e686-4eca-941b-75c0ff6bc764",
+            "3c31fbb8-bd1a-45f4-b6f0-6a3ee902958d",
+            "0c78b289-5300-41c9-83db-fedcd52148d9",
+            "98c5da65-693f-4fef-bc47-466af2761b98",
+            "e5d8593c-267b-4565-85dc-d85785a7e62f",
+            "3582360b-2f5a-4ab5-b2b3-49038ae1414b"
+          ]
+        },
+        {
+          "stepId": "step-003",
+          "actionType": "click",
+          "instruction": "执行第 3 步点击操作（x=39, y=972，源事件 95dddaef-b572-41aa-a033-f389e819971f）。",
+          "target": "coordinate:39,972",
+          "sourceEventIds": [
+            "95dddaef-b572-41aa-a033-f389e819971f"
+          ]
+        }
+      ],
+      "completionCriteria": {
+        "expectedStepCount": 3,
+        "requiredFrontmostAppBundleId": "com.apple.finder"
+      },
+      "failurePolicy": {
+        "onContextMismatch": "stopAndAskTeacher",
+        "onStepError": "stopAndAskTeacher",
+        "onUnknownAction": "stopAndAskTeacher"
+      }
+    },
+    "safetyNotes": [
+      "执行前前台应用必须是 com.apple.finder。",
+      "执行该知识条目时，需要老师确认后再执行。",
+      "坐标点击目标可能随分辨率或界面变化漂移。"
+    ],
+    "confidence": 0.72
+  },
+  "diagnostics": [
+    "LLM output schema validation failed: $.objective must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].target must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].sourceEventIds must be a non-empty array.",
+    "LLM output schema validation failed: $.safetyNotes must be a non-empty array.",
+    "Applied fallback on 15 step fields while normalizing executionPlan.",
+    "Fallback objective from KnowledgeItem.goal."
+  ],
+  "llmOutputAccepted": false,
+  "createdAt": "2026-03-14T01:54:09+08:00",
+  "generatorVersion": "openstaff-skill-mapper-v1"
+}

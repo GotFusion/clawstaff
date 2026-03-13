@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.review.v0",
+  "caseId": "pdb-017-safari-start-page-b",
+  "taskId": "task-session-gui-f23128c2-teaching-20260310-145427-002",
+  "sessionId": "session-gui-f23128c2-teaching-20260310-145427",
+  "category": "browser-operations",
+  "title": "Safari 起始页操作 B",
+  "reviewedAt": "2026-03-14T01:54:10+08:00",
+  "reviewer": "benchmark-regression",
+  "decision": "approved",
+  "passed": true,
+  "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked",
+  "notes": [],
+  "artifacts": {
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-017-safari-start-page-b/benchmark-pdb-017-safari-start-page-b",
+    "expectedPreflightStatus": "failed",
+    "preflightStatus": "failed",
+    "expectedExecutionStatus": "blocked",
+    "executionStatus": "blocked",
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-017-safari-start-page-b/logs/2026-03-13/session-gui-f23128c2-teaching-20260310-145427-openclaw.log"
+  }
+}

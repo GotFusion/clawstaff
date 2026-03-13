@@ -72,6 +72,30 @@ class OpenClawSkillMapperTests(unittest.TestCase):
         self.assertEqual(provenance["stepMappings"][0]["knowledgeStepId"], "step-001")
         self.assertGreater(len(provenance["stepMappings"][0]["semanticTargets"]), 0)
 
+    def test_build_provenance_infers_coordinate_fallback_from_instruction(self):
+        knowledge = json.loads(json.dumps(self.sample_knowledge))
+        knowledge["steps"][0]["instruction"] = "执行第 1 步点击操作（x=321, y=654，源事件 demo-event-001）。"
+        knowledge["steps"][0].pop("target", None)
+        normalized, _ = self.mod.normalize_execution_plan(
+            knowledge_item=knowledge,
+            llm_output=None,
+            llm_valid=False,
+        )
+
+        provenance = self.mod.build_provenance(
+            skill_name="benchmark-coordinate-fallback",
+            knowledge_item=knowledge,
+            mapped=normalized,
+            created_at=self.mod.iso_now(),
+            llm_output_accepted=False,
+        )
+
+        first_step = provenance["stepMappings"][0]
+        self.assertEqual(first_step["preferredLocatorType"], "coordinateFallback")
+        self.assertEqual(first_step["coordinate"]["x"], 321)
+        self.assertEqual(first_step["coordinate"]["y"], 654)
+        self.assertEqual(first_step["semanticTargets"][0]["locatorType"], "coordinateFallback")
+
     def test_validate_knowledge_item_detects_missing_steps(self):
         broken = dict(self.sample_knowledge)
         broken["steps"] = []

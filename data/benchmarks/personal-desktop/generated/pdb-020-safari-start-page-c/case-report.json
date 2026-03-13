@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+  "caseId": "pdb-020-safari-start-page-c",
+  "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-002",
+  "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+  "category": "browser-operations",
+  "title": "Safari 起始页操作 C",
+  "passed": true,
+  "source": {
+    "appName": "Safari浏览器",
+    "windowTitle": "个人 — 起始页",
+    "goal": "在 Safari浏览器 中复现任务 task-session-gui-fff3b655-teaching-20260310-201407-002 的操作流程",
+    "knowledgeStepCount": 1,
+    "rawEventCount": 16
+  },
+  "artifacts": {
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/source-record.json",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/benchmark-pdb-020-safari-start-page-c",
+    "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/skill-preflight.json",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/execution-result.json",
+    "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/review-result.json",
+    "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/case-report.json"
+  },
+  "results": {
+    "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+    "skillMapperExitCode": 0,
+    "skillPreflightExitCode": 0,
+    "skillPreflightStatus": "needs_teacher_confirmation",
+    "expectedExecutionStatus": "succeeded",
+    "executionStatus": "succeeded",
+    "reviewDecision": "approved"
+  },
+  "tags": [
+    "safari",
+    "start-page"
+  ]
+}

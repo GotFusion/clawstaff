@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "openstaff.skill-preflight-report.v0",
+  "skillName": "benchmark-pdb-019-xcode-focus-d",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-019-xcode-focus-d/benchmark-pdb-019-xcode-focus-d",
+  "status": "needs_teacher_confirmation",
+  "summary": "skill benchmark-pdb-019-xcode-focus-d 预检需老师确认：步骤 1，可直接自动执行 0，错误 0，告警 3。",
+  "requiresTeacherConfirmation": true,
+  "isAutoRunnable": false,
+  "allowedAppBundleIds": [
+    "com.apple.dt.Xcode"
+  ],
+  "issues": [
+    {
+      "severity": "warning",
+      "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+      "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-001"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-COORDINATE-ONLY-FALLBACK",
+      "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+      "stepId": "step-001"
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "step-001",
+      "actionType": "click",
+      "confidence": 0.24,
+      "locatorStatus": "degraded",
+      "targetAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-001"
+        },
+        {
+          "severity": "warning",
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+          "stepId": "step-001"
+        }
+      ]
+    }
+  ]
+}

@@ -100,6 +100,26 @@ def infer_target(instruction: str, action_type: str, app_name: str) -> str:
     return "unknown"
 
 
+def infer_coordinate(instruction: str) -> dict[str, Any] | None:
+    pattern_xy = re.search(r"x\s*=\s*(\d+)\s*[,，]\s*y\s*=\s*(\d+)", instruction, flags=re.IGNORECASE)
+    if pattern_xy:
+        return {
+            "x": int(pattern_xy.group(1)),
+            "y": int(pattern_xy.group(2)),
+            "coordinateSpace": "screen",
+        }
+
+    pattern_tuple = re.search(r"\((\d+)\s*,\s*(\d+)\)", instruction)
+    if pattern_tuple:
+        return {
+            "x": int(pattern_tuple.group(1)),
+            "y": int(pattern_tuple.group(2)),
+            "coordinateSpace": "screen",
+        }
+
+    return None
+
+
 def manual_confirmation_required(constraints: list[dict[str, Any]]) -> bool:
     return any(c.get("type") == "manualConfirmationRequired" for c in constraints)
 
@@ -402,6 +422,16 @@ def build_provenance(
         mapped_steps = []
 
     step_mappings: list[dict[str, Any]] = []
+    context = knowledge_item.get("context", {})
+    if not isinstance(context, dict):
+        context = {}
+
+    context_app_bundle_id = normalize_string(context.get("appBundleId"))
+    window_title = context.get("windowTitle")
+    window_title_pattern = None
+    if isinstance(window_title, str) and window_title.strip():
+        window_title_pattern = f"^{re.escape(window_title.strip())}$"
+
     for index, mapped_step in enumerate(mapped_steps):
         if not isinstance(mapped_step, dict):
             continue
@@ -417,15 +447,39 @@ def build_provenance(
 
         coordinate = target.get("coordinate")
         if not isinstance(coordinate, dict):
-            coordinate = None
+            instruction = normalize_string(
+                knowledge_step.get("instruction"),
+                normalize_string(mapped_step.get("instruction")),
+            )
+            coordinate = infer_coordinate(instruction)
 
         semantic_targets = target.get("semanticTargets")
         if not isinstance(semantic_targets, list):
             semantic_targets = []
 
+        if coordinate and not semantic_targets:
+            coordinate_fallback: dict[str, Any] = {
+                "locatorType": "coordinateFallback",
+                "appBundleId": context_app_bundle_id,
+                "boundingRect": {
+                    "x": coordinate["x"],
+                    "y": coordinate["y"],
+                    "width": 1,
+                    "height": 1,
+                    "coordinateSpace": normalize_string(coordinate.get("coordinateSpace"), "screen"),
+                },
+                "confidence": 0.24,
+                "source": "skill-mapper-fallback",
+            }
+            if window_title_pattern:
+                coordinate_fallback["windowTitlePattern"] = window_title_pattern
+            semantic_targets = [coordinate_fallback]
+
         preferred_locator_type = target.get("preferredLocatorType")
         if preferred_locator_type is not None:
             preferred_locator_type = normalize_string(preferred_locator_type)
+        elif coordinate and semantic_targets:
+            preferred_locator_type = "coordinateFallback"
 
         skill_step_id = normalize_string(mapped_step.get("stepId"), f"step-{index + 1:03d}")
         step_mappings.append(

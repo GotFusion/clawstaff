@@ -1,0 +1,170 @@
+{
+  "blockedSteps": 0,
+  "errorCode": "OCW-SKILL-PREFLIGHT-FAILED",
+  "failedSteps": 0,
+  "finishedAt": "2026-03-13T17:54:09.750Z",
+  "preflight": {
+    "allowedAppBundleIds": [
+      "com.apple.Safari"
+    ],
+    "isAutoRunnable": false,
+    "issues": [
+      {
+        "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+        "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+        "severity": "warning"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-001"
+      },
+      {
+        "code": "SPF-MISSING-LOCATOR",
+        "message": "步骤 step-001 不存在可解析 locator。",
+        "severity": "error",
+        "stepId": "step-001"
+      }
+    ],
+    "requiresTeacherConfirmation": true,
+    "schemaVersion": "openstaff.skill-preflight-report.v0",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/benchmark-pdb-009-safari-start-page-a",
+    "skillName": "benchmark-pdb-009-safari-start-page-a",
+    "status": "failed",
+    "steps": [
+      {
+        "actionType": "click",
+        "confidence": 0.72,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-001"
+          },
+          {
+            "code": "SPF-MISSING-LOCATOR",
+            "message": "步骤 step-001 不存在可解析 locator。",
+            "severity": "error",
+            "stepId": "step-001"
+          }
+        ],
+        "locatorStatus": "missing",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-001",
+        "targetAppBundleIds": [
+          "com.apple.Safari"
+        ]
+      }
+    ],
+    "summary": "skill benchmark-pdb-009-safari-start-page-a 预检失败：步骤 1，可直接自动执行 0，错误 1，告警 2。"
+  },
+  "review": {
+    "blockedSteps": 0,
+    "component": "student.openclaw.runner",
+    "errorCode": "OCW-SKILL-PREFLIGHT-FAILED",
+    "failedSteps": 0,
+    "finishedAt": "2026-03-13T17:54:09.750Z",
+    "logFilePath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/logs/2026-03-13/session-gui-5c113c56-teaching-20260310-144428-openclaw.log",
+    "preflight": {
+      "allowedAppBundleIds": [
+        "com.apple.Safari"
+      ],
+      "isAutoRunnable": false,
+      "issues": [
+        {
+          "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+          "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+          "severity": "warning"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-001"
+        },
+        {
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-001 不存在可解析 locator。",
+          "severity": "error",
+          "stepId": "step-001"
+        }
+      ],
+      "requiresTeacherConfirmation": true,
+      "schemaVersion": "openstaff.skill-preflight-report.v0",
+      "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/benchmark-pdb-009-safari-start-page-a",
+      "skillName": "benchmark-pdb-009-safari-start-page-a",
+      "status": "failed",
+      "steps": [
+        {
+          "actionType": "click",
+          "confidence": 0.72,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-001"
+            },
+            {
+              "code": "SPF-MISSING-LOCATOR",
+              "message": "步骤 step-001 不存在可解析 locator。",
+              "severity": "error",
+              "stepId": "step-001"
+            }
+          ],
+          "locatorStatus": "missing",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-001",
+          "targetAppBundleIds": [
+            "com.apple.Safari"
+          ]
+        }
+      ],
+      "summary": "skill benchmark-pdb-009-safari-start-page-a 预检失败：步骤 1，可直接自动执行 0，错误 1，告警 2。"
+    },
+    "reviewId": "openclaw-review-trace-openclaw-run-bc157f80-c226-4706-ae4d-b76a19564174",
+    "sessionId": "session-gui-5c113c56-teaching-20260310-144428",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/benchmark-pdb-009-safari-start-page-a",
+    "skillName": "benchmark-pdb-009-safari-start-page-a",
+    "startedAt": "2026-03-13T17:54:09.743Z",
+    "status": "blocked",
+    "succeededSteps": 0,
+    "summary": "skill benchmark-pdb-009-safari-start-page-a 预检失败：步骤 1，可直接自动执行 0，错误 1，告警 2。",
+    "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-002",
+    "totalSteps": 0,
+    "traceId": "trace-openclaw-run-bc157f80-c226-4706-ae4d-b76a19564174"
+  },
+  "runtimeArguments": [
+    "--gateway-mode",
+    "--skill-dir",
+    "/Users/wangzhenwu/Desktop/code/Personal/openstaff/data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/benchmark-pdb-009-safari-start-page-a",
+    "--trace-id",
+    "trace-openclaw-run-bc157f80-c226-4706-ae4d-b76a19564174",
+    "--session-id",
+    "session-gui-5c113c56-teaching-20260310-144428",
+    "--json-result",
+    "--task-id",
+    "task-session-gui-5c113c56-teaching-20260310-144428-002"
+  ],
+  "runtimeExecutablePath": "apps/macos/.build/debug/OpenStaffOpenClawCLI",
+  "schemaVersion": "openstaff.openclaw.execution-result.v0",
+  "sessionId": "session-gui-5c113c56-teaching-20260310-144428",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/benchmark-pdb-009-safari-start-page-a",
+  "skillName": "benchmark-pdb-009-safari-start-page-a",
+  "startedAt": "2026-03-13T17:54:09.743Z",
+  "status": "blocked",
+  "stderr": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。\n步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。\n步骤 step-001 不存在可解析 locator。",
+  "stdout": "",
+  "stepResults": [],
+  "succeededSteps": 0,
+  "summary": "skill benchmark-pdb-009-safari-start-page-a 预检失败：步骤 1，可直接自动执行 0，错误 1，告警 2。",
+  "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-002",
+  "totalSteps": 0,
+  "traceId": "trace-openclaw-run-bc157f80-c226-4706-ae4d-b76a19564174"
+}

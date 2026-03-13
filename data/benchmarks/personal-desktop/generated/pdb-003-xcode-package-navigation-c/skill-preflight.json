@@ -1,0 +1,301 @@
+{
+  "schemaVersion": "openstaff.skill-preflight-report.v0",
+  "skillName": "benchmark-pdb-003-xcode-package-navigation-c",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/benchmark-pdb-003-xcode-package-navigation-c",
+  "status": "needs_teacher_confirmation",
+  "summary": "skill benchmark-pdb-003-xcode-package-navigation-c 预检需老师确认：步骤 8，可直接自动执行 0，错误 0，告警 15。",
+  "requiresTeacherConfirmation": true,
+  "isAutoRunnable": false,
+  "allowedAppBundleIds": [
+    "com.apple.dt.Xcode"
+  ],
+  "issues": [
+    {
+      "severity": "warning",
+      "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+      "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-001"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-COORDINATE-ONLY-FALLBACK",
+      "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+      "stepId": "step-001"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-002"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-COORDINATE-ONLY-FALLBACK",
+      "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+      "stepId": "step-002"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-003 置信度 0.24 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-003"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-COORDINATE-ONLY-FALLBACK",
+      "message": "步骤 step-003 仅剩 coordinateFallback，不能直接自动执行。",
+      "stepId": "step-003"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-004 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-004"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-005 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-005"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-006 置信度 0.24 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-006"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-COORDINATE-ONLY-FALLBACK",
+      "message": "步骤 step-006 仅剩 coordinateFallback，不能直接自动执行。",
+      "stepId": "step-006"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-007 置信度 0.24 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-007"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-COORDINATE-ONLY-FALLBACK",
+      "message": "步骤 step-007 仅剩 coordinateFallback，不能直接自动执行。",
+      "stepId": "step-007"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-008 置信度 0.24 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-008"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-COORDINATE-ONLY-FALLBACK",
+      "message": "步骤 step-008 仅剩 coordinateFallback，不能直接自动执行。",
+      "stepId": "step-008"
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "step-001",
+      "actionType": "click",
+      "confidence": 0.24,
+      "locatorStatus": "degraded",
+      "targetAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-001"
+        },
+        {
+          "severity": "warning",
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+          "stepId": "step-001"
+        }
+      ]
+    },
+    {
+      "stepId": "step-002",
+      "actionType": "click",
+      "confidence": 0.24,
+      "locatorStatus": "degraded",
+      "targetAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-002"
+        },
+        {
+          "severity": "warning",
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+          "stepId": "step-002"
+        }
+      ]
+    },
+    {
+      "stepId": "step-003",
+      "actionType": "click",
+      "confidence": 0.24,
+      "locatorStatus": "degraded",
+      "targetAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-003 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-003"
+        },
+        {
+          "severity": "warning",
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-003 仅剩 coordinateFallback，不能直接自动执行。",
+          "stepId": "step-003"
+        }
+      ]
+    },
+    {
+      "stepId": "step-004",
+      "actionType": "input",
+      "confidence": 0.72,
+      "locatorStatus": "not_required",
+      "targetAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-004 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-004"
+        }
+      ]
+    },
+    {
+      "stepId": "step-005",
+      "actionType": "shortcut",
+      "confidence": 0.72,
+      "locatorStatus": "not_required",
+      "targetAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-005 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-005"
+        }
+      ]
+    },
+    {
+      "stepId": "step-006",
+      "actionType": "click",
+      "confidence": 0.24,
+      "locatorStatus": "degraded",
+      "targetAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-006 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-006"
+        },
+        {
+          "severity": "warning",
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-006 仅剩 coordinateFallback，不能直接自动执行。",
+          "stepId": "step-006"
+        }
+      ]
+    },
+    {
+      "stepId": "step-007",
+      "actionType": "click",
+      "confidence": 0.24,
+      "locatorStatus": "degraded",
+      "targetAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-007 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-007"
+        },
+        {
+          "severity": "warning",
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-007 仅剩 coordinateFallback，不能直接自动执行。",
+          "stepId": "step-007"
+        }
+      ]
+    },
+    {
+      "stepId": "step-008",
+      "actionType": "click",
+      "confidence": 0.24,
+      "locatorStatus": "degraded",
+      "targetAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-008 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-008"
+        },
+        {
+          "severity": "warning",
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-008 仅剩 coordinateFallback，不能直接自动执行。",
+          "stepId": "step-008"
+        }
+      ]
+    }
+  ]
+}

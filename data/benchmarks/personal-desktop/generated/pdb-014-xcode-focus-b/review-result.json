@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.review.v0",
+  "caseId": "pdb-014-xcode-focus-b",
+  "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-001",
+  "sessionId": "session-gui-f03aebb3-teaching-20260310-160325",
+  "category": "developer-tools",
+  "title": "Xcode 前台聚焦 B",
+  "reviewedAt": "2026-03-14T01:54:10+08:00",
+  "reviewer": "benchmark-regression",
+  "decision": "approved",
+  "passed": true,
+  "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked",
+  "notes": [],
+  "artifacts": {
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/benchmark-pdb-014-xcode-focus-b",
+    "expectedPreflightStatus": "failed",
+    "preflightStatus": "failed",
+    "expectedExecutionStatus": "blocked",
+    "executionStatus": "blocked",
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/logs/2026-03-13/session-gui-f03aebb3-teaching-20260310-160325-openclaw.log"
+  }
+}

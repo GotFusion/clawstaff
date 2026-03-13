@@ -1,0 +1,322 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.catalog.v0",
+  "benchmarkId": "personal-desktop-v20260314",
+  "description": "Frozen personal desktop benchmark corpus sourced from committed teaching-mode captures.",
+  "cases": [
+    {
+      "caseId": "pdb-001-xcode-package-navigation-a",
+      "taskId": "task-session-gui-023212a2-teaching-20260310-202613-001",
+      "category": "developer-tools",
+      "title": "Xcode Package.swift 导航链路 A",
+      "tags": [
+        "xcode",
+        "package-swift",
+        "navigation"
+      ],
+      "expected": {
+        "preflightStatus": "needs_teacher_confirmation",
+        "executionStatus": "succeeded"
+      }
+    },
+    {
+      "caseId": "pdb-002-xcode-package-navigation-b",
+      "taskId": "task-session-gui-0cacb6a5-teaching-20260310-204532-001",
+      "category": "developer-tools",
+      "title": "Xcode Package.swift 导航链路 B",
+      "tags": [
+        "xcode",
+        "package-swift",
+        "navigation"
+      ],
+      "expected": {
+        "preflightStatus": "needs_teacher_confirmation",
+        "executionStatus": "succeeded"
+      }
+    },
+    {
+      "caseId": "pdb-003-xcode-package-navigation-c",
+      "taskId": "task-session-gui-25d0d2ed-teaching-20260310-204424-001",
+      "category": "developer-tools",
+      "title": "Xcode Package.swift 深度导航",
+      "tags": [
+        "xcode",
+        "package-swift",
+        "navigation"
+      ],
+      "expected": {
+        "preflightStatus": "needs_teacher_confirmation",
+        "executionStatus": "succeeded"
+      }
+    },
+    {
+      "caseId": "pdb-004-xcode-focus",
+      "taskId": "task-session-gui-4214a172-teaching-20260310-142748-001",
+      "category": "developer-tools",
+      "title": "Xcode 前台聚焦",
+      "tags": [
+        "xcode",
+        "focus"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-005-safari-window-switch",
+      "taskId": "task-session-gui-4214a172-teaching-20260310-142748-002",
+      "category": "browser-operations",
+      "title": "Safari 窗口切换",
+      "tags": [
+        "safari",
+        "window-switch"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-006-vscode-focus",
+      "taskId": "task-session-gui-4589dbd7-teaching-20260310-143404-001",
+      "category": "developer-tools",
+      "title": "VS Code 前台聚焦",
+      "tags": [
+        "vscode",
+        "focus"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-007-qq-chat-navigation",
+      "taskId": "task-session-gui-4589dbd7-teaching-20260310-143404-002",
+      "category": "daily-office",
+      "title": "QQ 聊天窗口导航",
+      "tags": [
+        "qq",
+        "chat",
+        "office"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-008-codex-focus-a",
+      "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-001",
+      "category": "developer-tools",
+      "title": "Codex 会话聚焦 A",
+      "tags": [
+        "codex",
+        "focus"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-009-safari-start-page-a",
+      "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-002",
+      "category": "browser-operations",
+      "title": "Safari 起始页操作 A",
+      "tags": [
+        "safari",
+        "start-page"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-010-safari-baidu-a",
+      "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-003",
+      "category": "browser-operations",
+      "title": "Safari 百度页操作 A",
+      "tags": [
+        "safari",
+        "baidu"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-011-finder-window-navigation",
+      "taskId": "task-session-gui-8ec4947b-teaching-20260310-202519-001",
+      "category": "file-organization",
+      "title": "访达窗口文件导航",
+      "tags": [
+        "finder",
+        "files",
+        "navigation"
+      ],
+      "expected": {
+        "preflightStatus": "needs_teacher_confirmation",
+        "executionStatus": "succeeded"
+      }
+    },
+    {
+      "caseId": "pdb-012-codex-focus-b",
+      "taskId": "task-session-gui-b250e7f9-teaching-20260310-155114-001",
+      "category": "developer-tools",
+      "title": "Codex 会话聚焦 B",
+      "tags": [
+        "codex",
+        "focus"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-013-system-settings-navigation",
+      "taskId": "task-session-gui-b3e503cf-teaching-20260310-164817-001",
+      "category": "daily-office",
+      "title": "系统设置面板导航",
+      "tags": [
+        "system-settings",
+        "office",
+        "navigation"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-014-xcode-focus-b",
+      "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-001",
+      "category": "developer-tools",
+      "title": "Xcode 前台聚焦 B",
+      "tags": [
+        "xcode",
+        "focus"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-015-safari-focus",
+      "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-002",
+      "category": "browser-operations",
+      "title": "Safari 前台聚焦",
+      "tags": [
+        "safari",
+        "focus"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-016-xcode-package-single-click",
+      "taskId": "task-session-gui-f23128c2-teaching-20260310-145427-001",
+      "category": "developer-tools",
+      "title": "Xcode Package.swift 单击路径",
+      "tags": [
+        "xcode",
+        "package-swift",
+        "single-click"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-017-safari-start-page-b",
+      "taskId": "task-session-gui-f23128c2-teaching-20260310-145427-002",
+      "category": "browser-operations",
+      "title": "Safari 起始页操作 B",
+      "tags": [
+        "safari",
+        "start-page"
+      ],
+      "expected": {
+        "preflightStatus": "failed",
+        "executionStatus": "blocked"
+      }
+    },
+    {
+      "caseId": "pdb-018-xcode-focus-c",
+      "taskId": "task-session-gui-fb6a7c30-teaching-20260310-201227-001",
+      "category": "developer-tools",
+      "title": "Xcode 前台聚焦 C",
+      "tags": [
+        "xcode",
+        "focus"
+      ],
+      "expected": {
+        "preflightStatus": "needs_teacher_confirmation",
+        "executionStatus": "succeeded"
+      }
+    },
+    {
+      "caseId": "pdb-019-xcode-focus-d",
+      "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-001",
+      "category": "developer-tools",
+      "title": "Xcode 前台聚焦 D",
+      "tags": [
+        "xcode",
+        "focus"
+      ],
+      "expected": {
+        "preflightStatus": "needs_teacher_confirmation",
+        "executionStatus": "succeeded"
+      }
+    },
+    {
+      "caseId": "pdb-020-safari-start-page-c",
+      "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-002",
+      "category": "browser-operations",
+      "title": "Safari 起始页操作 C",
+      "tags": [
+        "safari",
+        "start-page"
+      ],
+      "expected": {
+        "preflightStatus": "needs_teacher_confirmation",
+        "executionStatus": "succeeded"
+      }
+    },
+    {
+      "caseId": "pdb-021-safari-baidu-b",
+      "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-003",
+      "category": "browser-operations",
+      "title": "Safari 百度页操作 B",
+      "tags": [
+        "safari",
+        "baidu"
+      ],
+      "expected": {
+        "preflightStatus": "needs_teacher_confirmation",
+        "executionStatus": "succeeded"
+      }
+    },
+    {
+      "caseId": "pdb-022-xcode-double-step",
+      "taskId": "task-session-gui-199fd65f-teaching-20260311-173758-001",
+      "category": "developer-tools",
+      "title": "Xcode 双步导航",
+      "tags": [
+        "xcode",
+        "double-step"
+      ],
+      "expected": {
+        "preflightStatus": "needs_teacher_confirmation",
+        "executionStatus": "succeeded"
+      }
+    }
+  ]
+}

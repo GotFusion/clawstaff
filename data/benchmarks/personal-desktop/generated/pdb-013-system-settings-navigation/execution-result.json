@@ -1,0 +1,322 @@
+{
+  "blockedSteps": 0,
+  "errorCode": "OCW-SKILL-PREFLIGHT-FAILED",
+  "failedSteps": 0,
+  "finishedAt": "2026-03-13T17:54:10.213Z",
+  "preflight": {
+    "allowedAppBundleIds": [
+      "com.apple.systempreferences"
+    ],
+    "isAutoRunnable": false,
+    "issues": [
+      {
+        "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+        "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+        "severity": "warning"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-001"
+      },
+      {
+        "code": "SPF-MISSING-LOCATOR",
+        "message": "步骤 step-001 不存在可解析 locator。",
+        "severity": "error",
+        "stepId": "step-001"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-002 置信度 0.72 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-002"
+      },
+      {
+        "code": "SPF-MISSING-LOCATOR",
+        "message": "步骤 step-002 不存在可解析 locator。",
+        "severity": "error",
+        "stepId": "step-002"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-003 置信度 0.72 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-003"
+      },
+      {
+        "code": "SPF-MISSING-LOCATOR",
+        "message": "步骤 step-003 不存在可解析 locator。",
+        "severity": "error",
+        "stepId": "step-003"
+      }
+    ],
+    "requiresTeacherConfirmation": true,
+    "schemaVersion": "openstaff.skill-preflight-report.v0",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/benchmark-pdb-013-system-settings-navigation",
+    "skillName": "benchmark-pdb-013-system-settings-navigation",
+    "status": "failed",
+    "steps": [
+      {
+        "actionType": "click",
+        "confidence": 0.72,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-001"
+          },
+          {
+            "code": "SPF-MISSING-LOCATOR",
+            "message": "步骤 step-001 不存在可解析 locator。",
+            "severity": "error",
+            "stepId": "step-001"
+          }
+        ],
+        "locatorStatus": "missing",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-001",
+        "targetAppBundleIds": [
+          "com.apple.systempreferences"
+        ]
+      },
+      {
+        "actionType": "click",
+        "confidence": 0.72,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-002 置信度 0.72 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-002"
+          },
+          {
+            "code": "SPF-MISSING-LOCATOR",
+            "message": "步骤 step-002 不存在可解析 locator。",
+            "severity": "error",
+            "stepId": "step-002"
+          }
+        ],
+        "locatorStatus": "missing",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-002",
+        "targetAppBundleIds": [
+          "com.apple.systempreferences"
+        ]
+      },
+      {
+        "actionType": "click",
+        "confidence": 0.72,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-003 置信度 0.72 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-003"
+          },
+          {
+            "code": "SPF-MISSING-LOCATOR",
+            "message": "步骤 step-003 不存在可解析 locator。",
+            "severity": "error",
+            "stepId": "step-003"
+          }
+        ],
+        "locatorStatus": "missing",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-003",
+        "targetAppBundleIds": [
+          "com.apple.systempreferences"
+        ]
+      }
+    ],
+    "summary": "skill benchmark-pdb-013-system-settings-navigation 预检失败：步骤 3，可直接自动执行 0，错误 3，告警 4。"
+  },
+  "review": {
+    "blockedSteps": 0,
+    "component": "student.openclaw.runner",
+    "errorCode": "OCW-SKILL-PREFLIGHT-FAILED",
+    "failedSteps": 0,
+    "finishedAt": "2026-03-13T17:54:10.213Z",
+    "logFilePath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/logs/2026-03-13/session-gui-b3e503cf-teaching-20260310-164817-openclaw.log",
+    "preflight": {
+      "allowedAppBundleIds": [
+        "com.apple.systempreferences"
+      ],
+      "isAutoRunnable": false,
+      "issues": [
+        {
+          "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+          "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+          "severity": "warning"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-001"
+        },
+        {
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-001 不存在可解析 locator。",
+          "severity": "error",
+          "stepId": "step-001"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-002 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-002"
+        },
+        {
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-002 不存在可解析 locator。",
+          "severity": "error",
+          "stepId": "step-002"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-003 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-003"
+        },
+        {
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-003 不存在可解析 locator。",
+          "severity": "error",
+          "stepId": "step-003"
+        }
+      ],
+      "requiresTeacherConfirmation": true,
+      "schemaVersion": "openstaff.skill-preflight-report.v0",
+      "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/benchmark-pdb-013-system-settings-navigation",
+      "skillName": "benchmark-pdb-013-system-settings-navigation",
+      "status": "failed",
+      "steps": [
+        {
+          "actionType": "click",
+          "confidence": 0.72,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-001"
+            },
+            {
+              "code": "SPF-MISSING-LOCATOR",
+              "message": "步骤 step-001 不存在可解析 locator。",
+              "severity": "error",
+              "stepId": "step-001"
+            }
+          ],
+          "locatorStatus": "missing",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-001",
+          "targetAppBundleIds": [
+            "com.apple.systempreferences"
+          ]
+        },
+        {
+          "actionType": "click",
+          "confidence": 0.72,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-002 置信度 0.72 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-002"
+            },
+            {
+              "code": "SPF-MISSING-LOCATOR",
+              "message": "步骤 step-002 不存在可解析 locator。",
+              "severity": "error",
+              "stepId": "step-002"
+            }
+          ],
+          "locatorStatus": "missing",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-002",
+          "targetAppBundleIds": [
+            "com.apple.systempreferences"
+          ]
+        },
+        {
+          "actionType": "click",
+          "confidence": 0.72,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-003 置信度 0.72 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-003"
+            },
+            {
+              "code": "SPF-MISSING-LOCATOR",
+              "message": "步骤 step-003 不存在可解析 locator。",
+              "severity": "error",
+              "stepId": "step-003"
+            }
+          ],
+          "locatorStatus": "missing",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-003",
+          "targetAppBundleIds": [
+            "com.apple.systempreferences"
+          ]
+        }
+      ],
+      "summary": "skill benchmark-pdb-013-system-settings-navigation 预检失败：步骤 3，可直接自动执行 0，错误 3，告警 4。"
+    },
+    "reviewId": "openclaw-review-trace-openclaw-run-99a5f170-0442-42ff-a3d0-c1b01acc5187",
+    "sessionId": "session-gui-b3e503cf-teaching-20260310-164817",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/benchmark-pdb-013-system-settings-navigation",
+    "skillName": "benchmark-pdb-013-system-settings-navigation",
+    "startedAt": "2026-03-13T17:54:10.208Z",
+    "status": "blocked",
+    "succeededSteps": 0,
+    "summary": "skill benchmark-pdb-013-system-settings-navigation 预检失败：步骤 3，可直接自动执行 0，错误 3，告警 4。",
+    "taskId": "task-session-gui-b3e503cf-teaching-20260310-164817-001",
+    "totalSteps": 0,
+    "traceId": "trace-openclaw-run-99a5f170-0442-42ff-a3d0-c1b01acc5187"
+  },
+  "runtimeArguments": [
+    "--gateway-mode",
+    "--skill-dir",
+    "/Users/wangzhenwu/Desktop/code/Personal/openstaff/data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/benchmark-pdb-013-system-settings-navigation",
+    "--trace-id",
+    "trace-openclaw-run-99a5f170-0442-42ff-a3d0-c1b01acc5187",
+    "--session-id",
+    "session-gui-b3e503cf-teaching-20260310-164817",
+    "--json-result",
+    "--task-id",
+    "task-session-gui-b3e503cf-teaching-20260310-164817-001"
+  ],
+  "runtimeExecutablePath": "apps/macos/.build/debug/OpenStaffOpenClawCLI",
+  "schemaVersion": "openstaff.openclaw.execution-result.v0",
+  "sessionId": "session-gui-b3e503cf-teaching-20260310-164817",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/benchmark-pdb-013-system-settings-navigation",
+  "skillName": "benchmark-pdb-013-system-settings-navigation",
+  "startedAt": "2026-03-13T17:54:10.208Z",
+  "status": "blocked",
+  "stderr": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。\n步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。\n步骤 step-001 不存在可解析 locator。\n步骤 step-002 置信度 0.72 低于阈值 0.80，需要老师确认。\n步骤 step-002 不存在可解析 locator。\n步骤 step-003 置信度 0.72 低于阈值 0.80，需要老师确认。\n步骤 step-003 不存在可解析 locator。",
+  "stdout": "",
+  "stepResults": [],
+  "succeededSteps": 0,
+  "summary": "skill benchmark-pdb-013-system-settings-navigation 预检失败：步骤 3，可直接自动执行 0，错误 3，告警 4。",
+  "taskId": "task-session-gui-b3e503cf-teaching-20260310-164817-001",
+  "totalSteps": 0,
+  "traceId": "trace-openclaw-run-99a5f170-0442-42ff-a3d0-c1b01acc5187"
+}

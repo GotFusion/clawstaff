@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.source-record.v0",
+  "caseId": "pdb-019-xcode-focus-d",
+  "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-001",
+  "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+  "category": "developer-tools",
+  "title": "Xcode 前台聚焦 D",
+  "sourceArtifacts": {
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-fff3b655-teaching-20260310-201407.jsonl",
+    "rawEventLogSha256": "5489a05925ce5755b56f3cb375cd6c106eb1042aff562dc1d8637a09709fc2e4",
+    "rawEventCount": 16,
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-fff3b655-teaching-20260310-201407-001.json",
+    "taskChunkSha256": "615140104d578de6d08d97968a09868a5f4a928db10bf61978d54f8e497322ee",
+    "knowledgeItemPath": "data/knowledge/2026-03-10/task-session-gui-fff3b655-teaching-20260310-201407-001.json",
+    "knowledgeItemSha256": "2732904beb48960154ff3d6a4bee5600fc3002b26ca3040867832160a98e866e",
+    "knowledgeStepCount": 1
+  },
+  "legacyArtifacts": {
+    "studentReviewPaths": [],
+    "teacherFeedbackPaths": []
+  },
+  "context": {
+    "appName": "Xcode",
+    "windowTitle": "",
+    "goal": "在 Xcode 中复现任务 task-session-gui-fff3b655-teaching-20260310-201407-001 的操作流程",
+    "boundaryReason": "contextSwitch",
+    "startTimestamp": "2026-03-10T12:14:09.207Z",
+    "endTimestamp": "2026-03-10T12:14:09.207Z"
+  },
+  "tags": [
+    "xcode",
+    "focus"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+  "caseId": "pdb-021-safari-baidu-b",
+  "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-003",
+  "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+  "category": "browser-operations",
+  "title": "Safari 百度页操作 B",
+  "passed": true,
+  "source": {
+    "appName": "Safari浏览器",
+    "windowTitle": "个人 — 百度一下，你就知道",
+    "goal": "在 Safari浏览器 中复现任务 task-session-gui-fff3b655-teaching-20260310-201407-003 的操作流程",
+    "knowledgeStepCount": 2,
+    "rawEventCount": 16
+  },
+  "artifacts": {
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/source-record.json",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b",
+    "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/skill-preflight.json",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/execution-result.json",
+    "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/review-result.json",
+    "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/case-report.json"
+  },
+  "results": {
+    "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+    "skillMapperExitCode": 0,
+    "skillPreflightExitCode": 0,
+    "skillPreflightStatus": "needs_teacher_confirmation",
+    "expectedExecutionStatus": "succeeded",
+    "executionStatus": "succeeded",
+    "reviewDecision": "approved"
+  },
+  "tags": [
+    "safari",
+    "baidu"
+  ]
+}

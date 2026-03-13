@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+  "caseId": "pdb-011-finder-window-navigation",
+  "taskId": "task-session-gui-8ec4947b-teaching-20260310-202519-001",
+  "sessionId": "session-gui-8ec4947b-teaching-20260310-202519",
+  "category": "file-organization",
+  "title": "访达窗口文件导航",
+  "passed": true,
+  "source": {
+    "appName": "访达",
+    "windowTitle": "",
+    "goal": "在 访达 中复现任务 task-session-gui-8ec4947b-teaching-20260310-202519-001 的操作流程",
+    "knowledgeStepCount": 3,
+    "rawEventCount": 16
+  },
+  "artifacts": {
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/source-record.json",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/benchmark-pdb-011-finder-window-navigation",
+    "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/skill-preflight.json",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/execution-result.json",
+    "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/review-result.json",
+    "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/case-report.json"
+  },
+  "results": {
+    "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+    "skillMapperExitCode": 0,
+    "skillPreflightExitCode": 0,
+    "skillPreflightStatus": "needs_teacher_confirmation",
+    "expectedExecutionStatus": "succeeded",
+    "executionStatus": "succeeded",
+    "reviewDecision": "approved"
+  },
+  "tags": [
+    "finder",
+    "files",
+    "navigation"
+  ]
+}

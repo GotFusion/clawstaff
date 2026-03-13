@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.source-record.v0",
+  "caseId": "pdb-021-safari-baidu-b",
+  "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-003",
+  "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+  "category": "browser-operations",
+  "title": "Safari 百度页操作 B",
+  "sourceArtifacts": {
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-fff3b655-teaching-20260310-201407.jsonl",
+    "rawEventLogSha256": "5489a05925ce5755b56f3cb375cd6c106eb1042aff562dc1d8637a09709fc2e4",
+    "rawEventCount": 16,
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-fff3b655-teaching-20260310-201407-003.json",
+    "taskChunkSha256": "950d39567327fe091a43be1aa92b498af7db5ac47169c2bbd4303cc88d97f437",
+    "knowledgeItemPath": "data/knowledge/2026-03-10/task-session-gui-fff3b655-teaching-20260310-201407-003.json",
+    "knowledgeItemSha256": "16aa74ab32da438178d077f0f437d280f0b62938bba0d64e641992337fe08302",
+    "knowledgeStepCount": 2
+  },
+  "legacyArtifacts": {
+    "studentReviewPaths": [],
+    "teacherFeedbackPaths": []
+  },
+  "context": {
+    "appName": "Safari浏览器",
+    "windowTitle": "个人 — 百度一下，你就知道",
+    "goal": "在 Safari浏览器 中复现任务 task-session-gui-fff3b655-teaching-20260310-201407-003 的操作流程",
+    "boundaryReason": "sessionEnd",
+    "startTimestamp": "2026-03-10T12:14:18.419Z",
+    "endTimestamp": "2026-03-10T12:14:21.555Z"
+  },
+  "tags": [
+    "safari",
+    "baidu"
+  ]
+}

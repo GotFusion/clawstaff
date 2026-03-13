@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "openstaff.skill-preflight-report.v0",
+  "skillName": "benchmark-pdb-017-safari-start-page-b",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-017-safari-start-page-b/benchmark-pdb-017-safari-start-page-b",
+  "status": "failed",
+  "summary": "skill benchmark-pdb-017-safari-start-page-b 预检失败：步骤 1，可直接自动执行 0，错误 1，告警 2。",
+  "requiresTeacherConfirmation": true,
+  "isAutoRunnable": false,
+  "allowedAppBundleIds": [
+    "com.apple.Safari"
+  ],
+  "issues": [
+    {
+      "severity": "warning",
+      "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+      "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-001"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-001 不存在可解析 locator。",
+      "stepId": "step-001"
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "step-001",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.apple.Safari"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-001"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-001 不存在可解析 locator。",
+          "stepId": "step-001"
+        }
+      ]
+    }
+  ]
+}

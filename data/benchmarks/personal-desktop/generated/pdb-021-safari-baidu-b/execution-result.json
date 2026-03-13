@@ -1,0 +1,239 @@
+{
+  "blockedSteps": 0,
+  "exitCode": 0,
+  "failedSteps": 0,
+  "finishedAt": "2026-03-13T17:54:11.266Z",
+  "preflight": {
+    "allowedAppBundleIds": [
+      "com.apple.Safari"
+    ],
+    "isAutoRunnable": false,
+    "issues": [
+      {
+        "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+        "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+        "severity": "warning"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-001"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-002"
+      },
+      {
+        "code": "SPF-COORDINATE-ONLY-FALLBACK",
+        "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+        "severity": "warning",
+        "stepId": "step-002"
+      }
+    ],
+    "requiresTeacherConfirmation": true,
+    "schemaVersion": "openstaff.skill-preflight-report.v0",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b",
+    "skillName": "benchmark-pdb-021-safari-baidu-b",
+    "status": "needs_teacher_confirmation",
+    "steps": [
+      {
+        "actionType": "shortcut",
+        "confidence": 0.72,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-001"
+          }
+        ],
+        "locatorStatus": "not_required",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-001",
+        "targetAppBundleIds": [
+          "com.apple.Safari"
+        ]
+      },
+      {
+        "actionType": "click",
+        "confidence": 0.24,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-002"
+          },
+          {
+            "code": "SPF-COORDINATE-ONLY-FALLBACK",
+            "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+            "severity": "warning",
+            "stepId": "step-002"
+          }
+        ],
+        "locatorStatus": "degraded",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-002",
+        "targetAppBundleIds": [
+          "com.apple.Safari"
+        ]
+      }
+    ],
+    "summary": "skill benchmark-pdb-021-safari-baidu-b 预检需老师确认：步骤 2，可直接自动执行 0，错误 0，告警 4。"
+  },
+  "review": {
+    "blockedSteps": 0,
+    "component": "student.openclaw.runner",
+    "exitCode": 0,
+    "failedSteps": 0,
+    "finishedAt": "2026-03-13T17:54:11.266Z",
+    "logFilePath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/logs/2026-03-13/session-gui-fff3b655-teaching-20260310-201407-openclaw.log",
+    "preflight": {
+      "allowedAppBundleIds": [
+        "com.apple.Safari"
+      ],
+      "isAutoRunnable": false,
+      "issues": [
+        {
+          "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+          "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+          "severity": "warning"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-001"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-002"
+        },
+        {
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+          "severity": "warning",
+          "stepId": "step-002"
+        }
+      ],
+      "requiresTeacherConfirmation": true,
+      "schemaVersion": "openstaff.skill-preflight-report.v0",
+      "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b",
+      "skillName": "benchmark-pdb-021-safari-baidu-b",
+      "status": "needs_teacher_confirmation",
+      "steps": [
+        {
+          "actionType": "shortcut",
+          "confidence": 0.72,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-001"
+            }
+          ],
+          "locatorStatus": "not_required",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-001",
+          "targetAppBundleIds": [
+            "com.apple.Safari"
+          ]
+        },
+        {
+          "actionType": "click",
+          "confidence": 0.24,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-002"
+            },
+            {
+              "code": "SPF-COORDINATE-ONLY-FALLBACK",
+              "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+              "severity": "warning",
+              "stepId": "step-002"
+            }
+          ],
+          "locatorStatus": "degraded",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-002",
+          "targetAppBundleIds": [
+            "com.apple.Safari"
+          ]
+        }
+      ],
+      "summary": "skill benchmark-pdb-021-safari-baidu-b 预检需老师确认：步骤 2，可直接自动执行 0，错误 0，告警 4。"
+    },
+    "reviewId": "openclaw-review-trace-openclaw-run-ebe484dd-9278-4344-8661-300135ced394",
+    "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b",
+    "skillName": "benchmark-pdb-021-safari-baidu-b",
+    "startedAt": "2026-03-13T17:54:11.265Z",
+    "status": "succeeded",
+    "succeededSteps": 2,
+    "summary": "Gateway finished skill benchmark-pdb-021-safari-baidu-b. total=2 succeeded=2 failed=0 blocked=0",
+    "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-003",
+    "totalSteps": 2,
+    "traceId": "trace-openclaw-run-ebe484dd-9278-4344-8661-300135ced394"
+  },
+  "runtimeArguments": [
+    "--gateway-mode",
+    "--skill-dir",
+    "/Users/wangzhenwu/Desktop/code/Personal/openstaff/data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b",
+    "--trace-id",
+    "trace-openclaw-run-ebe484dd-9278-4344-8661-300135ced394",
+    "--session-id",
+    "session-gui-fff3b655-teaching-20260310-201407",
+    "--json-result",
+    "--task-id",
+    "task-session-gui-fff3b655-teaching-20260310-201407-003"
+  ],
+  "runtimeExecutablePath": "apps/macos/.build/debug/OpenStaffOpenClawCLI",
+  "schemaVersion": "openstaff.openclaw.execution-result.v0",
+  "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b",
+  "skillName": "benchmark-pdb-021-safari-baidu-b",
+  "startedAt": "2026-03-13T17:54:11.244Z",
+  "status": "succeeded",
+  "stderr": "",
+  "stdout": "{\n  \"blockedSteps\" : 0,\n  \"failedSteps\" : 0,\n  \"finishedAt\" : \"2026-03-13T17:54:11.266Z\",\n  \"schemaVersion\" : \"openstaff.openclaw.gateway-result.v0\",\n  \"sessionId\" : \"session-gui-fff3b655-teaching-20260310-201407\",\n  \"skillDirectoryPath\" : \"\\/Users\\/wangzhenwu\\/Desktop\\/code\\/Personal\\/openstaff\\/data\\/benchmarks\\/personal-desktop\\/generated\\/pdb-021-safari-baidu-b\\/benchmark-pdb-021-safari-baidu-b\",\n  \"skillName\" : \"benchmark-pdb-021-safari-baidu-b\",\n  \"startedAt\" : \"2026-03-13T17:54:11.265Z\",\n  \"status\" : \"succeeded\",\n  \"stepResults\" : [\n    {\n      \"actionType\" : \"shortcut\",\n      \"finishedAt\" : \"2026-03-13T17:54:11.266Z\",\n      \"output\" : \"Gateway executed shortcut -> unknown\",\n      \"startedAt\" : \"2026-03-13T17:54:11.266Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-001\"\n    },\n    {\n      \"actionType\" : \"click\",\n      \"finishedAt\" : \"2026-03-13T17:54:11.266Z\",\n      \"output\" : \"Gateway executed click -> coordinate:45,964\",\n      \"startedAt\" : \"2026-03-13T17:54:11.266Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-002\"\n    }\n  ],\n  \"succeededSteps\" : 2,\n  \"summary\" : \"Gateway finished skill benchmark-pdb-021-safari-baidu-b. total=2 succeeded=2 failed=0 blocked=0\",\n  \"taskId\" : \"task-session-gui-fff3b655-teaching-20260310-201407-003\",\n  \"totalSteps\" : 2,\n  \"traceId\" : \"trace-openclaw-run-ebe484dd-9278-4344-8661-300135ced394\"\n}\n",
+  "stepResults": [
+    {
+      "actionType": "shortcut",
+      "finishedAt": "2026-03-13T17:54:11.266Z",
+      "output": "Gateway executed shortcut -> unknown",
+      "startedAt": "2026-03-13T17:54:11.266Z",
+      "status": "succeeded",
+      "stepId": "step-001"
+    },
+    {
+      "actionType": "click",
+      "finishedAt": "2026-03-13T17:54:11.266Z",
+      "output": "Gateway executed click -> coordinate:45,964",
+      "startedAt": "2026-03-13T17:54:11.266Z",
+      "status": "succeeded",
+      "stepId": "step-002"
+    }
+  ],
+  "succeededSteps": 2,
+  "summary": "Gateway finished skill benchmark-pdb-021-safari-baidu-b. total=2 succeeded=2 failed=0 blocked=0",
+  "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-003",
+  "totalSteps": 2,
+  "traceId": "trace-openclaw-run-ebe484dd-9278-4344-8661-300135ced394"
+}

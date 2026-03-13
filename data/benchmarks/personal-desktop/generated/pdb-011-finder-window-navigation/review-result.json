@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.review.v0",
+  "caseId": "pdb-011-finder-window-navigation",
+  "taskId": "task-session-gui-8ec4947b-teaching-20260310-202519-001",
+  "sessionId": "session-gui-8ec4947b-teaching-20260310-202519",
+  "category": "file-organization",
+  "title": "访达窗口文件导航",
+  "reviewedAt": "2026-03-14T01:54:10+08:00",
+  "reviewer": "benchmark-regression",
+  "decision": "approved",
+  "passed": true,
+  "summary": "skill preflight=needs_teacher_confirmation; runtime=succeeded; steps=3/3; expectedPreflight=needs_teacher_confirmation; expectedRuntime=succeeded",
+  "notes": [
+    "Benchmark runner injects teacher confirmation to validate deterministic runtime execution for confirmation-gated skills."
+  ],
+  "artifacts": {
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/benchmark-pdb-011-finder-window-navigation",
+    "expectedPreflightStatus": "needs_teacher_confirmation",
+    "preflightStatus": "needs_teacher_confirmation",
+    "expectedExecutionStatus": "succeeded",
+    "executionStatus": "succeeded",
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/logs/2026-03-13/session-gui-8ec4947b-teaching-20260310-202519-openclaw.log"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.source-record.v0",
+  "caseId": "pdb-003-xcode-package-navigation-c",
+  "taskId": "task-session-gui-25d0d2ed-teaching-20260310-204424-001",
+  "sessionId": "session-gui-25d0d2ed-teaching-20260310-204424",
+  "category": "developer-tools",
+  "title": "Xcode Package.swift 深度导航",
+  "sourceArtifacts": {
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-25d0d2ed-teaching-20260310-204424.jsonl",
+    "rawEventLogSha256": "7f941e851138baf3656df8bcc9f2ceac26eddc8b831d96f8f4c762ca80c70c61",
+    "rawEventCount": 24,
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-25d0d2ed-teaching-20260310-204424-001.json",
+    "taskChunkSha256": "8c0072c79543de12c29a00665e89ed2869229d7505cb2277af20ac7382ae4659",
+    "knowledgeItemPath": "data/knowledge/2026-03-10/task-session-gui-25d0d2ed-teaching-20260310-204424-001.json",
+    "knowledgeItemSha256": "75b8f27521e9bd5310a420cff8dcbff8eb9e9eeb58252624783e69e2c8312dff",
+    "knowledgeStepCount": 8
+  },
+  "legacyArtifacts": {
+    "studentReviewPaths": [],
+    "teacherFeedbackPaths": []
+  },
+  "context": {
+    "appName": "Xcode",
+    "windowTitle": "macos — Package.swift",
+    "goal": "在 Xcode 中复现任务 task-session-gui-25d0d2ed-teaching-20260310-204424-001 的操作流程",
+    "boundaryReason": "sessionEnd",
+    "startTimestamp": "2026-03-10T12:44:26.941Z",
+    "endTimestamp": "2026-03-10T12:44:46.817Z"
+  },
+  "tags": [
+    "xcode",
+    "package-swift",
+    "navigation"
+  ]
+}

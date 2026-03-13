@@ -1,0 +1,575 @@
+{
+  "blockedSteps": 0,
+  "exitCode": 0,
+  "failedSteps": 0,
+  "finishedAt": "2026-03-13T17:54:08.890Z",
+  "preflight": {
+    "allowedAppBundleIds": [
+      "com.apple.dt.Xcode"
+    ],
+    "isAutoRunnable": false,
+    "issues": [
+      {
+        "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+        "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+        "severity": "warning"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-001"
+      },
+      {
+        "code": "SPF-COORDINATE-ONLY-FALLBACK",
+        "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+        "severity": "warning",
+        "stepId": "step-001"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-002"
+      },
+      {
+        "code": "SPF-COORDINATE-ONLY-FALLBACK",
+        "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+        "severity": "warning",
+        "stepId": "step-002"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-003 置信度 0.24 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-003"
+      },
+      {
+        "code": "SPF-COORDINATE-ONLY-FALLBACK",
+        "message": "步骤 step-003 仅剩 coordinateFallback，不能直接自动执行。",
+        "severity": "warning",
+        "stepId": "step-003"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-004 置信度 0.24 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-004"
+      },
+      {
+        "code": "SPF-COORDINATE-ONLY-FALLBACK",
+        "message": "步骤 step-004 仅剩 coordinateFallback，不能直接自动执行。",
+        "severity": "warning",
+        "stepId": "step-004"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-005 置信度 0.72 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-005"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-006 置信度 0.24 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-006"
+      },
+      {
+        "code": "SPF-COORDINATE-ONLY-FALLBACK",
+        "message": "步骤 step-006 仅剩 coordinateFallback，不能直接自动执行。",
+        "severity": "warning",
+        "stepId": "step-006"
+      }
+    ],
+    "requiresTeacherConfirmation": true,
+    "schemaVersion": "openstaff.skill-preflight-report.v0",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/benchmark-pdb-002-xcode-package-navigation-b",
+    "skillName": "benchmark-pdb-002-xcode-package-navigation-b",
+    "status": "needs_teacher_confirmation",
+    "steps": [
+      {
+        "actionType": "click",
+        "confidence": 0.24,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-001"
+          },
+          {
+            "code": "SPF-COORDINATE-ONLY-FALLBACK",
+            "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+            "severity": "warning",
+            "stepId": "step-001"
+          }
+        ],
+        "locatorStatus": "degraded",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-001",
+        "targetAppBundleIds": [
+          "com.apple.dt.Xcode"
+        ]
+      },
+      {
+        "actionType": "click",
+        "confidence": 0.24,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-002"
+          },
+          {
+            "code": "SPF-COORDINATE-ONLY-FALLBACK",
+            "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+            "severity": "warning",
+            "stepId": "step-002"
+          }
+        ],
+        "locatorStatus": "degraded",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-002",
+        "targetAppBundleIds": [
+          "com.apple.dt.Xcode"
+        ]
+      },
+      {
+        "actionType": "click",
+        "confidence": 0.24,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-003 置信度 0.24 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-003"
+          },
+          {
+            "code": "SPF-COORDINATE-ONLY-FALLBACK",
+            "message": "步骤 step-003 仅剩 coordinateFallback，不能直接自动执行。",
+            "severity": "warning",
+            "stepId": "step-003"
+          }
+        ],
+        "locatorStatus": "degraded",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-003",
+        "targetAppBundleIds": [
+          "com.apple.dt.Xcode"
+        ]
+      },
+      {
+        "actionType": "click",
+        "confidence": 0.24,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-004 置信度 0.24 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-004"
+          },
+          {
+            "code": "SPF-COORDINATE-ONLY-FALLBACK",
+            "message": "步骤 step-004 仅剩 coordinateFallback，不能直接自动执行。",
+            "severity": "warning",
+            "stepId": "step-004"
+          }
+        ],
+        "locatorStatus": "degraded",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-004",
+        "targetAppBundleIds": [
+          "com.apple.dt.Xcode"
+        ]
+      },
+      {
+        "actionType": "input",
+        "confidence": 0.72,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-005 置信度 0.72 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-005"
+          }
+        ],
+        "locatorStatus": "not_required",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-005",
+        "targetAppBundleIds": [
+          "com.apple.dt.Xcode"
+        ]
+      },
+      {
+        "actionType": "click",
+        "confidence": 0.24,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-006 置信度 0.24 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-006"
+          },
+          {
+            "code": "SPF-COORDINATE-ONLY-FALLBACK",
+            "message": "步骤 step-006 仅剩 coordinateFallback，不能直接自动执行。",
+            "severity": "warning",
+            "stepId": "step-006"
+          }
+        ],
+        "locatorStatus": "degraded",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-006",
+        "targetAppBundleIds": [
+          "com.apple.dt.Xcode"
+        ]
+      }
+    ],
+    "summary": "skill benchmark-pdb-002-xcode-package-navigation-b 预检需老师确认：步骤 6，可直接自动执行 0，错误 0，告警 12。"
+  },
+  "review": {
+    "blockedSteps": 0,
+    "component": "student.openclaw.runner",
+    "exitCode": 0,
+    "failedSteps": 0,
+    "finishedAt": "2026-03-13T17:54:08.890Z",
+    "logFilePath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/logs/2026-03-13/session-gui-0cacb6a5-teaching-20260310-204532-openclaw.log",
+    "preflight": {
+      "allowedAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "isAutoRunnable": false,
+      "issues": [
+        {
+          "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+          "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+          "severity": "warning"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-001"
+        },
+        {
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+          "severity": "warning",
+          "stepId": "step-001"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-002"
+        },
+        {
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+          "severity": "warning",
+          "stepId": "step-002"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-003 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-003"
+        },
+        {
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-003 仅剩 coordinateFallback，不能直接自动执行。",
+          "severity": "warning",
+          "stepId": "step-003"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-004 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-004"
+        },
+        {
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-004 仅剩 coordinateFallback，不能直接自动执行。",
+          "severity": "warning",
+          "stepId": "step-004"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-005 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-005"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-006 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-006"
+        },
+        {
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-006 仅剩 coordinateFallback，不能直接自动执行。",
+          "severity": "warning",
+          "stepId": "step-006"
+        }
+      ],
+      "requiresTeacherConfirmation": true,
+      "schemaVersion": "openstaff.skill-preflight-report.v0",
+      "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/benchmark-pdb-002-xcode-package-navigation-b",
+      "skillName": "benchmark-pdb-002-xcode-package-navigation-b",
+      "status": "needs_teacher_confirmation",
+      "steps": [
+        {
+          "actionType": "click",
+          "confidence": 0.24,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-001"
+            },
+            {
+              "code": "SPF-COORDINATE-ONLY-FALLBACK",
+              "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+              "severity": "warning",
+              "stepId": "step-001"
+            }
+          ],
+          "locatorStatus": "degraded",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-001",
+          "targetAppBundleIds": [
+            "com.apple.dt.Xcode"
+          ]
+        },
+        {
+          "actionType": "click",
+          "confidence": 0.24,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-002"
+            },
+            {
+              "code": "SPF-COORDINATE-ONLY-FALLBACK",
+              "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+              "severity": "warning",
+              "stepId": "step-002"
+            }
+          ],
+          "locatorStatus": "degraded",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-002",
+          "targetAppBundleIds": [
+            "com.apple.dt.Xcode"
+          ]
+        },
+        {
+          "actionType": "click",
+          "confidence": 0.24,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-003 置信度 0.24 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-003"
+            },
+            {
+              "code": "SPF-COORDINATE-ONLY-FALLBACK",
+              "message": "步骤 step-003 仅剩 coordinateFallback，不能直接自动执行。",
+              "severity": "warning",
+              "stepId": "step-003"
+            }
+          ],
+          "locatorStatus": "degraded",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-003",
+          "targetAppBundleIds": [
+            "com.apple.dt.Xcode"
+          ]
+        },
+        {
+          "actionType": "click",
+          "confidence": 0.24,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-004 置信度 0.24 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-004"
+            },
+            {
+              "code": "SPF-COORDINATE-ONLY-FALLBACK",
+              "message": "步骤 step-004 仅剩 coordinateFallback，不能直接自动执行。",
+              "severity": "warning",
+              "stepId": "step-004"
+            }
+          ],
+          "locatorStatus": "degraded",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-004",
+          "targetAppBundleIds": [
+            "com.apple.dt.Xcode"
+          ]
+        },
+        {
+          "actionType": "input",
+          "confidence": 0.72,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-005 置信度 0.72 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-005"
+            }
+          ],
+          "locatorStatus": "not_required",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-005",
+          "targetAppBundleIds": [
+            "com.apple.dt.Xcode"
+          ]
+        },
+        {
+          "actionType": "click",
+          "confidence": 0.24,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-006 置信度 0.24 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-006"
+            },
+            {
+              "code": "SPF-COORDINATE-ONLY-FALLBACK",
+              "message": "步骤 step-006 仅剩 coordinateFallback，不能直接自动执行。",
+              "severity": "warning",
+              "stepId": "step-006"
+            }
+          ],
+          "locatorStatus": "degraded",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-006",
+          "targetAppBundleIds": [
+            "com.apple.dt.Xcode"
+          ]
+        }
+      ],
+      "summary": "skill benchmark-pdb-002-xcode-package-navigation-b 预检需老师确认：步骤 6，可直接自动执行 0，错误 0，告警 12。"
+    },
+    "reviewId": "openclaw-review-trace-openclaw-run-78411950-990f-4087-ab3d-51732f230513",
+    "sessionId": "session-gui-0cacb6a5-teaching-20260310-204532",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/benchmark-pdb-002-xcode-package-navigation-b",
+    "skillName": "benchmark-pdb-002-xcode-package-navigation-b",
+    "startedAt": "2026-03-13T17:54:08.888Z",
+    "status": "succeeded",
+    "succeededSteps": 6,
+    "summary": "Gateway finished skill benchmark-pdb-002-xcode-package-navigation-b. total=6 succeeded=6 failed=0 blocked=0",
+    "taskId": "task-session-gui-0cacb6a5-teaching-20260310-204532-001",
+    "totalSteps": 6,
+    "traceId": "trace-openclaw-run-78411950-990f-4087-ab3d-51732f230513"
+  },
+  "runtimeArguments": [
+    "--gateway-mode",
+    "--skill-dir",
+    "/Users/wangzhenwu/Desktop/code/Personal/openstaff/data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/benchmark-pdb-002-xcode-package-navigation-b",
+    "--trace-id",
+    "trace-openclaw-run-78411950-990f-4087-ab3d-51732f230513",
+    "--session-id",
+    "session-gui-0cacb6a5-teaching-20260310-204532",
+    "--json-result",
+    "--task-id",
+    "task-session-gui-0cacb6a5-teaching-20260310-204532-001"
+  ],
+  "runtimeExecutablePath": "apps/macos/.build/debug/OpenStaffOpenClawCLI",
+  "schemaVersion": "openstaff.openclaw.execution-result.v0",
+  "sessionId": "session-gui-0cacb6a5-teaching-20260310-204532",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/benchmark-pdb-002-xcode-package-navigation-b",
+  "skillName": "benchmark-pdb-002-xcode-package-navigation-b",
+  "startedAt": "2026-03-13T17:54:08.867Z",
+  "status": "succeeded",
+  "stderr": "",
+  "stdout": "{\n  \"blockedSteps\" : 0,\n  \"failedSteps\" : 0,\n  \"finishedAt\" : \"2026-03-13T17:54:08.890Z\",\n  \"schemaVersion\" : \"openstaff.openclaw.gateway-result.v0\",\n  \"sessionId\" : \"session-gui-0cacb6a5-teaching-20260310-204532\",\n  \"skillDirectoryPath\" : \"\\/Users\\/wangzhenwu\\/Desktop\\/code\\/Personal\\/openstaff\\/data\\/benchmarks\\/personal-desktop\\/generated\\/pdb-002-xcode-package-navigation-b\\/benchmark-pdb-002-xcode-package-navigation-b\",\n  \"skillName\" : \"benchmark-pdb-002-xcode-package-navigation-b\",\n  \"startedAt\" : \"2026-03-13T17:54:08.888Z\",\n  \"status\" : \"succeeded\",\n  \"stepResults\" : [\n    {\n      \"actionType\" : \"click\",\n      \"finishedAt\" : \"2026-03-13T17:54:08.888Z\",\n      \"output\" : \"Gateway executed click -> coordinate:538,43\",\n      \"startedAt\" : \"2026-03-13T17:54:08.888Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-001\"\n    },\n    {\n      \"actionType\" : \"click\",\n      \"finishedAt\" : \"2026-03-13T17:54:08.888Z\",\n      \"output\" : \"Gateway executed click -> coordinate:729,637\",\n      \"startedAt\" : \"2026-03-13T17:54:08.888Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-002\"\n    },\n    {\n      \"actionType\" : \"click\",\n      \"finishedAt\" : \"2026-03-13T17:54:08.889Z\",\n      \"output\" : \"Gateway executed click -> coordinate:382,761\",\n      \"startedAt\" : \"2026-03-13T17:54:08.889Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-003\"\n    },\n    {\n      \"actionType\" : \"click\",\n      \"finishedAt\" : \"2026-03-13T17:54:08.889Z\",\n      \"output\" : \"Gateway executed click -> coordinate:1581,824\",\n      \"startedAt\" : \"2026-03-13T17:54:08.889Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-004\"\n    },\n    {\n      \"actionType\" : \"input\",\n      \"finishedAt\" : \"2026-03-13T17:54:08.889Z\",\n      \"output\" : \"Gateway executed input -> unknown\",\n      \"startedAt\" : \"2026-03-13T17:54:08.889Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-005\"\n    },\n    {\n      \"actionType\" : \"click\",\n      \"finishedAt\" : \"2026-03-13T17:54:08.889Z\",\n      \"output\" : \"Gateway executed click -> coordinate:756,779\",\n      \"startedAt\" : \"2026-03-13T17:54:08.889Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-006\"\n    }\n  ],\n  \"succeededSteps\" : 6,\n  \"summary\" : \"Gateway finished skill benchmark-pdb-002-xcode-package-navigation-b. total=6 succeeded=6 failed=0 blocked=0\",\n  \"taskId\" : \"task-session-gui-0cacb6a5-teaching-20260310-204532-001\",\n  \"totalSteps\" : 6,\n  \"traceId\" : \"trace-openclaw-run-78411950-990f-4087-ab3d-51732f230513\"\n}\n",
+  "stepResults": [
+    {
+      "actionType": "click",
+      "finishedAt": "2026-03-13T17:54:08.888Z",
+      "output": "Gateway executed click -> coordinate:538,43",
+      "startedAt": "2026-03-13T17:54:08.888Z",
+      "status": "succeeded",
+      "stepId": "step-001"
+    },
+    {
+      "actionType": "click",
+      "finishedAt": "2026-03-13T17:54:08.888Z",
+      "output": "Gateway executed click -> coordinate:729,637",
+      "startedAt": "2026-03-13T17:54:08.888Z",
+      "status": "succeeded",
+      "stepId": "step-002"
+    },
+    {
+      "actionType": "click",
+      "finishedAt": "2026-03-13T17:54:08.889Z",
+      "output": "Gateway executed click -> coordinate:382,761",
+      "startedAt": "2026-03-13T17:54:08.889Z",
+      "status": "succeeded",
+      "stepId": "step-003"
+    },
+    {
+      "actionType": "click",
+      "finishedAt": "2026-03-13T17:54:08.889Z",
+      "output": "Gateway executed click -> coordinate:1581,824",
+      "startedAt": "2026-03-13T17:54:08.889Z",
+      "status": "succeeded",
+      "stepId": "step-004"
+    },
+    {
+      "actionType": "input",
+      "finishedAt": "2026-03-13T17:54:08.889Z",
+      "output": "Gateway executed input -> unknown",
+      "startedAt": "2026-03-13T17:54:08.889Z",
+      "status": "succeeded",
+      "stepId": "step-005"
+    },
+    {
+      "actionType": "click",
+      "finishedAt": "2026-03-13T17:54:08.889Z",
+      "output": "Gateway executed click -> coordinate:756,779",
+      "startedAt": "2026-03-13T17:54:08.889Z",
+      "status": "succeeded",
+      "stepId": "step-006"
+    }
+  ],
+  "succeededSteps": 6,
+  "summary": "Gateway finished skill benchmark-pdb-002-xcode-package-navigation-b. total=6 succeeded=6 failed=0 blocked=0",
+  "taskId": "task-session-gui-0cacb6a5-teaching-20260310-204532-001",
+  "totalSteps": 6,
+  "traceId": "trace-openclaw-run-78411950-990f-4087-ab3d-51732f230513"
+}

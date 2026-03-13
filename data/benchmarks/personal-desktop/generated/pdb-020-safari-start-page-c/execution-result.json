@@ -1,0 +1,155 @@
+{
+  "blockedSteps": 0,
+  "exitCode": 0,
+  "failedSteps": 0,
+  "finishedAt": "2026-03-13T17:54:11.091Z",
+  "preflight": {
+    "allowedAppBundleIds": [
+      "com.apple.Safari"
+    ],
+    "isAutoRunnable": false,
+    "issues": [
+      {
+        "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+        "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+        "severity": "warning"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-001"
+      }
+    ],
+    "requiresTeacherConfirmation": true,
+    "schemaVersion": "openstaff.skill-preflight-report.v0",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/benchmark-pdb-020-safari-start-page-c",
+    "skillName": "benchmark-pdb-020-safari-start-page-c",
+    "status": "needs_teacher_confirmation",
+    "steps": [
+      {
+        "actionType": "input",
+        "confidence": 0.72,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-001"
+          }
+        ],
+        "locatorStatus": "not_required",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-001",
+        "targetAppBundleIds": [
+          "com.apple.Safari"
+        ]
+      }
+    ],
+    "summary": "skill benchmark-pdb-020-safari-start-page-c 预检需老师确认：步骤 1，可直接自动执行 0，错误 0，告警 2。"
+  },
+  "review": {
+    "blockedSteps": 0,
+    "component": "student.openclaw.runner",
+    "exitCode": 0,
+    "failedSteps": 0,
+    "finishedAt": "2026-03-13T17:54:11.091Z",
+    "logFilePath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/logs/2026-03-13/session-gui-fff3b655-teaching-20260310-201407-openclaw.log",
+    "preflight": {
+      "allowedAppBundleIds": [
+        "com.apple.Safari"
+      ],
+      "isAutoRunnable": false,
+      "issues": [
+        {
+          "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+          "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+          "severity": "warning"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-001"
+        }
+      ],
+      "requiresTeacherConfirmation": true,
+      "schemaVersion": "openstaff.skill-preflight-report.v0",
+      "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/benchmark-pdb-020-safari-start-page-c",
+      "skillName": "benchmark-pdb-020-safari-start-page-c",
+      "status": "needs_teacher_confirmation",
+      "steps": [
+        {
+          "actionType": "input",
+          "confidence": 0.72,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-001"
+            }
+          ],
+          "locatorStatus": "not_required",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-001",
+          "targetAppBundleIds": [
+            "com.apple.Safari"
+          ]
+        }
+      ],
+      "summary": "skill benchmark-pdb-020-safari-start-page-c 预检需老师确认：步骤 1，可直接自动执行 0，错误 0，告警 2。"
+    },
+    "reviewId": "openclaw-review-trace-openclaw-run-bab90e94-8fde-4d04-99da-f8ff92928f84",
+    "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/benchmark-pdb-020-safari-start-page-c",
+    "skillName": "benchmark-pdb-020-safari-start-page-c",
+    "startedAt": "2026-03-13T17:54:11.090Z",
+    "status": "succeeded",
+    "succeededSteps": 1,
+    "summary": "Gateway finished skill benchmark-pdb-020-safari-start-page-c. total=1 succeeded=1 failed=0 blocked=0",
+    "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-002",
+    "totalSteps": 1,
+    "traceId": "trace-openclaw-run-bab90e94-8fde-4d04-99da-f8ff92928f84"
+  },
+  "runtimeArguments": [
+    "--gateway-mode",
+    "--skill-dir",
+    "/Users/wangzhenwu/Desktop/code/Personal/openstaff/data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/benchmark-pdb-020-safari-start-page-c",
+    "--trace-id",
+    "trace-openclaw-run-bab90e94-8fde-4d04-99da-f8ff92928f84",
+    "--session-id",
+    "session-gui-fff3b655-teaching-20260310-201407",
+    "--json-result",
+    "--task-id",
+    "task-session-gui-fff3b655-teaching-20260310-201407-002"
+  ],
+  "runtimeExecutablePath": "apps/macos/.build/debug/OpenStaffOpenClawCLI",
+  "schemaVersion": "openstaff.openclaw.execution-result.v0",
+  "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/benchmark-pdb-020-safari-start-page-c",
+  "skillName": "benchmark-pdb-020-safari-start-page-c",
+  "startedAt": "2026-03-13T17:54:11.065Z",
+  "status": "succeeded",
+  "stderr": "",
+  "stdout": "{\n  \"blockedSteps\" : 0,\n  \"failedSteps\" : 0,\n  \"finishedAt\" : \"2026-03-13T17:54:11.091Z\",\n  \"schemaVersion\" : \"openstaff.openclaw.gateway-result.v0\",\n  \"sessionId\" : \"session-gui-fff3b655-teaching-20260310-201407\",\n  \"skillDirectoryPath\" : \"\\/Users\\/wangzhenwu\\/Desktop\\/code\\/Personal\\/openstaff\\/data\\/benchmarks\\/personal-desktop\\/generated\\/pdb-020-safari-start-page-c\\/benchmark-pdb-020-safari-start-page-c\",\n  \"skillName\" : \"benchmark-pdb-020-safari-start-page-c\",\n  \"startedAt\" : \"2026-03-13T17:54:11.090Z\",\n  \"status\" : \"succeeded\",\n  \"stepResults\" : [\n    {\n      \"actionType\" : \"input\",\n      \"finishedAt\" : \"2026-03-13T17:54:11.091Z\",\n      \"output\" : \"Gateway executed input -> unknown\",\n      \"startedAt\" : \"2026-03-13T17:54:11.091Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-001\"\n    }\n  ],\n  \"succeededSteps\" : 1,\n  \"summary\" : \"Gateway finished skill benchmark-pdb-020-safari-start-page-c. total=1 succeeded=1 failed=0 blocked=0\",\n  \"taskId\" : \"task-session-gui-fff3b655-teaching-20260310-201407-002\",\n  \"totalSteps\" : 1,\n  \"traceId\" : \"trace-openclaw-run-bab90e94-8fde-4d04-99da-f8ff92928f84\"\n}\n",
+  "stepResults": [
+    {
+      "actionType": "input",
+      "finishedAt": "2026-03-13T17:54:11.091Z",
+      "output": "Gateway executed input -> unknown",
+      "startedAt": "2026-03-13T17:54:11.091Z",
+      "status": "succeeded",
+      "stepId": "step-001"
+    }
+  ],
+  "succeededSteps": 1,
+  "summary": "Gateway finished skill benchmark-pdb-020-safari-start-page-c. total=1 succeeded=1 failed=0 blocked=0",
+  "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-002",
+  "totalSteps": 1,
+  "traceId": "trace-openclaw-run-bab90e94-8fde-4d04-99da-f8ff92928f84"
+}

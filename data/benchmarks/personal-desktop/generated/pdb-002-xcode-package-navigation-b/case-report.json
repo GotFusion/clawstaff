@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+  "caseId": "pdb-002-xcode-package-navigation-b",
+  "taskId": "task-session-gui-0cacb6a5-teaching-20260310-204532-001",
+  "sessionId": "session-gui-0cacb6a5-teaching-20260310-204532",
+  "category": "developer-tools",
+  "title": "Xcode Package.swift 导航链路 B",
+  "passed": true,
+  "source": {
+    "appName": "Xcode",
+    "windowTitle": "macos — Package.swift",
+    "goal": "在 Xcode 中复现任务 task-session-gui-0cacb6a5-teaching-20260310-204532-001 的操作流程",
+    "knowledgeStepCount": 6,
+    "rawEventCount": 19
+  },
+  "artifacts": {
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/source-record.json",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/benchmark-pdb-002-xcode-package-navigation-b",
+    "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/skill-preflight.json",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/execution-result.json",
+    "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/review-result.json",
+    "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/case-report.json"
+  },
+  "results": {
+    "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+    "skillMapperExitCode": 0,
+    "skillPreflightExitCode": 0,
+    "skillPreflightStatus": "needs_teacher_confirmation",
+    "expectedExecutionStatus": "succeeded",
+    "executionStatus": "succeeded",
+    "reviewDecision": "approved"
+  },
+  "tags": [
+    "xcode",
+    "package-swift",
+    "navigation"
+  ]
+}

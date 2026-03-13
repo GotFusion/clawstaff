@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "openstaff.openclaw-skill.v1",
+  "skillName": "benchmark-pdb-008-codex-focus-a",
+  "knowledgeItemId": "ki-task-session-gui-5c113c56-teaching-20260310-144428-001",
+  "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-001",
+  "sessionId": "session-gui-5c113c56-teaching-20260310-144428",
+  "source": {
+    "knowledgeItemPath": "data/knowledge/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-001.json",
+    "llmOutputPath": "scripts/skills/examples/llm-output.sample.terminal-invalid.txt"
+  },
+  "provenance": {
+    "knowledge": {
+      "knowledgeItemId": "ki-task-session-gui-5c113c56-teaching-20260310-144428-001",
+      "knowledgeSchemaVersion": "knowledge.item.v0",
+      "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-001",
+      "sessionId": "session-gui-5c113c56-teaching-20260310-144428",
+      "knowledgeCreatedAt": "2026-03-10T06:44:41.738Z",
+      "knowledgeGeneratorVersion": "rule-v0"
+    },
+    "sourceTrace": {
+      "taskChunkSchemaVersion": "knowledge.task-chunk.v0",
+      "startTimestamp": "2026-03-10T06:44:35.595Z",
+      "endTimestamp": "2026-03-10T06:44:35.595Z",
+      "eventCount": 1,
+      "boundaryReason": "contextSwitch"
+    },
+    "skillBuild": {
+      "skillName": "benchmark-pdb-008-codex-focus-a",
+      "skillSchemaVersion": "openstaff.openclaw-skill.v1",
+      "skillGeneratorVersion": "openstaff-skill-mapper-v1",
+      "generatedAt": "2026-03-14T01:54:09+08:00",
+      "repairVersion": 0,
+      "llmOutputAccepted": false
+    },
+    "stepMappings": [
+      {
+        "skillStepId": "step-001",
+        "knowledgeStepId": "step-001",
+        "instruction": "执行第 1 步点击操作（源事件 193981a2-8710-47e6-ab4a-d38531da5d05）。",
+        "sourceEventIds": [
+          "193981a2-8710-47e6-ab4a-d38531da5d05"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      }
+    ]
+  },
+  "mappedOutput": {
+    "objective": "在 Codex 中复现任务 task-session-gui-5c113c56-teaching-20260310-144428-001 的操作流程",
+    "context": {
+      "appName": "Codex",
+      "appBundleId": "com.openai.codex",
+      "windowTitle": "Codex"
+    },
+    "executionPlan": {
+      "requiresTeacherConfirmation": true,
+      "steps": [
+        {
+          "stepId": "step-001",
+          "actionType": "click",
+          "instruction": "执行第 1 步点击操作（源事件 193981a2-8710-47e6-ab4a-d38531da5d05）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "193981a2-8710-47e6-ab4a-d38531da5d05"
+          ]
+        }
+      ],
+      "completionCriteria": {
+        "expectedStepCount": 1,
+        "requiredFrontmostAppBundleId": "com.openai.codex"
+      },
+      "failurePolicy": {
+        "onContextMismatch": "stopAndAskTeacher",
+        "onStepError": "stopAndAskTeacher",
+        "onUnknownAction": "stopAndAskTeacher"
+      }
+    },
+    "safetyNotes": [
+      "执行前前台应用必须是 com.openai.codex。",
+      "执行该知识条目时，需要老师确认后再执行。",
+      "坐标点击目标可能随分辨率或界面变化漂移。"
+    ],
+    "confidence": 0.72
+  },
+  "diagnostics": [
+    "LLM output schema validation failed: $.objective must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].target must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].sourceEventIds must be a non-empty array.",
+    "LLM output schema validation failed: $.safetyNotes must be a non-empty array.",
+    "Applied fallback on 5 step fields while normalizing executionPlan.",
+    "Fallback objective from KnowledgeItem.goal."
+  ],
+  "llmOutputAccepted": false,
+  "createdAt": "2026-03-14T01:54:09+08:00",
+  "generatorVersion": "openstaff-skill-mapper-v1"
+}

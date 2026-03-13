@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.review.v0",
+  "caseId": "pdb-015-safari-focus",
+  "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-002",
+  "sessionId": "session-gui-f03aebb3-teaching-20260310-160325",
+  "category": "browser-operations",
+  "title": "Safari 前台聚焦",
+  "reviewedAt": "2026-03-14T01:54:10+08:00",
+  "reviewer": "benchmark-regression",
+  "decision": "approved",
+  "passed": true,
+  "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked",
+  "notes": [
+    "Found 3 legacy student review artifact(s)."
+  ],
+  "artifacts": {
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/benchmark-pdb-015-safari-focus",
+    "expectedPreflightStatus": "failed",
+    "preflightStatus": "failed",
+    "expectedExecutionStatus": "blocked",
+    "executionStatus": "blocked",
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/logs/2026-03-13/session-gui-f03aebb3-teaching-20260310-160325-openclaw.log"
+  }
+}

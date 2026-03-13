@@ -1,0 +1,179 @@
+{
+  "blockedSteps": 0,
+  "exitCode": 0,
+  "failedSteps": 0,
+  "finishedAt": "2026-03-13T17:54:10.737Z",
+  "preflight": {
+    "allowedAppBundleIds": [
+      "com.apple.dt.Xcode"
+    ],
+    "isAutoRunnable": false,
+    "issues": [
+      {
+        "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+        "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+        "severity": "warning"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-001"
+      },
+      {
+        "code": "SPF-COORDINATE-ONLY-FALLBACK",
+        "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+        "severity": "warning",
+        "stepId": "step-001"
+      }
+    ],
+    "requiresTeacherConfirmation": true,
+    "schemaVersion": "openstaff.skill-preflight-report.v0",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/benchmark-pdb-018-xcode-focus-c",
+    "skillName": "benchmark-pdb-018-xcode-focus-c",
+    "status": "needs_teacher_confirmation",
+    "steps": [
+      {
+        "actionType": "click",
+        "confidence": 0.24,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-001"
+          },
+          {
+            "code": "SPF-COORDINATE-ONLY-FALLBACK",
+            "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+            "severity": "warning",
+            "stepId": "step-001"
+          }
+        ],
+        "locatorStatus": "degraded",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-001",
+        "targetAppBundleIds": [
+          "com.apple.dt.Xcode"
+        ]
+      }
+    ],
+    "summary": "skill benchmark-pdb-018-xcode-focus-c 预检需老师确认：步骤 1，可直接自动执行 0，错误 0，告警 3。"
+  },
+  "review": {
+    "blockedSteps": 0,
+    "component": "student.openclaw.runner",
+    "exitCode": 0,
+    "failedSteps": 0,
+    "finishedAt": "2026-03-13T17:54:10.737Z",
+    "logFilePath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/logs/2026-03-13/session-gui-fb6a7c30-teaching-20260310-201227-openclaw.log",
+    "preflight": {
+      "allowedAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "isAutoRunnable": false,
+      "issues": [
+        {
+          "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+          "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+          "severity": "warning"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-001"
+        },
+        {
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+          "severity": "warning",
+          "stepId": "step-001"
+        }
+      ],
+      "requiresTeacherConfirmation": true,
+      "schemaVersion": "openstaff.skill-preflight-report.v0",
+      "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/benchmark-pdb-018-xcode-focus-c",
+      "skillName": "benchmark-pdb-018-xcode-focus-c",
+      "status": "needs_teacher_confirmation",
+      "steps": [
+        {
+          "actionType": "click",
+          "confidence": 0.24,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-001"
+            },
+            {
+              "code": "SPF-COORDINATE-ONLY-FALLBACK",
+              "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+              "severity": "warning",
+              "stepId": "step-001"
+            }
+          ],
+          "locatorStatus": "degraded",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-001",
+          "targetAppBundleIds": [
+            "com.apple.dt.Xcode"
+          ]
+        }
+      ],
+      "summary": "skill benchmark-pdb-018-xcode-focus-c 预检需老师确认：步骤 1，可直接自动执行 0，错误 0，告警 3。"
+    },
+    "reviewId": "openclaw-review-trace-openclaw-run-98665dab-c96a-4fa4-90f1-2aff4116c371",
+    "sessionId": "session-gui-fb6a7c30-teaching-20260310-201227",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/benchmark-pdb-018-xcode-focus-c",
+    "skillName": "benchmark-pdb-018-xcode-focus-c",
+    "startedAt": "2026-03-13T17:54:10.736Z",
+    "status": "succeeded",
+    "succeededSteps": 1,
+    "summary": "Gateway finished skill benchmark-pdb-018-xcode-focus-c. total=1 succeeded=1 failed=0 blocked=0",
+    "taskId": "task-session-gui-fb6a7c30-teaching-20260310-201227-001",
+    "totalSteps": 1,
+    "traceId": "trace-openclaw-run-98665dab-c96a-4fa4-90f1-2aff4116c371"
+  },
+  "runtimeArguments": [
+    "--gateway-mode",
+    "--skill-dir",
+    "/Users/wangzhenwu/Desktop/code/Personal/openstaff/data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/benchmark-pdb-018-xcode-focus-c",
+    "--trace-id",
+    "trace-openclaw-run-98665dab-c96a-4fa4-90f1-2aff4116c371",
+    "--session-id",
+    "session-gui-fb6a7c30-teaching-20260310-201227",
+    "--json-result",
+    "--task-id",
+    "task-session-gui-fb6a7c30-teaching-20260310-201227-001"
+  ],
+  "runtimeExecutablePath": "apps/macos/.build/debug/OpenStaffOpenClawCLI",
+  "schemaVersion": "openstaff.openclaw.execution-result.v0",
+  "sessionId": "session-gui-fb6a7c30-teaching-20260310-201227",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/benchmark-pdb-018-xcode-focus-c",
+  "skillName": "benchmark-pdb-018-xcode-focus-c",
+  "startedAt": "2026-03-13T17:54:10.719Z",
+  "status": "succeeded",
+  "stderr": "",
+  "stdout": "{\n  \"blockedSteps\" : 0,\n  \"failedSteps\" : 0,\n  \"finishedAt\" : \"2026-03-13T17:54:10.737Z\",\n  \"schemaVersion\" : \"openstaff.openclaw.gateway-result.v0\",\n  \"sessionId\" : \"session-gui-fb6a7c30-teaching-20260310-201227\",\n  \"skillDirectoryPath\" : \"\\/Users\\/wangzhenwu\\/Desktop\\/code\\/Personal\\/openstaff\\/data\\/benchmarks\\/personal-desktop\\/generated\\/pdb-018-xcode-focus-c\\/benchmark-pdb-018-xcode-focus-c\",\n  \"skillName\" : \"benchmark-pdb-018-xcode-focus-c\",\n  \"startedAt\" : \"2026-03-13T17:54:10.736Z\",\n  \"status\" : \"succeeded\",\n  \"stepResults\" : [\n    {\n      \"actionType\" : \"click\",\n      \"finishedAt\" : \"2026-03-13T17:54:10.736Z\",\n      \"output\" : \"Gateway executed click -> coordinate:539,39\",\n      \"startedAt\" : \"2026-03-13T17:54:10.736Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-001\"\n    }\n  ],\n  \"succeededSteps\" : 1,\n  \"summary\" : \"Gateway finished skill benchmark-pdb-018-xcode-focus-c. total=1 succeeded=1 failed=0 blocked=0\",\n  \"taskId\" : \"task-session-gui-fb6a7c30-teaching-20260310-201227-001\",\n  \"totalSteps\" : 1,\n  \"traceId\" : \"trace-openclaw-run-98665dab-c96a-4fa4-90f1-2aff4116c371\"\n}\n",
+  "stepResults": [
+    {
+      "actionType": "click",
+      "finishedAt": "2026-03-13T17:54:10.736Z",
+      "output": "Gateway executed click -> coordinate:539,39",
+      "startedAt": "2026-03-13T17:54:10.736Z",
+      "status": "succeeded",
+      "stepId": "step-001"
+    }
+  ],
+  "succeededSteps": 1,
+  "summary": "Gateway finished skill benchmark-pdb-018-xcode-focus-c. total=1 succeeded=1 failed=0 blocked=0",
+  "taskId": "task-session-gui-fb6a7c30-teaching-20260310-201227-001",
+  "totalSteps": 1,
+  "traceId": "trace-openclaw-run-98665dab-c96a-4fa4-90f1-2aff4116c371"
+}

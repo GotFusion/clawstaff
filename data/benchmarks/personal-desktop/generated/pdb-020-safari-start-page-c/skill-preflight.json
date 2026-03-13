@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "openstaff.skill-preflight-report.v0",
+  "skillName": "benchmark-pdb-020-safari-start-page-c",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-020-safari-start-page-c/benchmark-pdb-020-safari-start-page-c",
+  "status": "needs_teacher_confirmation",
+  "summary": "skill benchmark-pdb-020-safari-start-page-c 预检需老师确认：步骤 1，可直接自动执行 0，错误 0，告警 2。",
+  "requiresTeacherConfirmation": true,
+  "isAutoRunnable": false,
+  "allowedAppBundleIds": [
+    "com.apple.Safari"
+  ],
+  "issues": [
+    {
+      "severity": "warning",
+      "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+      "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-001"
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "step-001",
+      "actionType": "input",
+      "confidence": 0.72,
+      "locatorStatus": "not_required",
+      "targetAppBundleIds": [
+        "com.apple.Safari"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-001"
+        }
+      ]
+    }
+  ]
+}

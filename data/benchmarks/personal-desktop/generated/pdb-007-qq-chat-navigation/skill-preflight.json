@@ -1,0 +1,781 @@
+{
+  "schemaVersion": "openstaff.skill-preflight-report.v0",
+  "skillName": "benchmark-pdb-007-qq-chat-navigation",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/benchmark-pdb-007-qq-chat-navigation",
+  "status": "failed",
+  "summary": "skill benchmark-pdb-007-qq-chat-navigation 预检失败：步骤 20，可直接自动执行 0，错误 20，告警 21。",
+  "requiresTeacherConfirmation": true,
+  "isAutoRunnable": false,
+  "allowedAppBundleIds": [
+    "com.tencent.qq"
+  ],
+  "issues": [
+    {
+      "severity": "warning",
+      "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+      "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-001"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-001 不存在可解析 locator。",
+      "stepId": "step-001"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-002 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-002"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-002 不存在可解析 locator。",
+      "stepId": "step-002"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-003 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-003"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-003 不存在可解析 locator。",
+      "stepId": "step-003"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-004 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-004"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-004 不存在可解析 locator。",
+      "stepId": "step-004"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-005 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-005"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-005 不存在可解析 locator。",
+      "stepId": "step-005"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-006 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-006"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-006 不存在可解析 locator。",
+      "stepId": "step-006"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-007 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-007"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-007 不存在可解析 locator。",
+      "stepId": "step-007"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-008 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-008"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-008 不存在可解析 locator。",
+      "stepId": "step-008"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-009 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-009"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-009 不存在可解析 locator。",
+      "stepId": "step-009"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-010 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-010"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-010 不存在可解析 locator。",
+      "stepId": "step-010"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-011 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-011"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-011 不存在可解析 locator。",
+      "stepId": "step-011"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-012 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-012"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-012 不存在可解析 locator。",
+      "stepId": "step-012"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-013 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-013"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-013 不存在可解析 locator。",
+      "stepId": "step-013"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-014 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-014"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-014 不存在可解析 locator。",
+      "stepId": "step-014"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-015 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-015"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-015 不存在可解析 locator。",
+      "stepId": "step-015"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-016 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-016"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-016 不存在可解析 locator。",
+      "stepId": "step-016"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-017 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-017"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-017 不存在可解析 locator。",
+      "stepId": "step-017"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-018 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-018"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-018 不存在可解析 locator。",
+      "stepId": "step-018"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-019 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-019"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-019 不存在可解析 locator。",
+      "stepId": "step-019"
+    },
+    {
+      "severity": "warning",
+      "code": "SPF-LOW-CONFIDENCE",
+      "message": "步骤 step-020 置信度 0.72 低于阈值 0.80，需要老师确认。",
+      "stepId": "step-020"
+    },
+    {
+      "severity": "error",
+      "code": "SPF-MISSING-LOCATOR",
+      "message": "步骤 step-020 不存在可解析 locator。",
+      "stepId": "step-020"
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "step-001",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-001"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-001 不存在可解析 locator。",
+          "stepId": "step-001"
+        }
+      ]
+    },
+    {
+      "stepId": "step-002",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-002 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-002"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-002 不存在可解析 locator。",
+          "stepId": "step-002"
+        }
+      ]
+    },
+    {
+      "stepId": "step-003",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-003 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-003"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-003 不存在可解析 locator。",
+          "stepId": "step-003"
+        }
+      ]
+    },
+    {
+      "stepId": "step-004",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-004 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-004"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-004 不存在可解析 locator。",
+          "stepId": "step-004"
+        }
+      ]
+    },
+    {
+      "stepId": "step-005",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-005 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-005"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-005 不存在可解析 locator。",
+          "stepId": "step-005"
+        }
+      ]
+    },
+    {
+      "stepId": "step-006",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-006 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-006"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-006 不存在可解析 locator。",
+          "stepId": "step-006"
+        }
+      ]
+    },
+    {
+      "stepId": "step-007",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-007 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-007"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-007 不存在可解析 locator。",
+          "stepId": "step-007"
+        }
+      ]
+    },
+    {
+      "stepId": "step-008",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-008 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-008"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-008 不存在可解析 locator。",
+          "stepId": "step-008"
+        }
+      ]
+    },
+    {
+      "stepId": "step-009",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-009 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-009"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-009 不存在可解析 locator。",
+          "stepId": "step-009"
+        }
+      ]
+    },
+    {
+      "stepId": "step-010",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-010 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-010"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-010 不存在可解析 locator。",
+          "stepId": "step-010"
+        }
+      ]
+    },
+    {
+      "stepId": "step-011",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-011 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-011"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-011 不存在可解析 locator。",
+          "stepId": "step-011"
+        }
+      ]
+    },
+    {
+      "stepId": "step-012",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-012 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-012"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-012 不存在可解析 locator。",
+          "stepId": "step-012"
+        }
+      ]
+    },
+    {
+      "stepId": "step-013",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-013 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-013"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-013 不存在可解析 locator。",
+          "stepId": "step-013"
+        }
+      ]
+    },
+    {
+      "stepId": "step-014",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-014 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-014"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-014 不存在可解析 locator。",
+          "stepId": "step-014"
+        }
+      ]
+    },
+    {
+      "stepId": "step-015",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-015 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-015"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-015 不存在可解析 locator。",
+          "stepId": "step-015"
+        }
+      ]
+    },
+    {
+      "stepId": "step-016",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-016 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-016"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-016 不存在可解析 locator。",
+          "stepId": "step-016"
+        }
+      ]
+    },
+    {
+      "stepId": "step-017",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-017 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-017"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-017 不存在可解析 locator。",
+          "stepId": "step-017"
+        }
+      ]
+    },
+    {
+      "stepId": "step-018",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-018 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-018"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-018 不存在可解析 locator。",
+          "stepId": "step-018"
+        }
+      ]
+    },
+    {
+      "stepId": "step-019",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-019 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-019"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-019 不存在可解析 locator。",
+          "stepId": "step-019"
+        }
+      ]
+    },
+    {
+      "stepId": "step-020",
+      "actionType": "click",
+      "confidence": 0.72,
+      "locatorStatus": "missing",
+      "targetAppBundleIds": [
+        "com.tencent.qq"
+      ],
+      "highRisk": false,
+      "lowConfidence": true,
+      "requiresTeacherConfirmation": true,
+      "issues": [
+        {
+          "severity": "warning",
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-020 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "stepId": "step-020"
+        },
+        {
+          "severity": "error",
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-020 不存在可解析 locator。",
+          "stepId": "step-020"
+        }
+      ]
+    }
+  ]
+}

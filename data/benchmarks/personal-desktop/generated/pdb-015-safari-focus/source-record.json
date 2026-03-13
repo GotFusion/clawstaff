@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.source-record.v0",
+  "caseId": "pdb-015-safari-focus",
+  "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-002",
+  "sessionId": "session-gui-f03aebb3-teaching-20260310-160325",
+  "category": "browser-operations",
+  "title": "Safari 前台聚焦",
+  "sourceArtifacts": {
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-f03aebb3-teaching-20260310-160325.jsonl",
+    "rawEventLogSha256": "c8f21f1fb6792bd02e7cb09b5dfae71789102ca0bb6f0e9d71eb51496fd93a69",
+    "rawEventCount": 2,
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-f03aebb3-teaching-20260310-160325-002.json",
+    "taskChunkSha256": "08d7fbc71daa1a69cd43fe08dffa6371a2cd9af3bd5b61573e17befb7bc0ab06",
+    "knowledgeItemPath": "data/knowledge/2026-03-10/task-session-gui-f03aebb3-teaching-20260310-160325-002.json",
+    "knowledgeItemSha256": "bfede5b6f397c0d3cbf98f40f6def3307362c940ab3c749cefd4e044e1d89669",
+    "knowledgeStepCount": 1
+  },
+  "legacyArtifacts": {
+    "studentReviewPaths": [
+      "data/reports/2026-03-10/session-gui-98c8dec0-task-session-gui-f03aebb3-teaching-20260310-160325-002-student-review.json",
+      "data/reports/2026-03-10/session-gui-de6e4f36-task-session-gui-f03aebb3-teaching-20260310-160325-002-student-review.json",
+      "data/reports/2026-03-10/session-gui-f03aebb3-task-session-gui-f03aebb3-teaching-20260310-160325-002-student-review.json"
+    ],
+    "teacherFeedbackPaths": []
+  },
+  "context": {
+    "appName": "Safari浏览器",
+    "windowTitle": "",
+    "goal": "在 Safari浏览器 中复现任务 task-session-gui-f03aebb3-teaching-20260310-160325-002 的操作流程",
+    "boundaryReason": "sessionEnd",
+    "startTimestamp": "2026-03-10T08:03:30.374Z",
+    "endTimestamp": "2026-03-10T08:03:30.374Z"
+  },
+  "tags": [
+    "safari",
+    "focus"
+  ]
+}

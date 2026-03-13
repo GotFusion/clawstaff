@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.source-record.v0",
+  "caseId": "pdb-007-qq-chat-navigation",
+  "taskId": "task-session-gui-4589dbd7-teaching-20260310-143404-002",
+  "sessionId": "session-gui-4589dbd7-teaching-20260310-143404",
+  "category": "daily-office",
+  "title": "QQ 聊天窗口导航",
+  "sourceArtifacts": {
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-4589dbd7-teaching-20260310-143404.jsonl",
+    "rawEventLogSha256": "a46e52401bf4ce2137348e373623a343c3681ac01b8078eeaf68686e4497de55",
+    "rawEventCount": 21,
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-002.json",
+    "taskChunkSha256": "67c8dc4bdd1318f87cd9ef357017046eb454b264e9982336223df5cb69eec862",
+    "knowledgeItemPath": "data/knowledge/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-002.json",
+    "knowledgeItemSha256": "0eaccb6d94f2eaeed2c631ed61adbfa0a3ae31b1a220c1c355f3e792cc1c020a",
+    "knowledgeStepCount": 20
+  },
+  "legacyArtifacts": {
+    "studentReviewPaths": [],
+    "teacherFeedbackPaths": []
+  },
+  "context": {
+    "appName": "QQ",
+    "windowTitle": "",
+    "goal": "在 QQ 中复现任务 task-session-gui-4589dbd7-teaching-20260310-143404-002 的操作流程",
+    "boundaryReason": "sessionEnd",
+    "startTimestamp": "2026-03-10T06:34:15.387Z",
+    "endTimestamp": "2026-03-10T06:35:11.689Z"
+  },
+  "tags": [
+    "qq",
+    "chat",
+    "office"
+  ]
+}

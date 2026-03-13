@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.review.v0",
+  "caseId": "pdb-018-xcode-focus-c",
+  "taskId": "task-session-gui-fb6a7c30-teaching-20260310-201227-001",
+  "sessionId": "session-gui-fb6a7c30-teaching-20260310-201227",
+  "category": "developer-tools",
+  "title": "Xcode 前台聚焦 C",
+  "reviewedAt": "2026-03-14T01:54:10+08:00",
+  "reviewer": "benchmark-regression",
+  "decision": "approved",
+  "passed": true,
+  "summary": "skill preflight=needs_teacher_confirmation; runtime=succeeded; steps=1/1; expectedPreflight=needs_teacher_confirmation; expectedRuntime=succeeded",
+  "notes": [
+    "Benchmark runner injects teacher confirmation to validate deterministic runtime execution for confirmation-gated skills."
+  ],
+  "artifacts": {
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/benchmark-pdb-018-xcode-focus-c",
+    "expectedPreflightStatus": "needs_teacher_confirmation",
+    "preflightStatus": "needs_teacher_confirmation",
+    "expectedExecutionStatus": "succeeded",
+    "executionStatus": "succeeded",
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/logs/2026-03-13/session-gui-fb6a7c30-teaching-20260310-201227-openclaw.log"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "openstaff.openclaw-skill.v1",
+  "skillName": "benchmark-pdb-016-xcode-package-single-click",
+  "knowledgeItemId": "ki-task-session-gui-f23128c2-teaching-20260310-145427-001",
+  "taskId": "task-session-gui-f23128c2-teaching-20260310-145427-001",
+  "sessionId": "session-gui-f23128c2-teaching-20260310-145427",
+  "source": {
+    "knowledgeItemPath": "data/knowledge/2026-03-10/task-session-gui-f23128c2-teaching-20260310-145427-001.json",
+    "llmOutputPath": "scripts/skills/examples/llm-output.sample.terminal-invalid.txt"
+  },
+  "provenance": {
+    "knowledge": {
+      "knowledgeItemId": "ki-task-session-gui-f23128c2-teaching-20260310-145427-001",
+      "knowledgeSchemaVersion": "knowledge.item.v0",
+      "taskId": "task-session-gui-f23128c2-teaching-20260310-145427-001",
+      "sessionId": "session-gui-f23128c2-teaching-20260310-145427",
+      "knowledgeCreatedAt": "2026-03-10T06:54:37.639Z",
+      "knowledgeGeneratorVersion": "rule-v0"
+    },
+    "sourceTrace": {
+      "taskChunkSchemaVersion": "knowledge.task-chunk.v0",
+      "startTimestamp": "2026-03-10T06:54:29.652Z",
+      "endTimestamp": "2026-03-10T06:54:29.652Z",
+      "eventCount": 1,
+      "boundaryReason": "contextSwitch"
+    },
+    "skillBuild": {
+      "skillName": "benchmark-pdb-016-xcode-package-single-click",
+      "skillSchemaVersion": "openstaff.openclaw-skill.v1",
+      "skillGeneratorVersion": "openstaff-skill-mapper-v1",
+      "generatedAt": "2026-03-14T01:54:10+08:00",
+      "repairVersion": 0,
+      "llmOutputAccepted": false
+    },
+    "stepMappings": [
+      {
+        "skillStepId": "step-001",
+        "knowledgeStepId": "step-001",
+        "instruction": "执行第 1 步点击操作（源事件 49153b44-2ee7-41e4-a12d-855652e81075）。",
+        "sourceEventIds": [
+          "49153b44-2ee7-41e4-a12d-855652e81075"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      }
+    ]
+  },
+  "mappedOutput": {
+    "objective": "在 Xcode 中复现任务 task-session-gui-f23128c2-teaching-20260310-145427-001 的操作流程",
+    "context": {
+      "appName": "Xcode",
+      "appBundleId": "com.apple.dt.Xcode",
+      "windowTitle": "macos — Package.swift"
+    },
+    "executionPlan": {
+      "requiresTeacherConfirmation": true,
+      "steps": [
+        {
+          "stepId": "step-001",
+          "actionType": "click",
+          "instruction": "执行第 1 步点击操作（源事件 49153b44-2ee7-41e4-a12d-855652e81075）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "49153b44-2ee7-41e4-a12d-855652e81075"
+          ]
+        }
+      ],
+      "completionCriteria": {
+        "expectedStepCount": 1,
+        "requiredFrontmostAppBundleId": "com.apple.dt.Xcode"
+      },
+      "failurePolicy": {
+        "onContextMismatch": "stopAndAskTeacher",
+        "onStepError": "stopAndAskTeacher",
+        "onUnknownAction": "stopAndAskTeacher"
+      }
+    },
+    "safetyNotes": [
+      "执行前前台应用必须是 com.apple.dt.Xcode。",
+      "执行该知识条目时，需要老师确认后再执行。",
+      "坐标点击目标可能随分辨率或界面变化漂移。"
+    ],
+    "confidence": 0.72
+  },
+  "diagnostics": [
+    "LLM output schema validation failed: $.objective must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].target must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].sourceEventIds must be a non-empty array.",
+    "LLM output schema validation failed: $.safetyNotes must be a non-empty array.",
+    "Applied fallback on 5 step fields while normalizing executionPlan.",
+    "Fallback objective from KnowledgeItem.goal."
+  ],
+  "llmOutputAccepted": false,
+  "createdAt": "2026-03-14T01:54:10+08:00",
+  "generatorVersion": "openstaff-skill-mapper-v1"
+}

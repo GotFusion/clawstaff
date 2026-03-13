@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.review.v0",
+  "caseId": "pdb-021-safari-baidu-b",
+  "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-003",
+  "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+  "category": "browser-operations",
+  "title": "Safari 百度页操作 B",
+  "reviewedAt": "2026-03-14T01:54:11+08:00",
+  "reviewer": "benchmark-regression",
+  "decision": "approved",
+  "passed": true,
+  "summary": "skill preflight=needs_teacher_confirmation; runtime=succeeded; steps=2/2; expectedPreflight=needs_teacher_confirmation; expectedRuntime=succeeded",
+  "notes": [
+    "Benchmark runner injects teacher confirmation to validate deterministic runtime execution for confirmation-gated skills."
+  ],
+  "artifacts": {
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b",
+    "expectedPreflightStatus": "needs_teacher_confirmation",
+    "preflightStatus": "needs_teacher_confirmation",
+    "expectedExecutionStatus": "succeeded",
+    "executionStatus": "succeeded",
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/logs/2026-03-13/session-gui-fff3b655-teaching-20260310-201407-openclaw.log"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+  "caseId": "pdb-022-xcode-double-step",
+  "taskId": "task-session-gui-199fd65f-teaching-20260311-173758-001",
+  "sessionId": "session-gui-199fd65f-teaching-20260311-173758",
+  "category": "developer-tools",
+  "title": "Xcode 双步导航",
+  "passed": true,
+  "source": {
+    "appName": "Xcode",
+    "windowTitle": "",
+    "goal": "在 Xcode 中复现任务 task-session-gui-199fd65f-teaching-20260311-173758-001 的操作流程",
+    "knowledgeStepCount": 2,
+    "rawEventCount": 2
+  },
+  "artifacts": {
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/source-record.json",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/benchmark-pdb-022-xcode-double-step",
+    "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/skill-preflight.json",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/execution-result.json",
+    "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/review-result.json",
+    "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/case-report.json"
+  },
+  "results": {
+    "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+    "skillMapperExitCode": 0,
+    "skillPreflightExitCode": 0,
+    "skillPreflightStatus": "needs_teacher_confirmation",
+    "expectedExecutionStatus": "succeeded",
+    "executionStatus": "succeeded",
+    "reviewDecision": "approved"
+  },
+  "tags": [
+    "xcode",
+    "double-step"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.review.v0",
+  "caseId": "pdb-013-system-settings-navigation",
+  "taskId": "task-session-gui-b3e503cf-teaching-20260310-164817-001",
+  "sessionId": "session-gui-b3e503cf-teaching-20260310-164817",
+  "category": "daily-office",
+  "title": "系统设置面板导航",
+  "reviewedAt": "2026-03-14T01:54:10+08:00",
+  "reviewer": "benchmark-regression",
+  "decision": "approved",
+  "passed": true,
+  "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked",
+  "notes": [
+    "Found 8 legacy student review artifact(s)."
+  ],
+  "artifacts": {
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/benchmark-pdb-013-system-settings-navigation",
+    "expectedPreflightStatus": "failed",
+    "preflightStatus": "failed",
+    "expectedExecutionStatus": "blocked",
+    "executionStatus": "blocked",
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/logs/2026-03-13/session-gui-b3e503cf-teaching-20260310-164817-openclaw.log"
+  }
+}

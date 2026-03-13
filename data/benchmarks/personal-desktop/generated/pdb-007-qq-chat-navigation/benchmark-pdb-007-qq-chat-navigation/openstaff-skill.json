@@ -1,0 +1,477 @@
+{
+  "schemaVersion": "openstaff.openclaw-skill.v1",
+  "skillName": "benchmark-pdb-007-qq-chat-navigation",
+  "knowledgeItemId": "ki-task-session-gui-4589dbd7-teaching-20260310-143404-002",
+  "taskId": "task-session-gui-4589dbd7-teaching-20260310-143404-002",
+  "sessionId": "session-gui-4589dbd7-teaching-20260310-143404",
+  "source": {
+    "knowledgeItemPath": "data/knowledge/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-002.json",
+    "llmOutputPath": "scripts/skills/examples/llm-output.sample.terminal-invalid.txt"
+  },
+  "provenance": {
+    "knowledge": {
+      "knowledgeItemId": "ki-task-session-gui-4589dbd7-teaching-20260310-143404-002",
+      "knowledgeSchemaVersion": "knowledge.item.v0",
+      "taskId": "task-session-gui-4589dbd7-teaching-20260310-143404-002",
+      "sessionId": "session-gui-4589dbd7-teaching-20260310-143404",
+      "knowledgeCreatedAt": "2026-03-10T06:35:14.910Z",
+      "knowledgeGeneratorVersion": "rule-v0"
+    },
+    "sourceTrace": {
+      "taskChunkSchemaVersion": "knowledge.task-chunk.v0",
+      "startTimestamp": "2026-03-10T06:34:15.387Z",
+      "endTimestamp": "2026-03-10T06:35:11.689Z",
+      "eventCount": 20,
+      "boundaryReason": "sessionEnd"
+    },
+    "skillBuild": {
+      "skillName": "benchmark-pdb-007-qq-chat-navigation",
+      "skillSchemaVersion": "openstaff.openclaw-skill.v1",
+      "skillGeneratorVersion": "openstaff-skill-mapper-v1",
+      "generatedAt": "2026-03-14T01:54:09+08:00",
+      "repairVersion": 0,
+      "llmOutputAccepted": false
+    },
+    "stepMappings": [
+      {
+        "skillStepId": "step-001",
+        "knowledgeStepId": "step-001",
+        "instruction": "执行第 1 步点击操作（源事件 c5e4cf43-78d9-4620-95df-0633e7f24b36）。",
+        "sourceEventIds": [
+          "c5e4cf43-78d9-4620-95df-0633e7f24b36"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-002",
+        "knowledgeStepId": "step-002",
+        "instruction": "执行第 2 步点击操作（源事件 1f550bc4-6d72-4354-8d23-2bece77eaf6b）。",
+        "sourceEventIds": [
+          "1f550bc4-6d72-4354-8d23-2bece77eaf6b"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-003",
+        "knowledgeStepId": "step-003",
+        "instruction": "执行第 3 步点击操作（源事件 5fe4a9f0-4e53-4b5e-ac43-96ca86ff1b51）。",
+        "sourceEventIds": [
+          "5fe4a9f0-4e53-4b5e-ac43-96ca86ff1b51"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-004",
+        "knowledgeStepId": "step-004",
+        "instruction": "执行第 4 步点击操作（源事件 d05f4027-6330-432c-a7d6-784b13629db7）。",
+        "sourceEventIds": [
+          "d05f4027-6330-432c-a7d6-784b13629db7"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-005",
+        "knowledgeStepId": "step-005",
+        "instruction": "执行第 5 步点击操作（源事件 fc51236f-7f3e-48d0-b2a1-691d3900d808）。",
+        "sourceEventIds": [
+          "fc51236f-7f3e-48d0-b2a1-691d3900d808"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-006",
+        "knowledgeStepId": "step-006",
+        "instruction": "执行第 6 步点击操作（源事件 4a36a58b-cdc4-4783-864d-0ea57d668c5e）。",
+        "sourceEventIds": [
+          "4a36a58b-cdc4-4783-864d-0ea57d668c5e"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-007",
+        "knowledgeStepId": "step-007",
+        "instruction": "执行第 7 步点击操作（源事件 3aac47af-3457-41fa-ac70-48a11286912b）。",
+        "sourceEventIds": [
+          "3aac47af-3457-41fa-ac70-48a11286912b"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-008",
+        "knowledgeStepId": "step-008",
+        "instruction": "执行第 8 步点击操作（源事件 f4daf1ff-14fb-4ac1-8107-d6de4c9b2e3c）。",
+        "sourceEventIds": [
+          "f4daf1ff-14fb-4ac1-8107-d6de4c9b2e3c"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-009",
+        "knowledgeStepId": "step-009",
+        "instruction": "执行第 9 步点击操作（源事件 d16befed-d155-4dfd-ac1b-43e63efbecb5）。",
+        "sourceEventIds": [
+          "d16befed-d155-4dfd-ac1b-43e63efbecb5"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-010",
+        "knowledgeStepId": "step-010",
+        "instruction": "执行第 10 步点击操作（源事件 4b46e86e-b91b-4a80-be25-6c95823684be）。",
+        "sourceEventIds": [
+          "4b46e86e-b91b-4a80-be25-6c95823684be"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-011",
+        "knowledgeStepId": "step-011",
+        "instruction": "执行第 11 步点击操作（源事件 a0e8fb21-4897-4d94-8a44-9853db30cf1a）。",
+        "sourceEventIds": [
+          "a0e8fb21-4897-4d94-8a44-9853db30cf1a"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-012",
+        "knowledgeStepId": "step-012",
+        "instruction": "执行第 12 步点击操作（源事件 fe9c7db2-f20e-4fd4-a666-1badb267dc02）。",
+        "sourceEventIds": [
+          "fe9c7db2-f20e-4fd4-a666-1badb267dc02"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-013",
+        "knowledgeStepId": "step-013",
+        "instruction": "执行第 13 步点击操作（源事件 3bc93ee9-89b3-449d-916f-cfcddde2c859）。",
+        "sourceEventIds": [
+          "3bc93ee9-89b3-449d-916f-cfcddde2c859"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-014",
+        "knowledgeStepId": "step-014",
+        "instruction": "执行第 14 步点击操作（源事件 01d213d2-5d47-4fb8-86be-0d423d4d00f6）。",
+        "sourceEventIds": [
+          "01d213d2-5d47-4fb8-86be-0d423d4d00f6"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-015",
+        "knowledgeStepId": "step-015",
+        "instruction": "执行第 15 步点击操作（源事件 2f7438ca-ff40-4f4e-802d-0c2b117e6bc4）。",
+        "sourceEventIds": [
+          "2f7438ca-ff40-4f4e-802d-0c2b117e6bc4"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-016",
+        "knowledgeStepId": "step-016",
+        "instruction": "执行第 16 步点击操作（源事件 b852388b-f1f3-42f0-a354-6cb87ae5d6c4）。",
+        "sourceEventIds": [
+          "b852388b-f1f3-42f0-a354-6cb87ae5d6c4"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-017",
+        "knowledgeStepId": "step-017",
+        "instruction": "执行第 17 步点击操作（源事件 e0ce9f88-3956-49bc-8b7d-f18aad88ee18）。",
+        "sourceEventIds": [
+          "e0ce9f88-3956-49bc-8b7d-f18aad88ee18"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-018",
+        "knowledgeStepId": "step-018",
+        "instruction": "执行第 18 步点击操作（源事件 e49e4da3-0b1b-4dbb-ba1d-8db8309634fa）。",
+        "sourceEventIds": [
+          "e49e4da3-0b1b-4dbb-ba1d-8db8309634fa"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-019",
+        "knowledgeStepId": "step-019",
+        "instruction": "执行第 19 步点击操作（源事件 e11cea87-ba83-4fcc-98ad-4d498f2cfdc5）。",
+        "sourceEventIds": [
+          "e11cea87-ba83-4fcc-98ad-4d498f2cfdc5"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      },
+      {
+        "skillStepId": "step-020",
+        "knowledgeStepId": "step-020",
+        "instruction": "执行第 20 步点击操作（源事件 933d6e9f-0e61-450b-a407-e8d70aad3e63）。",
+        "sourceEventIds": [
+          "933d6e9f-0e61-450b-a407-e8d70aad3e63"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      }
+    ]
+  },
+  "mappedOutput": {
+    "objective": "在 QQ 中复现任务 task-session-gui-4589dbd7-teaching-20260310-143404-002 的操作流程",
+    "context": {
+      "appName": "QQ",
+      "appBundleId": "com.tencent.qq",
+      "windowTitle": null
+    },
+    "executionPlan": {
+      "requiresTeacherConfirmation": true,
+      "steps": [
+        {
+          "stepId": "step-001",
+          "actionType": "click",
+          "instruction": "执行第 1 步点击操作（源事件 c5e4cf43-78d9-4620-95df-0633e7f24b36）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "c5e4cf43-78d9-4620-95df-0633e7f24b36"
+          ]
+        },
+        {
+          "stepId": "step-002",
+          "actionType": "click",
+          "instruction": "执行第 2 步点击操作（源事件 1f550bc4-6d72-4354-8d23-2bece77eaf6b）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "1f550bc4-6d72-4354-8d23-2bece77eaf6b"
+          ]
+        },
+        {
+          "stepId": "step-003",
+          "actionType": "click",
+          "instruction": "执行第 3 步点击操作（源事件 5fe4a9f0-4e53-4b5e-ac43-96ca86ff1b51）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "5fe4a9f0-4e53-4b5e-ac43-96ca86ff1b51"
+          ]
+        },
+        {
+          "stepId": "step-004",
+          "actionType": "click",
+          "instruction": "执行第 4 步点击操作（源事件 d05f4027-6330-432c-a7d6-784b13629db7）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "d05f4027-6330-432c-a7d6-784b13629db7"
+          ]
+        },
+        {
+          "stepId": "step-005",
+          "actionType": "click",
+          "instruction": "执行第 5 步点击操作（源事件 fc51236f-7f3e-48d0-b2a1-691d3900d808）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "fc51236f-7f3e-48d0-b2a1-691d3900d808"
+          ]
+        },
+        {
+          "stepId": "step-006",
+          "actionType": "click",
+          "instruction": "执行第 6 步点击操作（源事件 4a36a58b-cdc4-4783-864d-0ea57d668c5e）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "4a36a58b-cdc4-4783-864d-0ea57d668c5e"
+          ]
+        },
+        {
+          "stepId": "step-007",
+          "actionType": "click",
+          "instruction": "执行第 7 步点击操作（源事件 3aac47af-3457-41fa-ac70-48a11286912b）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "3aac47af-3457-41fa-ac70-48a11286912b"
+          ]
+        },
+        {
+          "stepId": "step-008",
+          "actionType": "click",
+          "instruction": "执行第 8 步点击操作（源事件 f4daf1ff-14fb-4ac1-8107-d6de4c9b2e3c）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "f4daf1ff-14fb-4ac1-8107-d6de4c9b2e3c"
+          ]
+        },
+        {
+          "stepId": "step-009",
+          "actionType": "click",
+          "instruction": "执行第 9 步点击操作（源事件 d16befed-d155-4dfd-ac1b-43e63efbecb5）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "d16befed-d155-4dfd-ac1b-43e63efbecb5"
+          ]
+        },
+        {
+          "stepId": "step-010",
+          "actionType": "click",
+          "instruction": "执行第 10 步点击操作（源事件 4b46e86e-b91b-4a80-be25-6c95823684be）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "4b46e86e-b91b-4a80-be25-6c95823684be"
+          ]
+        },
+        {
+          "stepId": "step-011",
+          "actionType": "click",
+          "instruction": "执行第 11 步点击操作（源事件 a0e8fb21-4897-4d94-8a44-9853db30cf1a）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "a0e8fb21-4897-4d94-8a44-9853db30cf1a"
+          ]
+        },
+        {
+          "stepId": "step-012",
+          "actionType": "click",
+          "instruction": "执行第 12 步点击操作（源事件 fe9c7db2-f20e-4fd4-a666-1badb267dc02）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "fe9c7db2-f20e-4fd4-a666-1badb267dc02"
+          ]
+        },
+        {
+          "stepId": "step-013",
+          "actionType": "click",
+          "instruction": "执行第 13 步点击操作（源事件 3bc93ee9-89b3-449d-916f-cfcddde2c859）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "3bc93ee9-89b3-449d-916f-cfcddde2c859"
+          ]
+        },
+        {
+          "stepId": "step-014",
+          "actionType": "click",
+          "instruction": "执行第 14 步点击操作（源事件 01d213d2-5d47-4fb8-86be-0d423d4d00f6）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "01d213d2-5d47-4fb8-86be-0d423d4d00f6"
+          ]
+        },
+        {
+          "stepId": "step-015",
+          "actionType": "click",
+          "instruction": "执行第 15 步点击操作（源事件 2f7438ca-ff40-4f4e-802d-0c2b117e6bc4）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "2f7438ca-ff40-4f4e-802d-0c2b117e6bc4"
+          ]
+        },
+        {
+          "stepId": "step-016",
+          "actionType": "click",
+          "instruction": "执行第 16 步点击操作（源事件 b852388b-f1f3-42f0-a354-6cb87ae5d6c4）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "b852388b-f1f3-42f0-a354-6cb87ae5d6c4"
+          ]
+        },
+        {
+          "stepId": "step-017",
+          "actionType": "click",
+          "instruction": "执行第 17 步点击操作（源事件 e0ce9f88-3956-49bc-8b7d-f18aad88ee18）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "e0ce9f88-3956-49bc-8b7d-f18aad88ee18"
+          ]
+        },
+        {
+          "stepId": "step-018",
+          "actionType": "click",
+          "instruction": "执行第 18 步点击操作（源事件 e49e4da3-0b1b-4dbb-ba1d-8db8309634fa）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "e49e4da3-0b1b-4dbb-ba1d-8db8309634fa"
+          ]
+        },
+        {
+          "stepId": "step-019",
+          "actionType": "click",
+          "instruction": "执行第 19 步点击操作（源事件 e11cea87-ba83-4fcc-98ad-4d498f2cfdc5）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "e11cea87-ba83-4fcc-98ad-4d498f2cfdc5"
+          ]
+        },
+        {
+          "stepId": "step-020",
+          "actionType": "click",
+          "instruction": "执行第 20 步点击操作（源事件 933d6e9f-0e61-450b-a407-e8d70aad3e63）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "933d6e9f-0e61-450b-a407-e8d70aad3e63"
+          ]
+        }
+      ],
+      "completionCriteria": {
+        "expectedStepCount": 20,
+        "requiredFrontmostAppBundleId": "com.tencent.qq"
+      },
+      "failurePolicy": {
+        "onContextMismatch": "stopAndAskTeacher",
+        "onStepError": "stopAndAskTeacher",
+        "onUnknownAction": "stopAndAskTeacher"
+      }
+    },
+    "safetyNotes": [
+      "执行前前台应用必须是 com.tencent.qq。",
+      "执行该知识条目时，需要老师确认后再执行。",
+      "坐标点击目标可能随分辨率或界面变化漂移。"
+    ],
+    "confidence": 0.72
+  },
+  "diagnostics": [
+    "LLM output schema validation failed: $.objective must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].target must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].sourceEventIds must be a non-empty array.",
+    "LLM output schema validation failed: $.safetyNotes must be a non-empty array.",
+    "Applied fallback on 100 step fields while normalizing executionPlan.",
+    "Fallback objective from KnowledgeItem.goal."
+  ],
+  "llmOutputAccepted": false,
+  "createdAt": "2026-03-14T01:54:09+08:00",
+  "generatorVersion": "openstaff-skill-mapper-v1"
+}

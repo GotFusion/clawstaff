@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+  "caseId": "pdb-005-safari-window-switch",
+  "taskId": "task-session-gui-4214a172-teaching-20260310-142748-002",
+  "sessionId": "session-gui-4214a172-teaching-20260310-142748",
+  "category": "browser-operations",
+  "title": "Safari 窗口切换",
+  "passed": true,
+  "source": {
+    "appName": "Safari浏览器",
+    "windowTitle": "",
+    "goal": "在 Safari浏览器 中复现任务 task-session-gui-4214a172-teaching-20260310-142748-002 的操作流程",
+    "knowledgeStepCount": 2,
+    "rawEventCount": 3
+  },
+  "artifacts": {
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/source-record.json",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/benchmark-pdb-005-safari-window-switch",
+    "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/skill-preflight.json",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/execution-result.json",
+    "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/review-result.json",
+    "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-005-safari-window-switch/case-report.json"
+  },
+  "results": {
+    "expectedSkillPreflightStatus": "failed",
+    "skillMapperExitCode": 0,
+    "skillPreflightExitCode": 1,
+    "skillPreflightStatus": "failed",
+    "expectedExecutionStatus": "blocked",
+    "executionStatus": "blocked",
+    "reviewDecision": "approved"
+  },
+  "tags": [
+    "safari",
+    "window-switch"
+  ]
+}

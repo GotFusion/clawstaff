@@ -11,7 +11,7 @@ OPENCLAW_TARGET := OpenStaffOpenClawCLI
 STUDENT_TARGET := OpenStaffStudentCLI
 ARGS ?=
 
-.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample test test-unit test-integration test-e2e release-regression release-preflight
+.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample benchmark-personal test test-unit test-integration test-e2e release-regression release-preflight
 
 build:
 	swift build --package-path $(APP_PACKAGE_PATH)
@@ -71,6 +71,9 @@ skills-validate-sample: skills-sample
 	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-sample/openstaff-task-session-20260307-a1-001
 	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-sample/openstaff-task-session-20260307-b2-001
 	python3 scripts/skills/validate_openclaw_skill.py --skill-dir /tmp/openstaff-skills-sample/openstaff-task-session-20260307-c3-001
+
+benchmark-personal:
+	python3 scripts/benchmarks/run_personal_desktop_benchmark.py $(ARGS)
 
 test:
 	python3 scripts/tests/run_all.py --suite all

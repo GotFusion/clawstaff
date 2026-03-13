@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+  "caseId": "pdb-018-xcode-focus-c",
+  "taskId": "task-session-gui-fb6a7c30-teaching-20260310-201227-001",
+  "sessionId": "session-gui-fb6a7c30-teaching-20260310-201227",
+  "category": "developer-tools",
+  "title": "Xcode 前台聚焦 C",
+  "passed": true,
+  "source": {
+    "appName": "Xcode",
+    "windowTitle": "",
+    "goal": "在 Xcode 中复现任务 task-session-gui-fb6a7c30-teaching-20260310-201227-001 的操作流程",
+    "knowledgeStepCount": 1,
+    "rawEventCount": 1
+  },
+  "artifacts": {
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/source-record.json",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/benchmark-pdb-018-xcode-focus-c",
+    "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/skill-preflight.json",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/execution-result.json",
+    "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/review-result.json",
+    "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-018-xcode-focus-c/case-report.json"
+  },
+  "results": {
+    "expectedSkillPreflightStatus": "needs_teacher_confirmation",
+    "skillMapperExitCode": 0,
+    "skillPreflightExitCode": 0,
+    "skillPreflightStatus": "needs_teacher_confirmation",
+    "expectedExecutionStatus": "succeeded",
+    "executionStatus": "succeeded",
+    "reviewDecision": "approved"
+  },
+  "tags": [
+    "xcode",
+    "focus"
+  ]
+}

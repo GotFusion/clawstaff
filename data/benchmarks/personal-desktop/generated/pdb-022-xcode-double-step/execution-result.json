@@ -1,0 +1,263 @@
+{
+  "blockedSteps": 0,
+  "exitCode": 0,
+  "failedSteps": 0,
+  "finishedAt": "2026-03-13T17:54:11.439Z",
+  "preflight": {
+    "allowedAppBundleIds": [
+      "com.apple.dt.Xcode"
+    ],
+    "isAutoRunnable": false,
+    "issues": [
+      {
+        "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+        "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+        "severity": "warning"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-001"
+      },
+      {
+        "code": "SPF-COORDINATE-ONLY-FALLBACK",
+        "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+        "severity": "warning",
+        "stepId": "step-001"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-002"
+      },
+      {
+        "code": "SPF-COORDINATE-ONLY-FALLBACK",
+        "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+        "severity": "warning",
+        "stepId": "step-002"
+      }
+    ],
+    "requiresTeacherConfirmation": true,
+    "schemaVersion": "openstaff.skill-preflight-report.v0",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/benchmark-pdb-022-xcode-double-step",
+    "skillName": "benchmark-pdb-022-xcode-double-step",
+    "status": "needs_teacher_confirmation",
+    "steps": [
+      {
+        "actionType": "click",
+        "confidence": 0.24,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-001"
+          },
+          {
+            "code": "SPF-COORDINATE-ONLY-FALLBACK",
+            "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+            "severity": "warning",
+            "stepId": "step-001"
+          }
+        ],
+        "locatorStatus": "degraded",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-001",
+        "targetAppBundleIds": [
+          "com.apple.dt.Xcode"
+        ]
+      },
+      {
+        "actionType": "click",
+        "confidence": 0.24,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-002"
+          },
+          {
+            "code": "SPF-COORDINATE-ONLY-FALLBACK",
+            "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+            "severity": "warning",
+            "stepId": "step-002"
+          }
+        ],
+        "locatorStatus": "degraded",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-002",
+        "targetAppBundleIds": [
+          "com.apple.dt.Xcode"
+        ]
+      }
+    ],
+    "summary": "skill benchmark-pdb-022-xcode-double-step 预检需老师确认：步骤 2，可直接自动执行 0，错误 0，告警 5。"
+  },
+  "review": {
+    "blockedSteps": 0,
+    "component": "student.openclaw.runner",
+    "exitCode": 0,
+    "failedSteps": 0,
+    "finishedAt": "2026-03-13T17:54:11.439Z",
+    "logFilePath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/logs/2026-03-13/session-gui-199fd65f-teaching-20260311-173758-openclaw.log",
+    "preflight": {
+      "allowedAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "isAutoRunnable": false,
+      "issues": [
+        {
+          "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+          "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+          "severity": "warning"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-001"
+        },
+        {
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+          "severity": "warning",
+          "stepId": "step-001"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-002"
+        },
+        {
+          "code": "SPF-COORDINATE-ONLY-FALLBACK",
+          "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+          "severity": "warning",
+          "stepId": "step-002"
+        }
+      ],
+      "requiresTeacherConfirmation": true,
+      "schemaVersion": "openstaff.skill-preflight-report.v0",
+      "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/benchmark-pdb-022-xcode-double-step",
+      "skillName": "benchmark-pdb-022-xcode-double-step",
+      "status": "needs_teacher_confirmation",
+      "steps": [
+        {
+          "actionType": "click",
+          "confidence": 0.24,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-001 置信度 0.24 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-001"
+            },
+            {
+              "code": "SPF-COORDINATE-ONLY-FALLBACK",
+              "message": "步骤 step-001 仅剩 coordinateFallback，不能直接自动执行。",
+              "severity": "warning",
+              "stepId": "step-001"
+            }
+          ],
+          "locatorStatus": "degraded",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-001",
+          "targetAppBundleIds": [
+            "com.apple.dt.Xcode"
+          ]
+        },
+        {
+          "actionType": "click",
+          "confidence": 0.24,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-002 置信度 0.24 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-002"
+            },
+            {
+              "code": "SPF-COORDINATE-ONLY-FALLBACK",
+              "message": "步骤 step-002 仅剩 coordinateFallback，不能直接自动执行。",
+              "severity": "warning",
+              "stepId": "step-002"
+            }
+          ],
+          "locatorStatus": "degraded",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-002",
+          "targetAppBundleIds": [
+            "com.apple.dt.Xcode"
+          ]
+        }
+      ],
+      "summary": "skill benchmark-pdb-022-xcode-double-step 预检需老师确认：步骤 2，可直接自动执行 0，错误 0，告警 5。"
+    },
+    "reviewId": "openclaw-review-trace-openclaw-run-4ceffd3c-6c5a-483f-829b-134bcb10f625",
+    "sessionId": "session-gui-199fd65f-teaching-20260311-173758",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/benchmark-pdb-022-xcode-double-step",
+    "skillName": "benchmark-pdb-022-xcode-double-step",
+    "startedAt": "2026-03-13T17:54:11.438Z",
+    "status": "succeeded",
+    "succeededSteps": 2,
+    "summary": "Gateway finished skill benchmark-pdb-022-xcode-double-step. total=2 succeeded=2 failed=0 blocked=0",
+    "taskId": "task-session-gui-199fd65f-teaching-20260311-173758-001",
+    "totalSteps": 2,
+    "traceId": "trace-openclaw-run-4ceffd3c-6c5a-483f-829b-134bcb10f625"
+  },
+  "runtimeArguments": [
+    "--gateway-mode",
+    "--skill-dir",
+    "/Users/wangzhenwu/Desktop/code/Personal/openstaff/data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/benchmark-pdb-022-xcode-double-step",
+    "--trace-id",
+    "trace-openclaw-run-4ceffd3c-6c5a-483f-829b-134bcb10f625",
+    "--session-id",
+    "session-gui-199fd65f-teaching-20260311-173758",
+    "--json-result",
+    "--task-id",
+    "task-session-gui-199fd65f-teaching-20260311-173758-001"
+  ],
+  "runtimeExecutablePath": "apps/macos/.build/debug/OpenStaffOpenClawCLI",
+  "schemaVersion": "openstaff.openclaw.execution-result.v0",
+  "sessionId": "session-gui-199fd65f-teaching-20260311-173758",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-022-xcode-double-step/benchmark-pdb-022-xcode-double-step",
+  "skillName": "benchmark-pdb-022-xcode-double-step",
+  "startedAt": "2026-03-13T17:54:11.417Z",
+  "status": "succeeded",
+  "stderr": "",
+  "stdout": "{\n  \"blockedSteps\" : 0,\n  \"failedSteps\" : 0,\n  \"finishedAt\" : \"2026-03-13T17:54:11.439Z\",\n  \"schemaVersion\" : \"openstaff.openclaw.gateway-result.v0\",\n  \"sessionId\" : \"session-gui-199fd65f-teaching-20260311-173758\",\n  \"skillDirectoryPath\" : \"\\/Users\\/wangzhenwu\\/Desktop\\/code\\/Personal\\/openstaff\\/data\\/benchmarks\\/personal-desktop\\/generated\\/pdb-022-xcode-double-step\\/benchmark-pdb-022-xcode-double-step\",\n  \"skillName\" : \"benchmark-pdb-022-xcode-double-step\",\n  \"startedAt\" : \"2026-03-13T17:54:11.438Z\",\n  \"status\" : \"succeeded\",\n  \"stepResults\" : [\n    {\n      \"actionType\" : \"click\",\n      \"finishedAt\" : \"2026-03-13T17:54:11.438Z\",\n      \"output\" : \"Gateway executed click -> coordinate:526,46\",\n      \"startedAt\" : \"2026-03-13T17:54:11.438Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-001\"\n    },\n    {\n      \"actionType\" : \"click\",\n      \"finishedAt\" : \"2026-03-13T17:54:11.439Z\",\n      \"output\" : \"Gateway executed click -> coordinate:719,653\",\n      \"startedAt\" : \"2026-03-13T17:54:11.439Z\",\n      \"status\" : \"succeeded\",\n      \"stepId\" : \"step-002\"\n    }\n  ],\n  \"succeededSteps\" : 2,\n  \"summary\" : \"Gateway finished skill benchmark-pdb-022-xcode-double-step. total=2 succeeded=2 failed=0 blocked=0\",\n  \"taskId\" : \"task-session-gui-199fd65f-teaching-20260311-173758-001\",\n  \"totalSteps\" : 2,\n  \"traceId\" : \"trace-openclaw-run-4ceffd3c-6c5a-483f-829b-134bcb10f625\"\n}\n",
+  "stepResults": [
+    {
+      "actionType": "click",
+      "finishedAt": "2026-03-13T17:54:11.438Z",
+      "output": "Gateway executed click -> coordinate:526,46",
+      "startedAt": "2026-03-13T17:54:11.438Z",
+      "status": "succeeded",
+      "stepId": "step-001"
+    },
+    {
+      "actionType": "click",
+      "finishedAt": "2026-03-13T17:54:11.439Z",
+      "output": "Gateway executed click -> coordinate:719,653",
+      "startedAt": "2026-03-13T17:54:11.439Z",
+      "status": "succeeded",
+      "stepId": "step-002"
+    }
+  ],
+  "succeededSteps": 2,
+  "summary": "Gateway finished skill benchmark-pdb-022-xcode-double-step. total=2 succeeded=2 failed=0 blocked=0",
+  "taskId": "task-session-gui-199fd65f-teaching-20260311-173758-001",
+  "totalSteps": 2,
+  "traceId": "trace-openclaw-run-4ceffd3c-6c5a-483f-829b-134bcb10f625"
+}

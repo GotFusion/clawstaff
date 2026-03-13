@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "openstaff.openclaw-skill.v1",
+  "skillName": "benchmark-pdb-015-safari-focus",
+  "knowledgeItemId": "ki-task-session-gui-f03aebb3-teaching-20260310-160325-002",
+  "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-002",
+  "sessionId": "session-gui-f03aebb3-teaching-20260310-160325",
+  "source": {
+    "knowledgeItemPath": "data/knowledge/2026-03-10/task-session-gui-f03aebb3-teaching-20260310-160325-002.json",
+    "llmOutputPath": "scripts/skills/examples/llm-output.sample.terminal-invalid.txt"
+  },
+  "provenance": {
+    "knowledge": {
+      "knowledgeItemId": "ki-task-session-gui-f03aebb3-teaching-20260310-160325-002",
+      "knowledgeSchemaVersion": "knowledge.item.v0",
+      "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-002",
+      "sessionId": "session-gui-f03aebb3-teaching-20260310-160325",
+      "knowledgeCreatedAt": "2026-03-10T08:03:35.213Z",
+      "knowledgeGeneratorVersion": "rule-v0"
+    },
+    "sourceTrace": {
+      "taskChunkSchemaVersion": "knowledge.task-chunk.v0",
+      "startTimestamp": "2026-03-10T08:03:30.374Z",
+      "endTimestamp": "2026-03-10T08:03:30.374Z",
+      "eventCount": 1,
+      "boundaryReason": "sessionEnd"
+    },
+    "skillBuild": {
+      "skillName": "benchmark-pdb-015-safari-focus",
+      "skillSchemaVersion": "openstaff.openclaw-skill.v1",
+      "skillGeneratorVersion": "openstaff-skill-mapper-v1",
+      "generatedAt": "2026-03-14T01:54:10+08:00",
+      "repairVersion": 0,
+      "llmOutputAccepted": false
+    },
+    "stepMappings": [
+      {
+        "skillStepId": "step-001",
+        "knowledgeStepId": "step-001",
+        "instruction": "执行第 1 步点击操作（源事件 fc1c4088-1a75-4c3f-a019-767c2c203640）。",
+        "sourceEventIds": [
+          "fc1c4088-1a75-4c3f-a019-767c2c203640"
+        ],
+        "preferredLocatorType": null,
+        "coordinate": null,
+        "semanticTargets": []
+      }
+    ]
+  },
+  "mappedOutput": {
+    "objective": "在 Safari浏览器 中复现任务 task-session-gui-f03aebb3-teaching-20260310-160325-002 的操作流程",
+    "context": {
+      "appName": "Safari浏览器",
+      "appBundleId": "com.apple.Safari",
+      "windowTitle": null
+    },
+    "executionPlan": {
+      "requiresTeacherConfirmation": true,
+      "steps": [
+        {
+          "stepId": "step-001",
+          "actionType": "click",
+          "instruction": "执行第 1 步点击操作（源事件 fc1c4088-1a75-4c3f-a019-767c2c203640）。",
+          "target": "unknown",
+          "sourceEventIds": [
+            "fc1c4088-1a75-4c3f-a019-767c2c203640"
+          ]
+        }
+      ],
+      "completionCriteria": {
+        "expectedStepCount": 1,
+        "requiredFrontmostAppBundleId": "com.apple.Safari"
+      },
+      "failurePolicy": {
+        "onContextMismatch": "stopAndAskTeacher",
+        "onStepError": "stopAndAskTeacher",
+        "onUnknownAction": "stopAndAskTeacher"
+      }
+    },
+    "safetyNotes": [
+      "执行前前台应用必须是 com.apple.Safari。",
+      "执行该知识条目时，需要老师确认后再执行。",
+      "坐标点击目标可能随分辨率或界面变化漂移。"
+    ],
+    "confidence": 0.72
+  },
+  "diagnostics": [
+    "LLM output schema validation failed: $.objective must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].target must be a non-empty string.",
+    "LLM output schema validation failed: $.executionPlan.steps[0].sourceEventIds must be a non-empty array.",
+    "LLM output schema validation failed: $.safetyNotes must be a non-empty array.",
+    "Applied fallback on 5 step fields while normalizing executionPlan.",
+    "Fallback objective from KnowledgeItem.goal."
+  ],
+  "llmOutputAccepted": false,
+  "createdAt": "2026-03-14T01:54:10+08:00",
+  "generatorVersion": "openstaff-skill-mapper-v1"
+}

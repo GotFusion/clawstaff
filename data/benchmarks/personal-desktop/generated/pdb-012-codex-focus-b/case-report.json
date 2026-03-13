@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.case-report.v0",
+  "caseId": "pdb-012-codex-focus-b",
+  "taskId": "task-session-gui-b250e7f9-teaching-20260310-155114-001",
+  "sessionId": "session-gui-b250e7f9-teaching-20260310-155114",
+  "category": "developer-tools",
+  "title": "Codex 会话聚焦 B",
+  "passed": true,
+  "source": {
+    "appName": "Codex",
+    "windowTitle": "Codex",
+    "goal": "在 Codex 中复现任务 task-session-gui-b250e7f9-teaching-20260310-155114-001 的操作流程",
+    "knowledgeStepCount": 1,
+    "rawEventCount": 1
+  },
+  "artifacts": {
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/source-record.json",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/benchmark-pdb-012-codex-focus-b",
+    "skillPreflightPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/skill-preflight.json",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/execution-result.json",
+    "reviewResultPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/review-result.json",
+    "caseReportPath": "data/benchmarks/personal-desktop/generated/pdb-012-codex-focus-b/case-report.json"
+  },
+  "results": {
+    "expectedSkillPreflightStatus": "failed",
+    "skillMapperExitCode": 0,
+    "skillPreflightExitCode": 1,
+    "skillPreflightStatus": "failed",
+    "expectedExecutionStatus": "blocked",
+    "executionStatus": "blocked",
+    "reviewDecision": "approved"
+  },
+  "tags": [
+    "codex",
+    "focus"
+  ]
+}

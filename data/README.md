@@ -7,5 +7,6 @@ Local-only runtime data for development and demos.
 - `knowledge/`: final KnowledgeItem files (`{yyyy-mm-dd}/{taskId}.json`).
 - `logs/`: runtime and execution logs.
 - `feedback/`: teacher feedback records (`{yyyy-mm-dd}/{sessionId}-{taskId}-teacher-feedback.jsonl`).
+- `benchmarks/`: frozen regression corpora and generated benchmark artifacts (`personal-desktop/*`).
 
 This directory is the default storage root in baseline mode.

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "openstaff.personal-desktop-benchmark.review.v0",
+  "caseId": "pdb-016-xcode-package-single-click",
+  "taskId": "task-session-gui-f23128c2-teaching-20260310-145427-001",
+  "sessionId": "session-gui-f23128c2-teaching-20260310-145427",
+  "category": "developer-tools",
+  "title": "Xcode Package.swift 单击路径",
+  "reviewedAt": "2026-03-14T01:54:10+08:00",
+  "reviewer": "benchmark-regression",
+  "decision": "approved",
+  "passed": true,
+  "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked",
+  "notes": [
+    "Found 1 legacy student review artifact(s)."
+  ],
+  "artifacts": {
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/benchmark-pdb-016-xcode-package-single-click",
+    "expectedPreflightStatus": "failed",
+    "preflightStatus": "failed",
+    "expectedExecutionStatus": "blocked",
+    "executionStatus": "blocked",
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/logs/2026-03-13/session-gui-f23128c2-teaching-20260310-145427-openclaw.log"
+  }
+}

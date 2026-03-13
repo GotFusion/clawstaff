@@ -1,0 +1,170 @@
+{
+  "blockedSteps": 0,
+  "errorCode": "OCW-SKILL-PREFLIGHT-FAILED",
+  "failedSteps": 0,
+  "finishedAt": "2026-03-13T17:54:09.212Z",
+  "preflight": {
+    "allowedAppBundleIds": [
+      "com.apple.dt.Xcode"
+    ],
+    "isAutoRunnable": false,
+    "issues": [
+      {
+        "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+        "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+        "severity": "warning"
+      },
+      {
+        "code": "SPF-LOW-CONFIDENCE",
+        "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+        "severity": "warning",
+        "stepId": "step-001"
+      },
+      {
+        "code": "SPF-MISSING-LOCATOR",
+        "message": "步骤 step-001 不存在可解析 locator。",
+        "severity": "error",
+        "stepId": "step-001"
+      }
+    ],
+    "requiresTeacherConfirmation": true,
+    "schemaVersion": "openstaff.skill-preflight-report.v0",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/benchmark-pdb-004-xcode-focus",
+    "skillName": "benchmark-pdb-004-xcode-focus",
+    "status": "failed",
+    "steps": [
+      {
+        "actionType": "click",
+        "confidence": 0.72,
+        "highRisk": false,
+        "issues": [
+          {
+            "code": "SPF-LOW-CONFIDENCE",
+            "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+            "severity": "warning",
+            "stepId": "step-001"
+          },
+          {
+            "code": "SPF-MISSING-LOCATOR",
+            "message": "步骤 step-001 不存在可解析 locator。",
+            "severity": "error",
+            "stepId": "step-001"
+          }
+        ],
+        "locatorStatus": "missing",
+        "lowConfidence": true,
+        "requiresTeacherConfirmation": true,
+        "stepId": "step-001",
+        "targetAppBundleIds": [
+          "com.apple.dt.Xcode"
+        ]
+      }
+    ],
+    "summary": "skill benchmark-pdb-004-xcode-focus 预检失败：步骤 1，可直接自动执行 0，错误 1，告警 2。"
+  },
+  "review": {
+    "blockedSteps": 0,
+    "component": "student.openclaw.runner",
+    "errorCode": "OCW-SKILL-PREFLIGHT-FAILED",
+    "failedSteps": 0,
+    "finishedAt": "2026-03-13T17:54:09.212Z",
+    "logFilePath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/logs/2026-03-13/session-gui-4214a172-teaching-20260310-142748-openclaw.log",
+    "preflight": {
+      "allowedAppBundleIds": [
+        "com.apple.dt.Xcode"
+      ],
+      "isAutoRunnable": false,
+      "issues": [
+        {
+          "code": "SPF-MANUAL-CONFIRMATION-REQUIRED",
+          "message": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。",
+          "severity": "warning"
+        },
+        {
+          "code": "SPF-LOW-CONFIDENCE",
+          "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+          "severity": "warning",
+          "stepId": "step-001"
+        },
+        {
+          "code": "SPF-MISSING-LOCATOR",
+          "message": "步骤 step-001 不存在可解析 locator。",
+          "severity": "error",
+          "stepId": "step-001"
+        }
+      ],
+      "requiresTeacherConfirmation": true,
+      "schemaVersion": "openstaff.skill-preflight-report.v0",
+      "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/benchmark-pdb-004-xcode-focus",
+      "skillName": "benchmark-pdb-004-xcode-focus",
+      "status": "failed",
+      "steps": [
+        {
+          "actionType": "click",
+          "confidence": 0.72,
+          "highRisk": false,
+          "issues": [
+            {
+              "code": "SPF-LOW-CONFIDENCE",
+              "message": "步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。",
+              "severity": "warning",
+              "stepId": "step-001"
+            },
+            {
+              "code": "SPF-MISSING-LOCATOR",
+              "message": "步骤 step-001 不存在可解析 locator。",
+              "severity": "error",
+              "stepId": "step-001"
+            }
+          ],
+          "locatorStatus": "missing",
+          "lowConfidence": true,
+          "requiresTeacherConfirmation": true,
+          "stepId": "step-001",
+          "targetAppBundleIds": [
+            "com.apple.dt.Xcode"
+          ]
+        }
+      ],
+      "summary": "skill benchmark-pdb-004-xcode-focus 预检失败：步骤 1，可直接自动执行 0，错误 1，告警 2。"
+    },
+    "reviewId": "openclaw-review-trace-openclaw-run-44fb8135-bcde-430e-9ee4-968e3c2b008f",
+    "sessionId": "session-gui-4214a172-teaching-20260310-142748",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/benchmark-pdb-004-xcode-focus",
+    "skillName": "benchmark-pdb-004-xcode-focus",
+    "startedAt": "2026-03-13T17:54:09.205Z",
+    "status": "blocked",
+    "succeededSteps": 0,
+    "summary": "skill benchmark-pdb-004-xcode-focus 预检失败：步骤 1，可直接自动执行 0，错误 1，告警 2。",
+    "taskId": "task-session-gui-4214a172-teaching-20260310-142748-001",
+    "totalSteps": 0,
+    "traceId": "trace-openclaw-run-44fb8135-bcde-430e-9ee4-968e3c2b008f"
+  },
+  "runtimeArguments": [
+    "--gateway-mode",
+    "--skill-dir",
+    "/Users/wangzhenwu/Desktop/code/Personal/openstaff/data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/benchmark-pdb-004-xcode-focus",
+    "--trace-id",
+    "trace-openclaw-run-44fb8135-bcde-430e-9ee4-968e3c2b008f",
+    "--session-id",
+    "session-gui-4214a172-teaching-20260310-142748",
+    "--json-result",
+    "--task-id",
+    "task-session-gui-4214a172-teaching-20260310-142748-001"
+  ],
+  "runtimeExecutablePath": "apps/macos/.build/debug/OpenStaffOpenClawCLI",
+  "schemaVersion": "openstaff.openclaw.execution-result.v0",
+  "sessionId": "session-gui-4214a172-teaching-20260310-142748",
+  "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-004-xcode-focus/benchmark-pdb-004-xcode-focus",
+  "skillName": "benchmark-pdb-004-xcode-focus",
+  "startedAt": "2026-03-13T17:54:09.205Z",
+  "status": "blocked",
+  "stderr": "skill 标记为 requiresTeacherConfirmation=true，不能直接自动执行。\n步骤 step-001 置信度 0.72 低于阈值 0.80，需要老师确认。\n步骤 step-001 不存在可解析 locator。",
+  "stdout": "",
+  "stepResults": [],
+  "succeededSteps": 0,
+  "summary": "skill benchmark-pdb-004-xcode-focus 预检失败：步骤 1，可直接自动执行 0，错误 1，告警 2。",
+  "taskId": "task-session-gui-4214a172-teaching-20260310-142748-001",
+  "totalSteps": 0,
+  "traceId": "trace-openclaw-run-44fb8135-bcde-430e-9ee4-968e3c2b008f"
+}
