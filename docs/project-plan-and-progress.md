@@ -147,4 +147,5 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 
 - 架构与目录合理性评审请见：`docs/architecture-review.md`。
 - 详细编码 TODO 清单请见：`docs/implementation-todo-checklist.md`。
+- 下一阶段技术路线图请见：`docs/next-phase-technical-roadmap.md`。
 - 建议按 TODO 阶段顺序推进，每完成一个阶段回写本文件“当前实现进展”。
