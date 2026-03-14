@@ -150,7 +150,8 @@ python3 scripts/validation/validate_skill_bundle.py \
 
 说明：
 - `validate_openclaw_skill.py` 负责 bundle/frontmatter/schema 一致性校验。
-- `validate_skill_bundle.py` 负责执行前预检：locator 可解析性、高风险动作、低置信步骤、目标 App 白名单。
+- `validate_skill_bundle.py` 负责执行前预检：locator 可解析性、高风险动作、低置信步骤、低复现度、敏感窗口识别、目标 App 白名单。
+- 统一安全策略位于 `config/safety-rules.yaml`；如需做项目级放行，请优先在其中配置 `App / task / skill` 白名单，而不是直接改代码。
 - App 技能列表会直接展示预检状态；`需老师确认` 的技能不会进入学生模式自动执行。
 
 ### 4.4 通过 OpenClaw Runner 执行已生成 skill
@@ -161,6 +162,7 @@ make openclaw ARGS="--skill-dir scripts/skills/examples/generated/openstaff-task
 说明：
 - 该入口会通过 `OpenClawRunner` 拉起 OpenClaw CLI / gateway 子进程。
 - 若 skill 命中 `requiresTeacherConfirmation` / 高风险 / 低置信安全门，必须显式传入 `--teacher-confirmed`。
+- 如需临时验证另一套风控规则，可额外传入 `--safety-rules /abs/path/to/safety-rules.yaml`。
 - 执行日志会写入 `data/logs/{yyyy-mm-dd}/{sessionId}-openclaw.log`。
 - 若执行失败，会返回结构化 `errorCode/stdout/stderr/exitCode/preflight` 结果，便于审阅与排障。
 

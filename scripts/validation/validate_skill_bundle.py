@@ -15,30 +15,119 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILL_VALIDATOR_PATH = REPO_ROOT / "scripts/skills/validate_openclaw_skill.py"
+DEFAULT_SAFETY_RULES_PATH = REPO_ROOT / "config/safety-rules.yaml"
 SUPPORTED_SCHEMA_VERSIONS = {
     "openstaff.openclaw-skill.v0",
     "openstaff.openclaw-skill.v1",
 }
 EXECUTABLE_ACTION_TYPES = {"click", "shortcut", "input", "openApp", "wait"}
-LOW_CONFIDENCE_THRESHOLD = 0.80
-HIGH_RISK_KEYWORDS = [
-    "删除",
-    "移除",
-    "支付",
-    "转账",
-    "系统设置",
-    "格式化",
-    "抹掉",
-    "重置",
-    "sudo",
-    "rm -rf",
-]
-HIGH_RISK_REGEX_PATTERNS = [
-    r"(?i)\brm\s+-rf\b",
-    r"(?i)\bsudo\s+",
-    r"(?i)\bshutdown\b|\breboot\b",
-    r"(?i)\bdd\s+if=",
-]
+DEFAULT_SAFETY_RULES: dict[str, Any] = {
+    "schemaVersion": "openstaff.safety-rules.v1",
+    "lowConfidenceThreshold": 0.80,
+    "highRiskKeywords": [
+        "删除",
+        "移除",
+        "支付",
+        "付款",
+        "转账",
+        "系统设置",
+        "格式化",
+        "抹掉",
+        "重置",
+        "sudo",
+        "rm -rf",
+    ],
+    "highRiskRegexPatterns": [
+        r"(?i)\brm\s+-rf\b",
+        r"(?i)\bsudo\s+",
+        r"(?i)\bshutdown\b|\breboot\b",
+        r"(?i)\bdd\s+if=",
+    ],
+    "autoExecutionAllowlist": {
+        "apps": [],
+        "tasks": [],
+        "skills": [],
+    },
+    "sensitiveWindows": [
+        {
+            "tag": "payment",
+            "appBundleIds": [
+                "com.alipay.client",
+                "com.tencent.xinWeChat",
+                "com.apple.Passbook",
+            ],
+            "windowTitleKeywords": [
+                "支付",
+                "付款",
+                "收银台",
+                "订单支付",
+                "checkout",
+                "billing",
+                "payment",
+            ],
+            "windowTitleRegexPatterns": [
+                r"(?i)\b(checkout|payment|billing)\b",
+            ],
+        },
+        {
+            "tag": "system_settings",
+            "appBundleIds": [
+                "com.apple.systempreferences",
+                "com.apple.systemsettings",
+            ],
+            "windowTitleKeywords": [
+                "系统设置",
+                "System Settings",
+                "隐私与安全性",
+                "Privacy & Security",
+            ],
+            "windowTitleRegexPatterns": [
+                r"(?i)\b(system settings|privacy\s*&\s*security)\b",
+            ],
+        },
+        {
+            "tag": "password_manager",
+            "appBundleIds": [
+                "com.1password.1password",
+                "com.1password.1password7",
+                "com.bitwarden.desktop",
+                "com.lastpass.LastPass",
+                "com.apple.keychainaccess",
+            ],
+            "windowTitleKeywords": [
+                "密码",
+                "Password",
+                "密码库",
+                "Vault",
+                "1Password",
+                "Bitwarden",
+                "钥匙串",
+            ],
+            "windowTitleRegexPatterns": [
+                r"(?i)\b(password|vault|keychain|1password|bitwarden)\b",
+            ],
+        },
+        {
+            "tag": "privacy_permission_popup",
+            "appBundleIds": [],
+            "windowTitleKeywords": [
+                "辅助功能",
+                "屏幕录制",
+                "完全磁盘访问权限",
+                "Would Like to Access",
+                "Would Like to Control",
+                "Privacy",
+                "Allow",
+                "Don't Allow",
+                "不允许",
+                "允许",
+            ],
+            "windowTitleRegexPatterns": [
+                r"(?i)(would like to (access|control)|screen recording|accessibility|privacy)",
+            ],
+        },
+    ],
+}
 
 
 def load_module(name: str, path: Path):
@@ -108,6 +197,32 @@ def parse_coordinate_target(target: str) -> tuple[float, float] | None:
         return None
 
 
+def deduplicate(values: list[str]) -> list[str]:
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        normalized_value = normalize(value)
+        if not normalized_value:
+            continue
+        key = normalized_value.casefold()
+        if key not in seen:
+            seen.add(key)
+            ordered.append(normalized_value)
+    return ordered
+
+
+def load_safety_rules(path: Path | None = None) -> dict[str, Any]:
+    candidate = path or DEFAULT_SAFETY_RULES_PATH
+    if candidate.exists():
+        try:
+            data = json.loads(candidate.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                return data
+        except (OSError, json.JSONDecodeError):
+            pass
+    return json.loads(json.dumps(DEFAULT_SAFETY_RULES))
+
+
 def derived_allowed_app_bundle_ids(mapping: dict[str, Any], extra_allowed: list[str]) -> list[str]:
     context_bundle_id = normalize(mapping.get("mappedOutput", {}).get("context", {}).get("appBundleId"))
     frontmost_bundle_id = normalize(
@@ -122,8 +237,9 @@ def derived_allowed_app_bundle_ids(mapping: dict[str, Any], extra_allowed: list[
     for value in values:
         if not value or value == "unknown":
             continue
-        if value not in seen:
-            seen.add(value)
+        key = value.casefold()
+        if key not in seen:
+            seen.add(key)
             ordered.append(value)
     return ordered
 
@@ -167,26 +283,34 @@ def step_target_app_bundle_ids(
     for value in values:
         if not value or value == "unknown":
             continue
-        if value not in seen:
-            seen.add(value)
+        key = value.casefold()
+        if key not in seen:
+            seen.add(key)
             ordered.append(value)
     return ordered
 
 
-def is_high_risk_step(step: dict[str, Any], target_app_bundle_ids: list[str]) -> bool:
-    action_type = normalize(step.get("actionType"))
+def is_high_risk_step(
+    step: dict[str, Any],
+    context_app_bundle_id: str,
+    target_app_bundle_ids: list[str],
+    keywords: list[str],
+    regex_patterns: list[str],
+) -> bool:
+    action_type = normalize(step.get("actionType")).casefold()
     joined = f"{normalize(step.get('instruction'))}\n{normalize(step.get('target'))}"
+    candidate_bundle_ids = [*target_app_bundle_ids, context_app_bundle_id]
 
-    if "com.apple.Terminal" in target_app_bundle_ids and action_type == "input":
+    if any(bundle_id.casefold() == "com.apple.terminal" for bundle_id in candidate_bundle_ids) and action_type == "input":
         return True
-    if action_type == "openApp":
+    if action_type == "openapp":
         bundle_id = parse_bundle_target(normalize(step.get("target")))
-        if bundle_id and "systemsettings" in bundle_id.lower():
+        if bundle_id and ("systemsettings" in bundle_id.casefold() or "systempreferences" in bundle_id.casefold()):
             return True
 
-    if any(keyword.lower() in joined.lower() for keyword in HIGH_RISK_KEYWORDS if keyword):
+    if any(keyword and keyword.casefold() in joined.casefold() for keyword in keywords):
         return True
-    return any(re.search(pattern, joined) for pattern in HIGH_RISK_REGEX_PATTERNS)
+    return any(pattern and re.search(pattern, joined) for pattern in regex_patterns)
 
 
 def validate_locator(step: dict[str, Any], step_mapping: dict[str, Any] | None, step_id: str) -> tuple[str, list[dict[str, Any]]]:
@@ -245,7 +369,178 @@ def validate_structure(skill_dir: Path, mapping: dict[str, Any]) -> list[dict[st
     return issues
 
 
-def build_report(skill_dir: Path, extra_allowed: list[str]) -> dict[str, Any]:
+def step_window_titles(mapping: dict[str, Any], step_mapping: dict[str, Any] | None) -> list[str]:
+    values: list[str] = []
+    context_window_title = normalize(mapping.get("mappedOutput", {}).get("context", {}).get("windowTitle"))
+    if context_window_title:
+        values.append(context_window_title)
+
+    if step_mapping:
+        for semantic_target in step_mapping.get("semanticTargets", []):
+            if isinstance(semantic_target, dict):
+                window_title = normalize(semantic_target.get("windowTitlePattern"))
+                if window_title:
+                    values.append(window_title)
+
+    return deduplicate(values)
+
+
+def matched_sensitive_window_tags(
+    mapping: dict[str, Any],
+    step_mapping: dict[str, Any] | None,
+    target_app_bundle_ids: list[str],
+    safety_rules: dict[str, Any],
+) -> list[str]:
+    context_bundle_id = normalize(mapping.get("mappedOutput", {}).get("context", {}).get("appBundleId"))
+    bundle_ids = {value.casefold() for value in deduplicate([context_bundle_id, *target_app_bundle_ids])}
+    window_titles = step_window_titles(mapping, step_mapping)
+
+    tags: list[str] = []
+    for rule in safety_rules.get("sensitiveWindows", []):
+        if not isinstance(rule, dict):
+            continue
+        tag = normalize(rule.get("tag"))
+        app_bundle_ids = [normalize(value).casefold() for value in rule.get("appBundleIds", []) if normalize(value)]
+        keywords = [normalize(value) for value in rule.get("windowTitleKeywords", []) if normalize(value)]
+        regex_patterns = [normalize(value) for value in rule.get("windowTitleRegexPatterns", []) if normalize(value)]
+
+        matched_by_bundle = any(bundle_id in bundle_ids for bundle_id in app_bundle_ids)
+        matched_by_keyword = any(keyword.casefold() in title.casefold() for keyword in keywords for title in window_titles)
+        matched_by_regex = any(re.search(pattern, title) for pattern in regex_patterns for title in window_titles)
+
+        if tag and (matched_by_bundle or matched_by_keyword or matched_by_regex) and tag not in tags:
+            tags.append(tag)
+    return tags
+
+
+def matched_allowlist_scopes(
+    mapping: dict[str, Any],
+    target_app_bundle_ids: list[str],
+    safety_rules: dict[str, Any],
+) -> list[str]:
+    allowlist = safety_rules.get("autoExecutionAllowlist", {})
+    if not isinstance(allowlist, dict):
+        allowlist = {}
+
+    scopes: list[str] = []
+    context_bundle_id = normalize(mapping.get("mappedOutput", {}).get("context", {}).get("appBundleId"))
+    for bundle_id in deduplicate([context_bundle_id, *target_app_bundle_ids]):
+        if any(normalize(value).casefold() == bundle_id.casefold() for value in allowlist.get("apps", [])):
+            scopes.append(f"app:{bundle_id}")
+
+    task_id = normalize(mapping.get("taskId"))
+    if task_id and any(normalize(value) == task_id for value in allowlist.get("tasks", [])):
+        scopes.append(f"task:{task_id}")
+
+    skill_name = normalize(mapping.get("skillName"))
+    if skill_name and any(normalize(value) == skill_name for value in allowlist.get("skills", [])):
+        scopes.append(f"skill:{skill_name}")
+
+    return deduplicate(scopes)
+
+
+def evaluate_safety_policy(
+    mapping: dict[str, Any],
+    step: dict[str, Any],
+    step_id: str,
+    step_mapping: dict[str, Any] | None,
+    target_app_bundle_ids: list[str],
+    confidence: float,
+    locator_status: str,
+    plan_requires_teacher_confirmation: bool,
+    safety_rules: dict[str, Any],
+) -> dict[str, Any]:
+    threshold = safety_rules.get("lowConfidenceThreshold", DEFAULT_SAFETY_RULES["lowConfidenceThreshold"])
+    if not isinstance(threshold, (int, float)):
+        threshold = DEFAULT_SAFETY_RULES["lowConfidenceThreshold"]
+    threshold = max(0.0, min(1.0, float(threshold)))
+
+    keywords = deduplicate(
+        [normalize(value) for value in safety_rules.get("highRiskKeywords", DEFAULT_SAFETY_RULES["highRiskKeywords"]) if normalize(value)]
+    )
+    regex_patterns = deduplicate(
+        [normalize(value) for value in safety_rules.get("highRiskRegexPatterns", DEFAULT_SAFETY_RULES["highRiskRegexPatterns"]) if normalize(value)]
+    )
+
+    context_app_bundle_id = normalize(mapping.get("mappedOutput", {}).get("context", {}).get("appBundleId"))
+    sensitive_window_tags = matched_sensitive_window_tags(mapping, step_mapping, target_app_bundle_ids, safety_rules)
+    low_confidence = confidence < threshold
+    low_reproducibility = locator_status == "degraded"
+    high_risk = is_high_risk_step(
+        step,
+        context_app_bundle_id,
+        target_app_bundle_ids,
+        keywords,
+        regex_patterns,
+    ) or bool(sensitive_window_tags)
+    matched_allowlist = matched_allowlist_scopes(mapping, target_app_bundle_ids, safety_rules)
+    allowlisted = bool(matched_allowlist)
+    blocks_auto_execution = not allowlisted and (
+        bool(sensitive_window_tags) or (high_risk and low_confidence and low_reproducibility)
+    )
+    requires_teacher_confirmation = plan_requires_teacher_confirmation or (
+        not allowlisted and (high_risk or low_confidence or low_reproducibility)
+    )
+
+    issues: list[dict[str, Any]] = []
+    if low_confidence:
+        issues.append(
+            issue(
+                "warning",
+                "SPF-LOW-CONFIDENCE",
+                f"步骤 {step_id} 置信度 {confidence:.2f} 低于阈值 {threshold:.2f}，需要老师确认。",
+                step_id,
+            )
+        )
+    if high_risk:
+        issues.append(
+            issue("warning", "SPF-HIGH-RISK-ACTION", f"步骤 {step_id} 被识别为高风险动作，需要老师确认。", step_id)
+        )
+    if low_reproducibility:
+        issues.append(
+            issue(
+                "warning",
+                "SPF-LOW-REPRODUCIBILITY",
+                f"步骤 {step_id} 复现度较低（locatorStatus={locator_status}），默认不能自动执行。",
+                step_id,
+            )
+        )
+    if sensitive_window_tags:
+        issues.append(
+            issue(
+                "warning",
+                "SPF-SENSITIVE-WINDOW",
+                f"步骤 {step_id} 命中敏感窗口：{', '.join(sensitive_window_tags)}。",
+                step_id,
+            )
+        )
+    if blocks_auto_execution:
+        issues.append(
+            issue(
+                "warning",
+                "SPF-AUTO-EXECUTION-BLOCKED",
+                f"步骤 {step_id} 命中“低置信 + 高风险 + 低复现度”或敏感窗口策略，默认禁止学生模式自动直跑。",
+                step_id,
+            )
+        )
+
+    return {
+        "highRisk": high_risk,
+        "lowConfidence": low_confidence,
+        "lowReproducibility": low_reproducibility,
+        "sensitiveWindowTags": sensitive_window_tags,
+        "matchedAllowlistScopes": matched_allowlist,
+        "blocksAutoExecution": blocks_auto_execution,
+        "requiresTeacherConfirmation": requires_teacher_confirmation,
+        "issues": issues,
+    }
+
+
+def build_report(
+    skill_dir: Path,
+    extra_allowed: list[str],
+    safety_rules_path: Path | None = None,
+) -> dict[str, Any]:
     mapping_path = skill_dir / "openstaff-skill.json"
     if not mapping_path.exists():
         issues = [issue("error", "SPF-SKILL-BUNDLE-UNREADABLE", f"未找到技能文件：{mapping_path}")]
@@ -280,6 +575,7 @@ def build_report(skill_dir: Path, extra_allowed: list[str]) -> dict[str, Any]:
             "steps": [],
         }
 
+    safety_rules = load_safety_rules(safety_rules_path)
     skill_name = normalize(mapping.get("skillName"), skill_dir.name)
     issues = validate_structure(skill_dir, mapping)
     steps: list[dict[str, Any]] = []
@@ -356,32 +652,22 @@ def build_report(skill_dir: Path, extra_allowed: list[str]) -> dict[str, Any]:
                 )
 
         confidence = derived_step_confidence(step_mapping, fallback_confidence)
-        low_confidence = confidence < LOW_CONFIDENCE_THRESHOLD
-        if low_confidence:
-            step_issues.append(
-                issue(
-                    "warning",
-                    "SPF-LOW-CONFIDENCE",
-                    f"步骤 {step_id} 置信度 {confidence:.2f} 低于阈值 {LOW_CONFIDENCE_THRESHOLD:.2f}，需要老师确认。",
-                    step_id,
-                )
-            )
-
-        high_risk = is_high_risk_step(step, target_app_bundle_ids)
-        if high_risk:
-            step_issues.append(
-                issue("warning", "SPF-HIGH-RISK-ACTION", f"步骤 {step_id} 被识别为高风险动作，需要老师确认。", step_id)
-            )
-
         locator_status, locator_issues = validate_locator(step, step_mapping, step_id)
         step_issues.extend(locator_issues)
 
-        step_requires_confirmation = (
-            requires_teacher_confirmation
-            or high_risk
-            or low_confidence
-            or locator_status == "degraded"
+        policy = evaluate_safety_policy(
+            mapping=mapping,
+            step=step,
+            step_id=step_id,
+            step_mapping=step_mapping,
+            target_app_bundle_ids=target_app_bundle_ids,
+            confidence=confidence,
+            locator_status=locator_status,
+            plan_requires_teacher_confirmation=requires_teacher_confirmation,
+            safety_rules=safety_rules,
         )
+        step_issues.extend(policy["issues"])
+
         steps.append(
             {
                 "stepId": step_id,
@@ -389,9 +675,13 @@ def build_report(skill_dir: Path, extra_allowed: list[str]) -> dict[str, Any]:
                 "confidence": confidence,
                 "locatorStatus": locator_status,
                 "targetAppBundleIds": target_app_bundle_ids,
-                "highRisk": high_risk,
-                "lowConfidence": low_confidence,
-                "requiresTeacherConfirmation": step_requires_confirmation,
+                "highRisk": policy["highRisk"],
+                "lowConfidence": policy["lowConfidence"],
+                "lowReproducibility": policy["lowReproducibility"],
+                "sensitiveWindowTags": policy["sensitiveWindowTags"],
+                "matchedAllowlistScopes": policy["matchedAllowlistScopes"],
+                "blocksAutoExecution": policy["blocksAutoExecution"],
+                "requiresTeacherConfirmation": policy["requiresTeacherConfirmation"],
                 "issues": step_issues,
             }
         )
@@ -399,8 +689,21 @@ def build_report(skill_dir: Path, extra_allowed: list[str]) -> dict[str, Any]:
 
     error_count = sum(1 for item in issues if item["severity"] == "error")
     warning_count = sum(1 for item in issues if item["severity"] == "warning")
-    auto_runnable_steps = sum(1 for step in steps if not step["requiresTeacherConfirmation"])
-    status = "failed" if error_count > 0 else ("needs_teacher_confirmation" if any(step["requiresTeacherConfirmation"] for step in steps) or requires_teacher_confirmation else "passed")
+    auto_runnable_steps = sum(
+        1
+        for step in steps
+        if not step["requiresTeacherConfirmation"]
+        and not any(item["severity"] == "error" for item in step["issues"])
+    )
+    status = (
+        "failed"
+        if error_count > 0
+        else (
+            "needs_teacher_confirmation"
+            if any(step["requiresTeacherConfirmation"] for step in steps) or requires_teacher_confirmation
+            else "passed"
+        )
+    )
     summary = (
         f"skill {skill_name} 预检"
         f"{'通过' if status == 'passed' else '需老师确认' if status == 'needs_teacher_confirmation' else '失败'}："
@@ -431,6 +734,11 @@ def parse_args() -> argparse.Namespace:
         help="Additional allowed app bundle ID. May be specified multiple times.",
     )
     parser.add_argument(
+        "--safety-rules",
+        type=Path,
+        help="Optional safety rules file. Default: config/safety-rules.yaml",
+    )
+    parser.add_argument(
         "--require-auto-runnable",
         action="store_true",
         help="Treat confirmation-required skills as failure for CI gating.",
@@ -453,7 +761,7 @@ def print_text_report(report: dict[str, Any]) -> None:
 
 def main() -> int:
     args = parse_args()
-    report = build_report(args.skill_dir, args.allow_app_bundle_id)
+    report = build_report(args.skill_dir, args.allow_app_bundle_id, args.safety_rules)
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:

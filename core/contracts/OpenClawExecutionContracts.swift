@@ -32,6 +32,7 @@ public struct OpenClawExecutionRequest: Codable, Equatable, Sendable {
     public let runtimeEnvironment: [String: String]
     public let workingDirectoryPath: String?
     public let logsRootDirectoryPath: String
+    public let safetyRulesPath: String?
     public let component: String
     public let timeoutSeconds: Int?
     public let teacherConfirmed: Bool
@@ -48,6 +49,7 @@ public struct OpenClawExecutionRequest: Codable, Equatable, Sendable {
         runtimeEnvironment: [String: String] = [:],
         workingDirectoryPath: String? = nil,
         logsRootDirectoryPath: String = "data/logs",
+        safetyRulesPath: String? = nil,
         component: String = "student.openclaw.runner",
         timeoutSeconds: Int? = 30,
         teacherConfirmed: Bool = false
@@ -63,6 +65,7 @@ public struct OpenClawExecutionRequest: Codable, Equatable, Sendable {
         self.runtimeEnvironment = runtimeEnvironment
         self.workingDirectoryPath = workingDirectoryPath
         self.logsRootDirectoryPath = logsRootDirectoryPath
+        self.safetyRulesPath = safetyRulesPath
         self.component = component
         self.timeoutSeconds = timeoutSeconds
         self.teacherConfirmed = teacherConfirmed

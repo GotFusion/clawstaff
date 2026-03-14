@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "openstaff.safety-rules.v1",
+  "lowConfidenceThreshold": 0.8,
+  "highRiskKeywords": [
+    "删除",
+    "移除",
+    "支付",
+    "付款",
+    "转账",
+    "系统设置",
+    "格式化",
+    "抹掉",
+    "重置",
+    "sudo",
+    "rm -rf"
+  ],
+  "highRiskRegexPatterns": [
+    "(?i)\\brm\\s+-rf\\b",
+    "(?i)\\bsudo\\s+",
+    "(?i)\\bshutdown\\b|\\breboot\\b",
+    "(?i)\\bdd\\s+if="
+  ],
+  "autoExecutionAllowlist": {
+    "apps": [],
+    "tasks": [],
+    "skills": []
+  },
+  "sensitiveWindows": [
+    {
+      "tag": "payment",
+      "appBundleIds": [
+        "com.alipay.client",
+        "com.tencent.xinWeChat",
+        "com.apple.Passbook"
+      ],
+      "windowTitleKeywords": [
+        "支付",
+        "付款",
+        "收银台",
+        "订单支付",
+        "checkout",
+        "billing",
+        "payment"
+      ],
+      "windowTitleRegexPatterns": [
+        "(?i)\\b(checkout|payment|billing)\\b"
+      ]
+    },
+    {
+      "tag": "system_settings",
+      "appBundleIds": [
+        "com.apple.systempreferences",
+        "com.apple.systemsettings"
+      ],
+      "windowTitleKeywords": [
+        "系统设置",
+        "System Settings",
+        "隐私与安全性",
+        "Privacy & Security"
+      ],
+      "windowTitleRegexPatterns": [
+        "(?i)\\b(system settings|privacy\\s*&\\s*security)\\b"
+      ]
+    },
+    {
+      "tag": "password_manager",
+      "appBundleIds": [
+        "com.1password.1password",
+        "com.1password.1password7",
+        "com.bitwarden.desktop",
+        "com.lastpass.LastPass",
+        "com.apple.keychainaccess"
+      ],
+      "windowTitleKeywords": [
+        "密码",
+        "Password",
+        "密码库",
+        "Vault",
+        "1Password",
+        "Bitwarden",
+        "钥匙串"
+      ],
+      "windowTitleRegexPatterns": [
+        "(?i)\\b(password|vault|keychain|1password|bitwarden)\\b"
+      ]
+    },
+    {
+      "tag": "privacy_permission_popup",
+      "appBundleIds": [],
+      "windowTitleKeywords": [
+        "辅助功能",
+        "屏幕录制",
+        "完全磁盘访问权限",
+        "Would Like to Access",
+        "Would Like to Control",
+        "Privacy",
+        "Allow",
+        "Don't Allow",
+        "不允许",
+        "允许"
+      ],
+      "windowTitleRegexPatterns": [
+        "(?i)(would like to (access|control)|screen recording|accessibility|privacy)"
+      ]
+    }
+  ]
+}

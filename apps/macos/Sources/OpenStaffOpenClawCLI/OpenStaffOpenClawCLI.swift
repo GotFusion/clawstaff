@@ -40,6 +40,7 @@ struct OpenStaffOpenClawCLI {
                 ),
                 workingDirectoryPath: options.workingDirectoryPath,
                 logsRootDirectoryPath: options.logsRootDirectoryURL.path,
+                safetyRulesPath: options.safetyRulesPath,
                 timeoutSeconds: options.timeoutSeconds,
                 teacherConfirmed: options.teacherConfirmed
             )
@@ -225,6 +226,7 @@ struct OpenStaffOpenClawCLI {
           --task-id <id>                        Optional task ID override.
           --trace-id <id>                       Optional trace ID override.
           --logs-root <path>                    Execution log root. Default: data/logs
+          --safety-rules <path>                 Optional safety rules file. Default: config/safety-rules.yaml
           --runtime-executable <path>           Optional runtime executable override. Default: OPENCLAW_CLI_PATH or current executable.
           --working-dir <path>                  Optional subprocess working directory.
           --timeout-seconds <n>                 Subprocess timeout in seconds. Default: 30
@@ -250,6 +252,7 @@ private struct OpenClawCLIOptions {
     let taskId: String?
     let traceId: String?
     let logsRootPath: String
+    let safetyRulesPath: String?
     let runtimeExecutablePath: String?
     let workingDirectoryPath: String?
     let timeoutSeconds: Int
@@ -273,6 +276,7 @@ private struct OpenClawCLIOptions {
         var taskId: String?
         var traceId: String?
         var logsRootPath = defaultLogsRoot
+        var safetyRulesPath: String?
         var runtimeExecutablePath: String?
         var workingDirectoryPath: String?
         var timeoutSeconds = 30
@@ -317,6 +321,12 @@ private struct OpenClawCLIOptions {
                     throw OpenClawCLIOptionError.missingValue("--logs-root")
                 }
                 logsRootPath = arguments[index]
+            case "--safety-rules":
+                index += 1
+                guard index < arguments.count else {
+                    throw OpenClawCLIOptionError.missingValue("--safety-rules")
+                }
+                safetyRulesPath = arguments[index]
             case "--runtime-executable":
                 index += 1
                 guard index < arguments.count else {
@@ -372,6 +382,7 @@ private struct OpenClawCLIOptions {
                 taskId: taskId,
                 traceId: traceId,
                 logsRootPath: logsRootPath,
+                safetyRulesPath: safetyRulesPath,
                 runtimeExecutablePath: runtimeExecutablePath,
                 workingDirectoryPath: workingDirectoryPath,
                 timeoutSeconds: timeoutSeconds,
@@ -393,6 +404,7 @@ private struct OpenClawCLIOptions {
             taskId: taskId,
             traceId: traceId,
             logsRootPath: logsRootPath,
+            safetyRulesPath: safetyRulesPath,
             runtimeExecutablePath: runtimeExecutablePath,
             workingDirectoryPath: workingDirectoryPath,
             timeoutSeconds: timeoutSeconds,

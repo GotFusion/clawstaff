@@ -297,6 +297,9 @@ public enum SkillPreflightIssueCode: String, Codable, Equatable, Sendable {
     case targetAppNotAllowed = "SPF-TARGET-APP-NOT-ALLOWED"
     case highRiskAction = "SPF-HIGH-RISK-ACTION"
     case lowConfidence = "SPF-LOW-CONFIDENCE"
+    case lowReproducibility = "SPF-LOW-REPRODUCIBILITY"
+    case sensitiveWindow = "SPF-SENSITIVE-WINDOW"
+    case autoExecutionBlockedByPolicy = "SPF-AUTO-EXECUTION-BLOCKED"
 }
 
 public enum SkillPreflightLocatorStatus: String, Codable, Equatable, Sendable {
@@ -333,6 +336,10 @@ public struct SkillPreflightStepReport: Codable, Equatable, Sendable {
     public let targetAppBundleIds: [String]
     public let highRisk: Bool
     public let lowConfidence: Bool
+    public let lowReproducibility: Bool
+    public let sensitiveWindowTags: [String]
+    public let matchedAllowlistScopes: [String]
+    public let blocksAutoExecution: Bool
     public let requiresTeacherConfirmation: Bool
     public let issues: [SkillPreflightIssue]
 
@@ -344,6 +351,10 @@ public struct SkillPreflightStepReport: Codable, Equatable, Sendable {
         targetAppBundleIds: [String],
         highRisk: Bool,
         lowConfidence: Bool,
+        lowReproducibility: Bool,
+        sensitiveWindowTags: [String],
+        matchedAllowlistScopes: [String],
+        blocksAutoExecution: Bool,
         requiresTeacherConfirmation: Bool,
         issues: [SkillPreflightIssue]
     ) {
@@ -354,6 +365,10 @@ public struct SkillPreflightStepReport: Codable, Equatable, Sendable {
         self.targetAppBundleIds = targetAppBundleIds
         self.highRisk = highRisk
         self.lowConfidence = lowConfidence
+        self.lowReproducibility = lowReproducibility
+        self.sensitiveWindowTags = sensitiveWindowTags
+        self.matchedAllowlistScopes = matchedAllowlistScopes
+        self.blocksAutoExecution = blocksAutoExecution
         self.requiresTeacherConfirmation = requiresTeacherConfirmation
         self.issues = issues
     }
@@ -405,6 +420,7 @@ public struct SkillPreflightOptions: Equatable, Sendable {
     public let highRiskKeywords: [String]
     public let highRiskRegexPatterns: [String]
     public let extraAllowedAppBundleIds: [String]
+    public let safetyRulesPath: String?
 
     public init(
         lowConfidenceThreshold: Double = 0.80,
@@ -426,12 +442,14 @@ public struct SkillPreflightOptions: Equatable, Sendable {
             #"(?i)\bshutdown\b|\breboot\b"#,
             #"(?i)\bdd\s+if="#
         ],
-        extraAllowedAppBundleIds: [String] = []
+        extraAllowedAppBundleIds: [String] = [],
+        safetyRulesPath: String? = nil
     ) {
         self.lowConfidenceThreshold = lowConfidenceThreshold
         self.highRiskKeywords = highRiskKeywords
         self.highRiskRegexPatterns = highRiskRegexPatterns
         self.extraAllowedAppBundleIds = extraAllowedAppBundleIds
+        self.safetyRulesPath = safetyRulesPath
     }
 }
 
@@ -551,6 +569,7 @@ public struct SkillPreflightValidator {
     ) -> SkillPreflightReport {
         var issues: [SkillPreflightIssue] = []
         var stepReports: [SkillPreflightStepReport] = []
+        let safetyEvaluator = SafetyPolicyEvaluator(rulesPath: options.safetyRulesPath)
 
         if !Self.supportedSchemaVersions.contains(payload.schemaVersion) {
             issues.append(
@@ -635,7 +654,8 @@ public struct SkillPreflightValidator {
                 payload: payload,
                 allowedAppBundleIds: allowedAppBundleIds,
                 options: options,
-                planRequiresTeacherConfirmation: plan.requiresTeacherConfirmation
+                planRequiresTeacherConfirmation: plan.requiresTeacherConfirmation,
+                safetyEvaluator: safetyEvaluator
             )
             issues.append(contentsOf: stepIssues.issues)
             stepReports.append(stepIssues.report)
@@ -680,7 +700,8 @@ public struct SkillPreflightValidator {
         payload: SkillBundlePayload,
         allowedAppBundleIds: [String],
         options: SkillPreflightOptions,
-        planRequiresTeacherConfirmation: Bool
+        planRequiresTeacherConfirmation: Bool,
+        safetyEvaluator: SafetyPolicyEvaluator
     ) -> (report: SkillPreflightStepReport, issues: [SkillPreflightIssue]) {
         let actionType = normalized(step.actionType)
         let stepId = normalized(step.stepId, fallback: "step-\(stepIndex + 1)")
@@ -725,36 +746,6 @@ public struct SkillPreflightValidator {
             )
         }
 
-        let stepConfidence = derivedStepConfidence(mapping: mapping, fallback: payload.mappedOutput.confidence)
-        let lowConfidence = stepConfidence < options.lowConfidenceThreshold
-        if lowConfidence {
-            issues.append(
-                SkillPreflightIssue(
-                    severity: .warning,
-                    code: .lowConfidence,
-                    message: "步骤 \(stepId) 置信度 \(String(format: "%.2f", stepConfidence)) 低于阈值 \(String(format: "%.2f", options.lowConfidenceThreshold))，需要老师确认。",
-                    stepId: stepId
-                )
-            )
-        }
-
-        let highRisk = isHighRiskStep(
-            step: step,
-            targetAppBundleIds: targetAppBundleIds,
-            keywords: options.highRiskKeywords,
-            regexPatterns: options.highRiskRegexPatterns
-        )
-        if highRisk {
-            issues.append(
-                SkillPreflightIssue(
-                    severity: .warning,
-                    code: .highRiskAction,
-                    message: "步骤 \(stepId) 被识别为高风险动作，需要老师确认。",
-                    stepId: stepId
-                )
-            )
-        }
-
         let locatorOutcome = validateLocator(
             for: step,
             stepId: stepId,
@@ -762,10 +753,30 @@ public struct SkillPreflightValidator {
         )
         issues.append(contentsOf: locatorOutcome.issues)
 
-        let requiresTeacherConfirmation = planRequiresTeacherConfirmation
-            || highRisk
-            || lowConfidence
-            || locatorOutcome.locatorStatus == .degraded
+        let defaultOptions = SkillPreflightOptions()
+        let stepConfidence = derivedStepConfidence(mapping: mapping, fallback: payload.mappedOutput.confidence)
+        let policyDecision = safetyEvaluator.evaluate(
+            stepId: stepId,
+            context: SafetyPolicyContext(
+                taskId: payload.taskId,
+                skillName: payload.skillName,
+                contextAppBundleId: payload.mappedOutput.context.appBundleId,
+                targetAppBundleIds: targetAppBundleIds,
+                windowTitles: stepWindowTitles(mapping: mapping, payload: payload),
+                actionType: actionType,
+                instruction: step.instruction,
+                target: step.target,
+                confidence: stepConfidence,
+                locatorStatus: locatorOutcome.locatorStatus,
+                planRequiresTeacherConfirmation: planRequiresTeacherConfirmation,
+                highRiskKeywordsOverride: options.highRiskKeywords == defaultOptions.highRiskKeywords ? [] : options.highRiskKeywords,
+                highRiskRegexPatternsOverride: options.highRiskRegexPatterns == defaultOptions.highRiskRegexPatterns ? [] : options.highRiskRegexPatterns,
+                lowConfidenceThresholdOverride: options.lowConfidenceThreshold == defaultOptions.lowConfidenceThreshold
+                    ? nil
+                    : options.lowConfidenceThreshold
+            )
+        )
+        issues.append(contentsOf: policyDecision.issues)
 
         return (
             report: SkillPreflightStepReport(
@@ -774,9 +785,13 @@ public struct SkillPreflightValidator {
                 confidence: stepConfidence,
                 locatorStatus: locatorOutcome.locatorStatus,
                 targetAppBundleIds: targetAppBundleIds,
-                highRisk: highRisk,
-                lowConfidence: lowConfidence,
-                requiresTeacherConfirmation: requiresTeacherConfirmation,
+                highRisk: policyDecision.highRisk,
+                lowConfidence: policyDecision.lowConfidence,
+                lowReproducibility: policyDecision.lowReproducibility,
+                sensitiveWindowTags: policyDecision.sensitiveWindowTags,
+                matchedAllowlistScopes: policyDecision.matchedAllowlistScopes,
+                blocksAutoExecution: policyDecision.blocksAutoExecution,
+                requiresTeacherConfirmation: policyDecision.requiresTeacherConfirmation,
                 issues: issues
             ),
             issues: issues
@@ -954,40 +969,6 @@ public struct SkillPreflightValidator {
         return max(0.0, min(1.0, value))
     }
 
-    private func isHighRiskStep(
-        step: SkillBundleExecutionStep,
-        targetAppBundleIds: [String],
-        keywords: [String],
-        regexPatterns: [String]
-    ) -> Bool {
-        let actionType = normalized(step.actionType)
-        let joinedText = "\(step.instruction)\n\(step.target)"
-
-        if targetAppBundleIds.contains("com.apple.Terminal"), actionType == "input" {
-            return true
-        }
-
-        for keyword in keywords where !keyword.isEmpty {
-            if joinedText.localizedCaseInsensitiveContains(keyword) {
-                return true
-            }
-        }
-
-        for pattern in regexPatterns {
-            if joinedText.range(of: pattern, options: [.regularExpression]) != nil {
-                return true
-            }
-        }
-
-        if actionType == "openApp",
-           let bundleId = parseBundleTarget(step.target),
-           bundleId.localizedCaseInsensitiveContains("systemsettings") {
-            return true
-        }
-
-        return false
-    }
-
     private func buildSummary(
         skillName: String,
         status: SkillPreflightStatus,
@@ -996,7 +977,9 @@ public struct SkillPreflightValidator {
     ) -> String {
         let errorCount = issues.filter { $0.severity == .error }.count
         let warningCount = issues.filter { $0.severity == .warning }.count
-        let autoRunnableSteps = stepReports.filter { !$0.requiresTeacherConfirmation }.count
+        let autoRunnableSteps = stepReports.filter {
+            !$0.requiresTeacherConfirmation && !$0.issues.contains(where: { $0.severity == .error })
+        }.count
         return "skill \(skillName) 预检\(status.displayName)：步骤 \(stepReports.count)，可直接自动执行 \(autoRunnableSteps)，错误 \(errorCount)，告警 \(warningCount)。"
     }
 
@@ -1036,6 +1019,33 @@ public struct SkillPreflightValidator {
     private func normalized(_ value: String?, fallback: String = "") -> String {
         let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return trimmed.isEmpty ? fallback : trimmed
+    }
+
+    private func stepWindowTitles(
+        mapping: SkillBundleStepMapping?,
+        payload: SkillBundlePayload
+    ) -> [String] {
+        var values: [String] = []
+        if let payloadWindowTitle = payload.mappedOutput.context.windowTitle {
+            values.append(payloadWindowTitle)
+        }
+
+        if let mapping {
+            values.append(contentsOf: mapping.semanticTargets.compactMap(\.windowTitlePattern))
+        }
+
+        var ordered: [String] = []
+        var seen = Set<String>()
+        for value in values {
+            let normalizedValue = normalized(value)
+            guard !normalizedValue.isEmpty else {
+                continue
+            }
+            if seen.insert(normalizedValue.lowercased()).inserted {
+                ordered.append(normalizedValue)
+            }
+        }
+        return ordered
     }
 }
 

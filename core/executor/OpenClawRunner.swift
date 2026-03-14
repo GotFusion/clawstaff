@@ -148,7 +148,8 @@ public struct OpenClawRunner {
         }
 
         let preflight = preflightValidator.validateSkillDirectory(
-            at: URL(fileURLWithPath: request.skillDirectoryPath, isDirectory: true)
+            at: URL(fileURLWithPath: request.skillDirectoryPath, isDirectory: true),
+            options: SkillPreflightOptions(safetyRulesPath: request.safetyRulesPath)
         )
         if preflight.status == .failed {
             return finalizeTerminal(

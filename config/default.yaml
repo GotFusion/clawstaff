@@ -18,6 +18,7 @@ logging:
 
 safety:
   emergencyStopEnabled: true
+  rulesPath: config/safety-rules.yaml
   blockedActionKeywords:
     - "rm -rf"
     - "删除"

@@ -12,7 +12,8 @@
   - 校验 `knowledge.item.v0` JSON。
   - 对缺失 `target` 的历史知识条目输出告警，避免直接卡死发布门禁。
 - `validate_skill_bundle.py`
-  - 执行前 skill preflight，检查 locator、风险、白名单与自动执行条件。
+  - 执行前 skill preflight，检查 locator、风险、低复现度、敏感窗口、白名单与自动执行条件。
+  - 默认读取 `config/safety-rules.yaml`，也可通过 `--safety-rules` 指定临时规则文件。
 - `run_replay_verify_check.py`
   - 包装 `OpenStaffReplayVerifyCLI`，将 replay verify 结果标准化为可供 release preflight 消费的报告。
 

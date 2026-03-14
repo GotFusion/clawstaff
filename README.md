@@ -56,6 +56,7 @@ make release-preflight
 - `make skills-sample`：运行 3 条示例任务映射（含 1 条 fallback 案例）。
 - `make skills-validate-sample`：校验 `skills-sample` 输出技能的可读性与一致性。
 - `python3 scripts/validation/validate_skill_bundle.py --skill-dir <path>`：执行 skill 预检（schema / locator / 风险 / App 白名单）。
+- `config/safety-rules.yaml`：统一配置敏感窗口识别、自动执行阻断与 `App / task / skill` 白名单。
 - `make test`：一键执行 unit + integration + e2e 测试并输出汇总。
 - `make test-unit`：仅执行单元测试。
 - `make test-integration`：仅执行集成测试。
