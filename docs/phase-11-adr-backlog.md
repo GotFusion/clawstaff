@@ -1,6 +1,6 @@
 # ClawStaff Phase 11 ADR 列表
 
-> 目标：为 [phase-11-knowledge-reinforcement-roadmap.md](/Users/wangzhenwu/Desktop/code/Personal/OpenStaff/docs/phase-11-knowledge-reinforcement-roadmap.md) 提供需要立项的架构决策清单。这里不是完整 ADR 正文，而是建议的 ADR backlog、编号、核心决策问题与推荐顺序。
+> 目标：为 [phase-11-knowledge-reinforcement-roadmap.md](/Users/mac/Desktop/code/Personal/openstaff/docs/phase-11-knowledge-reinforcement-roadmap.md) 提供需要立项的架构决策清单。这里不是完整 ADR 正文，而是建议的 ADR backlog、编号、核心决策问题与推荐顺序。
 
 ## 建议原则
 
@@ -27,6 +27,12 @@
 - `ADR-0017-chatgpt-sourced-preference-provenance.md`
 - `ADR-0018-personal-preference-benchmark.md`
 - `ADR-0019-preference-drift-monitoring.md`
+
+### 第四批：在 UX 落地与外部集成前锁定
+- `ADR-0020-learning-visibility-and-privacy-controls.md`
+- `ADR-0021-teacher-quick-feedback-actions.md`
+- `ADR-0022-learning-bundle-export-and-restore.md`
+- `ADR-0023-learning-hooks-and-gateway-contracts.md`
 
 ---
 
@@ -63,13 +69,13 @@
 - `docs/adr/ADR-0011-mainline-vs-side-turns.md`
 
 **要回答的问题**
-- 哪些交互属于偏好学习主线？
-- assist 提示、闲聊、背景解释、审阅注释是否计入学习？
+- 哪些任务片段属于偏好学习主线？
+- assist 预判提示、系统状态播报、背景资料整理、审阅注释是否计入学习？
 - repair 行为是否单独视为主线？
 
 **需要比较的方案**
-- 方案 A：所有交互都学习
-- 方案 B：仅执行类交互学习
+- 方案 A：所有任务片段都学习
+- 方案 B：仅执行类任务片段学习
 - 方案 C：主线任务推进 + 修复行为学习，其余降噪
 
 **建议方向**
@@ -262,15 +268,91 @@
 
 ---
 
-## 建议补充 ADR
+## ADR-0020：Learning Visibility and Privacy Controls
 
-如果 Phase 11 中后段开始涉及更多系统复杂度，建议追加：
+**建议文件**
+- `docs/adr/ADR-0020-learning-visibility-and-privacy-controls.md`
 
-- `ADR-0020-preference-audit-and-rollback.md`
-- `ADR-0021-preference-aware-safety-priority.md`
-- `ADR-0022-policy-assembly-observability.md`
+**要回答的问题**
+- 学习状态必须在哪些表面可见？
+- app / 窗口排除、临时暂停、敏感场景静默的最小集合是什么？
+- 哪些场景一旦命中就必须停止学习落盘？
 
-这些 ADR 可以在第一批偏好装配完成后再写，不必阻塞 Phase 11 前半段。
+**需要比较的方案**
+- 方案 A：默认后台采集，只在设置页展示状态
+- 方案 B：默认显式状态 + 暂停 / 排除 / 敏感场景静默
+
+**建议方向**
+- 采用方案 B
+
+**不提前定会出的问题**
+- 学习模式会变成黑盒，用户信任成本过高
+
+---
+
+## ADR-0021：Teacher Quick Feedback Actions
+
+**建议文件**
+- `docs/adr/ADR-0021-teacher-quick-feedback-actions.md`
+
+**要回答的问题**
+- 第一版 quick actions 的固定集合是什么？
+- quick action 和自由文本备注如何共存？
+- 哪些 quick action 直接映射为 `teacherReview` evidence？
+
+**需要比较的方案**
+- 方案 A：全部依赖自由文本备注
+- 方案 B：固定 quick actions + 可选短备注
+
+**建议方向**
+- 采用方案 B
+
+**不提前定会出的问题**
+- 反馈入口会过重，老师不愿意持续给反馈
+
+---
+
+## ADR-0022：Learning Bundle Export and Restore
+
+**建议文件**
+- `docs/adr/ADR-0022-learning-bundle-export-and-restore.md`
+
+**要回答的问题**
+- 哪些 learning 资产必须纳入 bundle？
+- bundle 以文件树、单个压缩包，还是数据库快照形式导出？
+- 恢复时是直接覆盖，还是先 dry-run 校验？
+
+**需要比较的方案**
+- 方案 A：只备份数据库或内部状态
+- 方案 B：文件事实源 + manifest 校验 + dry-run 恢复
+
+**建议方向**
+- 采用方案 B
+
+**不提前定会出的问题**
+- 偏好资产无法迁移、审计或跨环境恢复
+
+---
+
+## ADR-0023：Learning Hooks and Gateway Contracts
+
+**建议文件**
+- `docs/adr/ADR-0023-learning-hooks-and-gateway-contracts.md`
+
+**要回答的问题**
+- 哪些 learning 事件要通过 hook 暴露？
+- 哪些查询 / 导出能力要通过 gateway 暴露？
+- 插件可消费哪些结构化边界，不能依赖哪些内部对象？
+
+**需要比较的方案**
+- 方案 A：插件直接读内部对象或数据库
+- 方案 B：文件工件 + hook 事件 + gateway 查询 / 导出
+
+**建议方向**
+- 采用方案 B
+
+**不提前定会出的问题**
+- 后续一旦 OpenClaw 内部结构调整，学习层就会跟着断裂
 
 ---
 
@@ -279,6 +361,7 @@
 1. 先写 `ADR-0010` 到 `ADR-0013`
 2. 再写 `ADR-0014` 到 `ADR-0016`
 3. 当 ChatGPT 偏好提炼和 benchmark 真正开始落地时，再写 `ADR-0017` 到 `ADR-0019`
+4. 当 learning 状态、quick feedback、bundle 导出和 hook 边界进入实现时，再写 `ADR-0020` 到 `ADR-0023`
 
 ---
 
