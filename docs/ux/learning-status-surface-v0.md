@@ -72,8 +72,8 @@
 
 ## 当前已知边界
 
-- v0 还没有完整的隐私 / 排除面板，详细配置放到 `TODO 11.0.3`
-- 当前排除规则以内建默认值和环境变量扩展为主
+- `Privacy / Exclusion Panel` 已在状态工作台落地，详细交互见 `docs/ux/learning-privacy-controls-v0.md`
+- 当前排除与敏感场景规则以 app bundle / 窗口标题为主，尚未接入更细粒度的字段级脱敏
 - 仓库内 `make` 触发的 Swift 命令现已通过 `scripts/dev/with_xcode_env.sh` 自动切到完整 Xcode，避免 `CommandLineTools` 环境下的 `XCTest` 缺失问题
 
 ## 验收对照

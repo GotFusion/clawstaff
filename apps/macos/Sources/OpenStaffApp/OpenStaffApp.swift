@@ -320,6 +320,10 @@ struct OpenStaffDashboardView: View {
                     .padding(.top, 4)
                 }
 
+                GroupBox("Privacy / Exclusion Panel") {
+                    LearningPrivacyPanel(dashboardViewModel: viewModel)
+                }
+
                 HStack(alignment: .top, spacing: 12) {
                     GroupBox("当前状态") {
                         VStack(alignment: .leading, spacing: 8) {
@@ -1301,6 +1305,10 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     @Published private(set) var executorBackendDescription: String
     @Published private(set) var usesHelperExecutorBackend: Bool
     @Published private(set) var executorHelperPath: String?
+    @Published private(set) var learningPrivacyConfiguration: LearningPrivacyConfiguration
+    @Published private(set) var learningPrivacyConfigurationPath: String
+    @Published private(set) var learningPrivacyStatusMessage: String?
+    @Published private(set) var learningPrivacyStatusSucceeded = true
 
     private let logger = InMemoryOrchestratorStateLogger()
     private let stateMachine: ModeStateMachine
@@ -1315,8 +1323,8 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     private let modeObservationCapture: any ModeObservationCaptureControlling
     private let learningContextSnapshotProvider: any LearningContextSnapshotProviding
     private let learningLastSuccessfulWriteProvider: any LearningLastSuccessfulWriteProviding
-    private let learningExclusionPolicy: LearningAppExclusionPolicy
-    private let learningSensitiveScenePolicy: LearningSensitiveScenePolicy
+    private let learningPrivacyConfigurationStore: any LearningPrivacyConfigurationStoring
+    private let learningSensitiveScenePolicy: SensitiveScenePolicy
     private let nowProvider: () -> Date
     private var learningStatusRefreshTimer: Timer?
     private var learningStatusRefreshTimerTarget: DashboardLearningStatusRefreshTimerTarget?
@@ -1357,10 +1365,13 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         permissionSnapshotProvider: @escaping (Bool) -> PermissionSnapshot = PermissionSnapshot.capture,
         learningContextSnapshotProvider: any LearningContextSnapshotProviding = SystemLearningContextSnapshotProvider(),
         learningLastSuccessfulWriteProvider: any LearningLastSuccessfulWriteProviding = RawEventLastSuccessfulWriteProvider(),
-        learningExclusionPolicy: LearningAppExclusionPolicy = .default(),
-        learningSensitiveScenePolicy: LearningSensitiveScenePolicy = LearningSensitiveScenePolicy(),
+        learningPrivacyConfigurationStore: any LearningPrivacyConfigurationStoring = FileLearningPrivacyConfigurationStore(),
+        learningSensitiveScenePolicy: SensitiveScenePolicy = SensitiveScenePolicy(),
         nowProvider: @escaping () -> Date = Date.init
     ) {
+        let loadedLearningPrivacyConfiguration = learningPrivacyConfigurationStore
+            .load()
+            .normalized(referenceDate: nowProvider())
         self.currentMode = initialMode
         self.selectedMode = initialMode
         self.runningMode = nil
@@ -1380,12 +1391,15 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         } else {
             self.executorHelperPath = nil
         }
+        self.learningPrivacyConfiguration = loadedLearningPrivacyConfiguration
+        self.learningPrivacyConfigurationPath = learningPrivacyConfigurationStore.configurationURL.path
+        self.learningPrivacyStatusMessage = nil
         self.activeObservationSessionId = nil
         self.modeObservationCapture = modeObservationCapture
         self.permissionSnapshotProvider = permissionSnapshotProvider
         self.learningContextSnapshotProvider = learningContextSnapshotProvider
         self.learningLastSuccessfulWriteProvider = learningLastSuccessfulWriteProvider
-        self.learningExclusionPolicy = learningExclusionPolicy
+        self.learningPrivacyConfigurationStore = learningPrivacyConfigurationStore
         self.learningSensitiveScenePolicy = learningSensitiveScenePolicy
         self.nowProvider = nowProvider
         self.stateMachine = ModeStateMachine(initialMode: initialMode, logger: logger)
@@ -1416,11 +1430,31 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     }
 
     var learningPauseResumeActionTitle: String {
-        learningSessionState.teacherPaused ? "恢复学习" : "暂停学习"
+        learningSessionState.isUserPauseActive ? "恢复学习" : "暂停学习"
     }
 
     var canToggleLearningPauseResume: Bool {
         learningSessionState.canPauseOrResumeInOneClick
+    }
+
+    var learningAppExclusions: [LearningPrivacyAppExclusion] {
+        learningPrivacyConfiguration.excludedApps
+    }
+
+    var learningWindowTitleExclusions: [LearningWindowTitleExclusionRule] {
+        learningPrivacyConfiguration.excludedWindowTitleRules
+    }
+
+    var learningSensitiveSceneRules: [SensitiveSceneRule] {
+        learningSensitiveScenePolicy.rules
+    }
+
+    var learningTemporaryPauseDescription: String {
+        guard let temporaryPauseUntil = learningPrivacyConfiguration.temporaryPauseUntil,
+              temporaryPauseUntil > nowProvider() else {
+            return "当前未启用临时暂停。"
+        }
+        return "已暂停至 \(OpenStaffDateFormatter.displayString(from: temporaryPauseUntil))。"
     }
 
     var modeStatusSummary: String {
@@ -1466,7 +1500,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             return
         }
 
-        if learningSessionState.teacherPaused {
+        if learningSessionState.isUserPauseActive {
             resumeLearningCapture()
         } else {
             pauseLearningCapture()
@@ -1658,7 +1692,146 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         guard canToggleLearningPauseResume else {
             return
         }
+        clearLearningTemporaryPause(announceResult: false)
         refreshLearningStatusSurface(forceTeacherPaused: false)
+    }
+
+    func reloadLearningPrivacyConfiguration() {
+        learningPrivacyConfiguration = learningPrivacyConfigurationStore
+            .load()
+            .normalized(referenceDate: nowProvider())
+        learningPrivacyStatusSucceeded = true
+        learningPrivacyStatusMessage = "已重新加载隐私与排除规则。"
+        refreshLearningStatusSurface()
+    }
+
+    func pauseLearningCaptureForFifteenMinutes() {
+        updateLearningPrivacyConfiguration(
+            successMessage: "学习已临时暂停 15 分钟。"
+        ) { configuration in
+            configuration.temporaryPauseUntil = nowProvider()
+                .addingTimeInterval(LearningPrivacyConfiguration.temporaryPauseDuration)
+        }
+    }
+
+    func clearLearningTemporaryPause(announceResult: Bool = true) {
+        updateLearningPrivacyConfiguration(
+            successMessage: announceResult ? "已取消临时暂停。" : nil,
+            announceResult: announceResult
+        ) { configuration in
+            configuration.temporaryPauseUntil = nil
+        }
+    }
+
+    func addCurrentAppToLearningExclusions() {
+        let currentApp = learningSessionState.currentApp
+        addLearningAppExclusion(
+            displayName: currentApp.appName,
+            bundleId: currentApp.appBundleId,
+            appName: currentApp.appName
+        )
+    }
+
+    func addLearningAppExclusion(
+        displayName: String,
+        bundleId: String,
+        appName: String
+    ) {
+        let normalizedBundleId = bundleId.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedAppName = appName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedDisplayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedBundleId.isEmpty || !normalizedAppName.isEmpty else {
+            learningPrivacyStatusSucceeded = false
+            learningPrivacyStatusMessage = "请至少填写 bundle id 或 app 名称。"
+            return
+        }
+
+        updateLearningPrivacyConfiguration(
+            successMessage: "已添加 app 排除规则。"
+        ) { configuration in
+            configuration.excludedApps.append(
+                LearningPrivacyAppExclusion(
+                    displayName: normalizedDisplayName,
+                    bundleId: normalizedBundleId,
+                    appName: normalizedAppName
+                )
+            )
+        }
+    }
+
+    func removeLearningAppExclusion(id: String) {
+        updateLearningPrivacyConfiguration(
+            successMessage: "已移除 app 排除规则。"
+        ) { configuration in
+            configuration.excludedApps.removeAll { $0.id == id }
+        }
+    }
+
+    func addCurrentWindowTitleToLearningExclusions(
+        matchType: LearningWindowTitleMatchType = .contains
+    ) {
+        let currentWindowTitle = learningSessionState.currentApp.windowTitle ?? ""
+        addLearningWindowTitleExclusion(
+            displayName: "",
+            pattern: currentWindowTitle,
+            matchType: matchType
+        )
+    }
+
+    func addLearningWindowTitleExclusion(
+        displayName: String,
+        pattern: String,
+        matchType: LearningWindowTitleMatchType
+    ) {
+        let normalizedPattern = pattern.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedDisplayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedPattern.isEmpty else {
+            learningPrivacyStatusSucceeded = false
+            learningPrivacyStatusMessage = "窗口标题规则不能为空。"
+            return
+        }
+
+        updateLearningPrivacyConfiguration(
+            successMessage: "已添加窗口标题排除规则。"
+        ) { configuration in
+            configuration.excludedWindowTitleRules.append(
+                LearningWindowTitleExclusionRule(
+                    displayName: normalizedDisplayName,
+                    pattern: normalizedPattern,
+                    matchType: matchType
+                )
+            )
+        }
+    }
+
+    func removeLearningWindowTitleExclusion(id: String) {
+        updateLearningPrivacyConfiguration(
+            successMessage: "已移除窗口标题排除规则。"
+        ) { configuration in
+            configuration.excludedWindowTitleRules.removeAll { $0.id == id }
+        }
+    }
+
+    func setSensitiveSceneAutoMuteEnabled(_ enabled: Bool) {
+        updateLearningPrivacyConfiguration(
+            successMessage: enabled ? "已启用敏感场景自动静默。" : "已关闭敏感场景自动静默。"
+        ) { configuration in
+            configuration.sensitiveSceneAutoMuteEnabled = enabled
+        }
+    }
+
+    func setSensitiveSceneRule(_ ruleId: String, enabled: Bool) {
+        updateLearningPrivacyConfiguration(
+            successMessage: enabled ? "已启用敏感场景规则。" : "已关闭敏感场景规则。"
+        ) { configuration in
+            let normalizedRuleId = ruleId.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            configuration.enabledSensitiveSceneRuleIds.removeAll {
+                $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == normalizedRuleId
+            }
+            if enabled {
+                configuration.enabledSensitiveSceneRuleIds.append(normalizedRuleId)
+            }
+        }
     }
 
     func startMode(_ mode: OpenStaffMode) {
@@ -2214,14 +2387,23 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             )
         }
 
+        let normalizedLearningPrivacyConfiguration = normalizeLearningPrivacyConfigurationIfNeeded()
         let teacherPaused = forceTeacherPaused ?? learningSessionState.teacherPaused
         let observesTeacherActions = runningMode.map(shouldObserveTeacherActions(for:)) ?? false
         let currentApp = LearningSurfaceAppContext(snapshot: latestLearningContextSnapshot)
-        let exclusionMatch = learningExclusionPolicy.match(for: currentApp)
-        let sensitiveMatch = learningSensitiveScenePolicy.match(for: currentApp)
+        let exclusionPolicy = LearningAppExclusionPolicy.default(
+            settings: normalizedLearningPrivacyConfiguration
+        )
+        let exclusionMatch = exclusionPolicy.match(for: currentApp)
+        let sensitiveMatch = learningSensitiveScenePolicy.match(
+            for: currentApp,
+            enabledRuleIds: normalizedLearningPrivacyConfiguration.effectiveEnabledSensitiveSceneRuleIds
+        )
+        let temporaryPauseUntil = normalizedLearningPrivacyConfiguration.temporaryPauseUntil
         let shouldRunCapture = runningMode != nil
             && observesTeacherActions
             && !teacherPaused
+            && temporaryPauseUntil == nil
             && !emergencyStopActive
             && exclusionMatch == nil
             && sensitiveMatch == nil
@@ -2253,6 +2435,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                 observesTeacherActions: observesTeacherActions,
                 captureRunning: modeObservationCapture.isRunning,
                 teacherPaused: teacherPaused,
+                temporaryPauseUntil: temporaryPauseUntil,
                 currentApp: currentApp,
                 exclusionMatch: exclusionMatch,
                 sensitiveMatch: sensitiveMatch,
@@ -2262,6 +2445,57 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                 updatedAt: nowProvider()
             )
         )
+    }
+
+    private func normalizeLearningPrivacyConfigurationIfNeeded() -> LearningPrivacyConfiguration {
+        let normalized = learningPrivacyConfiguration.normalized(referenceDate: nowProvider())
+        guard normalized != learningPrivacyConfiguration else {
+            return learningPrivacyConfiguration
+        }
+
+        do {
+            try learningPrivacyConfigurationStore.save(normalized)
+        } catch {
+            learningPrivacyConfiguration = normalized
+            return normalized
+        }
+
+        learningPrivacyConfiguration = normalized
+        return normalized
+    }
+
+    private func updateLearningPrivacyConfiguration(
+        successMessage: String?,
+        announceResult: Bool = true,
+        mutate: (inout LearningPrivacyConfiguration) -> Void
+    ) {
+        var updatedConfiguration = learningPrivacyConfiguration
+        mutate(&updatedConfiguration)
+        updatedConfiguration = updatedConfiguration.normalized(referenceDate: nowProvider())
+
+        guard updatedConfiguration != learningPrivacyConfiguration else {
+            if let successMessage, announceResult {
+                learningPrivacyStatusSucceeded = true
+                learningPrivacyStatusMessage = successMessage
+            }
+            refreshLearningStatusSurface(refreshContext: false)
+            return
+        }
+
+        do {
+            try learningPrivacyConfigurationStore.save(updatedConfiguration)
+            learningPrivacyConfiguration = updatedConfiguration
+            if announceResult {
+                learningPrivacyStatusSucceeded = true
+                learningPrivacyStatusMessage = successMessage
+            }
+            refreshLearningStatusSurface(refreshContext: false)
+        } catch {
+            if announceResult {
+                learningPrivacyStatusSucceeded = false
+                learningPrivacyStatusMessage = "保存隐私规则失败：\(error.localizedDescription)"
+            }
+        }
     }
 
     private func startObservationCaptureIfNeeded(for mode: OpenStaffMode) throws {
@@ -4107,15 +4341,17 @@ enum LearnedSkillActionResult {
 enum OpenStaffWorkspacePaths {
     static var repositoryRoot: URL {
         let environment = ProcessInfo.processInfo.environment
+        let fileManager = FileManager.default
         if let override = environment["OPENSTAFF_WORKSPACE_ROOT"],
            !override.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let overrideRoot = URL(fileURLWithPath: override, isDirectory: true)
-            if isWorkspaceRootCandidate(overrideRoot) {
+            var isDirectory: ObjCBool = false
+            if fileManager.fileExists(atPath: overrideRoot.path, isDirectory: &isDirectory),
+               isDirectory.boolValue {
                 return overrideRoot
             }
         }
 
-        let fileManager = FileManager.default
         let seeds = workspaceRootSearchSeeds(fileManager: fileManager)
         for seed in seeds {
             if let matched = findWorkspaceRoot(startingAt: seed, maxDepth: 16, fileManager: fileManager) {

@@ -46,20 +46,20 @@
 - [ ] 单次反馈中位耗时不高于 `8` 秒
 
 ### TODO 11.0.3 落地 `Privacy / Exclusion Panel`
-- [ ] 支持 app 排除名单
-- [ ] 支持窗口标题排除规则
-- [ ] 支持 `15` 分钟临时暂停
-- [ ] 支持敏感场景自动静默
-- [ ] 第一版敏感场景至少覆盖密码、支付、隐私授权、医疗 / 金融
+- [x] 支持 app 排除名单
+- [x] 支持窗口标题排除规则
+- [x] 支持 `15` 分钟临时暂停
+- [x] 支持敏感场景自动静默
+- [x] 第一版敏感场景至少覆盖密码、支付、隐私授权、医疗 / 金融
 
 **输出物**
-- `config/learning-privacy.example.yaml`
-- `core/learning/SensitiveScenePolicy.swift`
-- `docs/ux/learning-privacy-controls-v0.md`
+- [x] `config/learning-privacy.example.yaml`
+- [x] `core/learning/SensitiveScenePolicy.swift`
+- [x] `docs/ux/learning-privacy-controls-v0.md`
 
 **验收标准**
-- [ ] 被排除 app / 窗口不会继续生成 learning 工件
-- [ ] `capture-policy-violation-count = 0`
+- [x] 被排除 app / 窗口不会继续生成 learning 工件
+- [x] 自动化回归样本中 `capture-policy-violation-count = 0`
 
 ---
 

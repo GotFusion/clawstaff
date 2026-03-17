@@ -786,24 +786,24 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 #### TODO 11.0.3 落地 `Privacy / Exclusion Panel`
 
 - 第一版必须支持：
-  - app 排除名单
-  - 窗口标题排除规则
-  - `15` 分钟临时暂停
-  - 敏感页面自动静默
+  - [x] app 排除名单
+  - [x] 窗口标题排除规则
+  - [x] `15` 分钟临时暂停
+  - [x] 敏感页面自动静默
 - 敏感场景至少先覆盖：
-  - 密码输入
-  - 支付
-  - 隐私授权
-  - 医疗 / 金融
+  - [x] 密码输入
+  - [x] 支付
+  - [x] 隐私授权
+  - [x] 医疗 / 金融
 
 **输出物**
-- `config/learning-privacy.example.yaml`
-- `core/learning/SensitiveScenePolicy.swift`
-- `docs/ux/learning-privacy-controls-v0.md`
+- [x] `config/learning-privacy.example.yaml`
+- [x] `core/learning/SensitiveScenePolicy.swift`
+- [x] `docs/ux/learning-privacy-controls-v0.md`
 
 **验收标准**
-- [ ] 被排除 app / 窗口不会继续生成 learning 工件。
-- [ ] 试点样本中 `capture-policy-violation-count = 0`。
+- [x] 被排除 app / 窗口不会继续生成 learning 工件。
+- [x] 自动化回归样本中 `capture-policy-violation-count = 0`。
 
 ### 阶段 11.1：学习数据层（Week 2）
 

@@ -49,6 +49,7 @@ public struct LearningSessionStateInput: Equatable, Sendable {
     public let observesTeacherActions: Bool
     public let captureRunning: Bool
     public let teacherPaused: Bool
+    public let temporaryPauseUntil: Date?
     public let currentApp: LearningSurfaceAppContext
     public let exclusionMatch: LearningStatusRuleMatch?
     public let sensitiveMatch: LearningStatusRuleMatch?
@@ -63,6 +64,7 @@ public struct LearningSessionStateInput: Equatable, Sendable {
         observesTeacherActions: Bool,
         captureRunning: Bool,
         teacherPaused: Bool,
+        temporaryPauseUntil: Date?,
         currentApp: LearningSurfaceAppContext,
         exclusionMatch: LearningStatusRuleMatch?,
         sensitiveMatch: LearningStatusRuleMatch?,
@@ -76,6 +78,7 @@ public struct LearningSessionStateInput: Equatable, Sendable {
         self.observesTeacherActions = observesTeacherActions
         self.captureRunning = captureRunning
         self.teacherPaused = teacherPaused
+        self.temporaryPauseUntil = temporaryPauseUntil
         self.currentApp = currentApp
         self.exclusionMatch = exclusionMatch
         self.sensitiveMatch = sensitiveMatch
@@ -92,6 +95,7 @@ public struct LearningSessionState: Codable, Equatable, Sendable {
     public let observesTeacherActions: Bool
     public let captureRunning: Bool
     public let teacherPaused: Bool
+    public let temporaryPauseUntil: Date?
     public let currentApp: LearningSurfaceAppContext
     public let status: LearningActivityStatus
     public let statusReason: String
@@ -107,6 +111,7 @@ public struct LearningSessionState: Codable, Equatable, Sendable {
         observesTeacherActions: Bool,
         captureRunning: Bool,
         teacherPaused: Bool,
+        temporaryPauseUntil: Date?,
         currentApp: LearningSurfaceAppContext,
         status: LearningActivityStatus,
         statusReason: String,
@@ -121,6 +126,7 @@ public struct LearningSessionState: Codable, Equatable, Sendable {
         self.observesTeacherActions = observesTeacherActions
         self.captureRunning = captureRunning
         self.teacherPaused = teacherPaused
+        self.temporaryPauseUntil = temporaryPauseUntil
         self.currentApp = currentApp
         self.status = status
         self.statusReason = statusReason
@@ -133,6 +139,17 @@ public struct LearningSessionState: Codable, Equatable, Sendable {
 
     public var isActivelyLearning: Bool {
         status == .on && captureRunning
+    }
+
+    public var isTemporarilyPaused: Bool {
+        guard let temporaryPauseUntil else {
+            return false
+        }
+        return temporaryPauseUntil > updatedAt
+    }
+
+    public var isUserPauseActive: Bool {
+        teacherPaused || isTemporarilyPaused
     }
 
     public var canPauseOrResumeInOneClick: Bool {
@@ -151,6 +168,7 @@ public struct LearningSessionState: Codable, Equatable, Sendable {
                 observesTeacherActions: false,
                 captureRunning: false,
                 teacherPaused: false,
+                temporaryPauseUntil: nil,
                 currentApp: .unknown,
                 exclusionMatch: nil,
                 sensitiveMatch: nil,
@@ -178,6 +196,14 @@ public enum LearningSessionStateResolver {
             status = .paused
             statusReason = "老师已手动暂停学习。"
             matchedRule = nil
+        } else if let temporaryPauseUntil = input.temporaryPauseUntil,
+                  temporaryPauseUntil > input.updatedAt {
+            status = .paused
+            statusReason = "学习已临时暂停至 \(displayString(from: temporaryPauseUntil))。"
+            matchedRule = LearningStatusRuleMatch(
+                ruleId: "pause.temporary-15m",
+                displayName: "15 分钟临时暂停"
+            )
         } else if let exclusionMatch = input.exclusionMatch {
             status = .excluded
             statusReason = "当前应用已被排除：\(exclusionMatch.displayName)。"
@@ -202,6 +228,7 @@ public enum LearningSessionStateResolver {
             observesTeacherActions: input.observesTeacherActions,
             captureRunning: input.captureRunning,
             teacherPaused: input.teacherPaused,
+            temporaryPauseUntil: input.temporaryPauseUntil,
             currentApp: input.currentApp,
             status: status,
             statusReason: statusReason,
@@ -211,5 +238,12 @@ public enum LearningSessionStateResolver {
             capturedEventCount: input.capturedEventCount,
             updatedAt: input.updatedAt
         )
+    }
+
+    private static func displayString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter.string(from: date)
     }
 }

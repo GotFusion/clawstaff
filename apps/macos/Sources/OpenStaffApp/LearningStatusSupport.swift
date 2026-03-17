@@ -65,16 +65,20 @@ struct RawEventLastSuccessfulWriteProvider: LearningLastSuccessfulWriteProviding
 struct LearningAppExclusionPolicy {
     private let excludedBundleIds: Set<String>
     private let excludedAppNames: Set<String>
+    private let excludedWindowTitleRules: [LearningWindowTitleExclusionRule]
 
     init(
         excludedBundleIds: Set<String> = [],
-        excludedAppNames: Set<String> = []
+        excludedAppNames: Set<String> = [],
+        excludedWindowTitleRules: [LearningWindowTitleExclusionRule] = []
     ) {
         self.excludedBundleIds = Set(excludedBundleIds.map(Self.normalized))
         self.excludedAppNames = Set(excludedAppNames.map(Self.normalized))
+        self.excludedWindowTitleRules = excludedWindowTitleRules.map { $0.normalized() }
     }
 
     static func `default`(
+        settings: LearningPrivacyConfiguration = .default,
         environment: [String: String] = ProcessInfo.processInfo.environment
     ) -> LearningAppExclusionPolicy {
         let configuredBundleIds = environment["OPENSTAFF_LEARNING_EXCLUDED_BUNDLE_IDS"]?
@@ -82,15 +86,24 @@ struct LearningAppExclusionPolicy {
             .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty } ?? []
 
+        let configuredAppBundleIds = settings.excludedApps
+            .map(\.bundleId)
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        let configuredAppNames = settings.excludedApps
+            .map(\.appName)
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
         return LearningAppExclusionPolicy(
-            excludedBundleIds: Set(configuredBundleIds),
-            excludedAppNames: ["OpenStaff"]
+            excludedBundleIds: Set(configuredBundleIds + configuredAppBundleIds),
+            excludedAppNames: Set(configuredAppNames + ["OpenStaff"]),
+            excludedWindowTitleRules: settings.excludedWindowTitleRules
         )
     }
 
     func match(for app: LearningSurfaceAppContext) -> LearningStatusRuleMatch? {
         let normalizedBundleId = Self.normalized(app.appBundleId)
         let normalizedAppName = Self.normalized(app.appName)
+        let windowTitle = app.windowTitle?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
         if normalizedBundleId.contains("openstaff") || normalizedAppName == "openstaff" {
             return LearningStatusRuleMatch(
@@ -113,30 +126,11 @@ struct LearningAppExclusionPolicy {
             )
         }
 
-        return nil
-    }
-
-    private static func normalized(_ value: String) -> String {
-        value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-    }
-}
-
-struct LearningSensitiveScenePolicy {
-    let rules: [SensitiveWindowRule]
-
-    init(rules: [SensitiveWindowRule] = SafetyPolicyRules.defaultSensitiveWindows) {
-        self.rules = rules
-    }
-
-    func match(for app: LearningSurfaceAppContext) -> LearningStatusRuleMatch? {
-        let bundleId = app.appBundleId.trimmingCharacters(in: .whitespacesAndNewlines)
-        let windowTitle = app.windowTitle?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-
-        for rule in rules {
-            if matches(rule: rule, bundleId: bundleId, windowTitle: windowTitle) {
+        if !windowTitle.isEmpty {
+            for rule in excludedWindowTitleRules where matches(rule: rule, windowTitle: windowTitle) {
                 return LearningStatusRuleMatch(
-                    ruleId: "sensitive.\(rule.tag)",
-                    displayName: displayName(for: rule)
+                    ruleId: rule.id,
+                    displayName: rule.resolvedDisplayName
                 )
             }
         }
@@ -145,47 +139,24 @@ struct LearningSensitiveScenePolicy {
     }
 
     private func matches(
-        rule: SensitiveWindowRule,
-        bundleId: String,
+        rule: LearningWindowTitleExclusionRule,
         windowTitle: String
     ) -> Bool {
-        if !bundleId.isEmpty,
-           rule.appBundleIds.contains(where: {
-               $0.caseInsensitiveCompare(bundleId) == .orderedSame
-           }) {
-            return true
+        let pattern = rule.pattern.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !pattern.isEmpty else {
+            return false
         }
 
-        if !windowTitle.isEmpty,
-           rule.windowTitleKeywords.contains(where: {
-               windowTitle.localizedCaseInsensitiveContains($0)
-           }) {
-            return true
+        switch rule.matchType {
+        case .contains:
+            return windowTitle.localizedCaseInsensitiveContains(pattern)
+        case .regex:
+            return windowTitle.range(of: pattern, options: .regularExpression) != nil
         }
-
-        if !windowTitle.isEmpty,
-           rule.windowTitleRegexPatterns.contains(where: {
-               windowTitle.range(of: $0, options: .regularExpression) != nil
-           }) {
-            return true
-        }
-
-        return false
     }
 
-    private func displayName(for rule: SensitiveWindowRule) -> String {
-        switch rule.tag {
-        case "payment":
-            return "支付 / 付款"
-        case "system_settings":
-            return "系统设置 / 隐私授权"
-        case "password_manager":
-            return "密码 / 钥匙串"
-        case "privacy_permission_popup":
-            return "隐私权限弹窗"
-        default:
-            return rule.tag
-        }
+    private static func normalized(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 }
 

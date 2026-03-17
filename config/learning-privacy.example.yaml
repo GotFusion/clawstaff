@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "openstaff.learning-privacy.v1",
+  "excludedApps": [
+    {
+      "id": "app.com.apple.Preview",
+      "displayName": "Preview",
+      "bundleId": "com.apple.Preview",
+      "appName": "Preview"
+    }
+  ],
+  "excludedWindowTitleRules": [
+    {
+      "id": "window.contains.statement",
+      "displayName": "财务对账单",
+      "pattern": "对账单",
+      "matchType": "contains"
+    },
+    {
+      "id": "window.regex.medical",
+      "displayName": "医疗标题正则",
+      "pattern": "(?i)\\b(patient|medical|clinic)\\b",
+      "matchType": "regex"
+    }
+  ],
+  "temporaryPauseUntil": null,
+  "sensitiveSceneAutoMuteEnabled": true,
+  "enabledSensitiveSceneRuleIds": [
+    "password_entry",
+    "payment",
+    "privacy_authorization",
+    "medical",
+    "financial"
+  ]
+}

@@ -105,6 +105,118 @@ final class LearningStatusSurfaceTests: XCTestCase {
         XCTAssertTrue(viewModel.learningSessionState.statusReason.contains("敏感"))
     }
 
+    func testWindowTitleExclusionStopsCaptureAndMarksExcluded() {
+        let capture = FakeModeObservationCaptureService()
+        let contextProvider = FakeLearningContextSnapshotProvider(
+            snapshot: ContextSnapshot(
+                appName: "Numbers",
+                appBundleId: "com.apple.Numbers",
+                windowTitle: "2026 财务对账单",
+                windowId: "4"
+            )
+        )
+        let privacyStore = InMemoryLearningPrivacyConfigurationStore(
+            configuration: LearningPrivacyConfiguration(
+                excludedWindowTitleRules: [
+                    LearningWindowTitleExclusionRule(
+                        displayName: "账单窗口",
+                        pattern: "对账单",
+                        matchType: .contains
+                    )
+                ]
+            )
+        )
+        let viewModel = OpenStaffDashboardViewModel(
+            modeObservationCapture: capture,
+            permissionSnapshotProvider: { _ in
+                PermissionSnapshot(accessibilityTrusted: true, dataDirectoryWritable: true)
+            },
+            learningContextSnapshotProvider: contextProvider,
+            learningLastSuccessfulWriteProvider: FakeLearningLastSuccessfulWriteProvider(),
+            learningPrivacyConfigurationStore: privacyStore
+        )
+
+        viewModel.startMode(.teaching)
+
+        XCTAssertEqual(viewModel.learningSessionState.status, .excluded)
+        XCTAssertFalse(capture.isRunning)
+        XCTAssertEqual(viewModel.learningSessionState.matchedRule?.displayName, "账单窗口")
+    }
+
+    func testTemporaryPauseStopsCaptureAndAutoResumesAfterExpiry() {
+        let capture = FakeModeObservationCaptureService()
+        let contextProvider = FakeLearningContextSnapshotProvider(
+            snapshot: ContextSnapshot(
+                appName: "Finder",
+                appBundleId: "com.apple.finder",
+                windowTitle: "Documents",
+                windowId: "5"
+            )
+        )
+        let clock = FakeLearningClock(now: Date(timeIntervalSince1970: 1_763_100_000))
+        let privacyStore = InMemoryLearningPrivacyConfigurationStore()
+        let viewModel = OpenStaffDashboardViewModel(
+            modeObservationCapture: capture,
+            permissionSnapshotProvider: { _ in
+                PermissionSnapshot(accessibilityTrusted: true, dataDirectoryWritable: true)
+            },
+            learningContextSnapshotProvider: contextProvider,
+            learningLastSuccessfulWriteProvider: FakeLearningLastSuccessfulWriteProvider(),
+            learningPrivacyConfigurationStore: privacyStore,
+            nowProvider: { clock.now }
+        )
+
+        viewModel.startMode(.teaching)
+        XCTAssertEqual(viewModel.learningSessionState.status, .on)
+
+        let sessionId = viewModel.activeObservationSessionId
+        viewModel.pauseLearningCaptureForFifteenMinutes()
+
+        XCTAssertEqual(viewModel.learningSessionState.status, .paused)
+        XCTAssertFalse(capture.isRunning)
+        XCTAssertTrue(viewModel.learningSessionState.isTemporarilyPaused)
+        XCTAssertEqual(viewModel.activeObservationSessionId, sessionId)
+
+        clock.now = clock.now.addingTimeInterval(16 * 60)
+        viewModel.refreshLearningStatusSurface()
+
+        XCTAssertEqual(viewModel.learningSessionState.status, .on)
+        XCTAssertTrue(capture.isRunning)
+        XCTAssertFalse(viewModel.learningSessionState.isTemporarilyPaused)
+        XCTAssertEqual(viewModel.activeObservationSessionId, sessionId)
+    }
+
+    func testSensitiveSceneAutoMuteCanBeDisabled() {
+        let capture = FakeModeObservationCaptureService()
+        let contextProvider = FakeLearningContextSnapshotProvider(
+            snapshot: ContextSnapshot(
+                appName: "Safari",
+                appBundleId: "com.apple.Safari",
+                windowTitle: "Checkout Payment",
+                windowId: "6"
+            )
+        )
+        let privacyStore = InMemoryLearningPrivacyConfigurationStore(
+            configuration: LearningPrivacyConfiguration(
+                sensitiveSceneAutoMuteEnabled: false
+            )
+        )
+        let viewModel = OpenStaffDashboardViewModel(
+            modeObservationCapture: capture,
+            permissionSnapshotProvider: { _ in
+                PermissionSnapshot(accessibilityTrusted: true, dataDirectoryWritable: true)
+            },
+            learningContextSnapshotProvider: contextProvider,
+            learningLastSuccessfulWriteProvider: FakeLearningLastSuccessfulWriteProvider(),
+            learningPrivacyConfigurationStore: privacyStore
+        )
+
+        viewModel.startMode(.teaching)
+
+        XCTAssertEqual(viewModel.learningSessionState.status, .on)
+        XCTAssertTrue(capture.isRunning)
+    }
+
     func testRawEventLastSuccessfulWriteProviderReturnsLatestModificationDate() throws {
         let fileManager = FileManager.default
         let root = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
@@ -158,6 +270,35 @@ private struct FakeLearningLastSuccessfulWriteProvider: LearningLastSuccessfulWr
 
     func latestSuccessfulWriteAt(rawEventsRootDirectory: URL) -> Date? {
         lastWrite
+    }
+}
+
+private final class InMemoryLearningPrivacyConfigurationStore: LearningPrivacyConfigurationStoring {
+    var configurationURL: URL
+    var configuration: LearningPrivacyConfiguration
+
+    init(
+        configurationURL: URL = URL(fileURLWithPath: "/tmp/openstaff-learning-privacy-test.json"),
+        configuration: LearningPrivacyConfiguration = .default
+    ) {
+        self.configurationURL = configurationURL
+        self.configuration = configuration
+    }
+
+    func load() -> LearningPrivacyConfiguration {
+        configuration
+    }
+
+    func save(_ configuration: LearningPrivacyConfiguration) throws {
+        self.configuration = configuration
+    }
+}
+
+private final class FakeLearningClock {
+    var now: Date
+
+    init(now: Date) {
+        self.now = now
     }
 }
 
