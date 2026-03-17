@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import hashlib
 from pathlib import Path
 
 
@@ -16,8 +17,9 @@ def build_swift_env() -> dict[str, str]:
     if XCODE_DEVELOPER_DIR.exists():
         env["DEVELOPER_DIR"] = str(XCODE_DEVELOPER_DIR)
 
-    module_cache = REPO_ROOT / ".build/module-cache"
-    clang_module_cache = REPO_ROOT / ".build/clang-module-cache"
+    cache_key = hashlib.sha256(str(REPO_ROOT).encode("utf-8")).hexdigest()[:12]
+    module_cache = REPO_ROOT / f".build/module-cache-{cache_key}"
+    clang_module_cache = REPO_ROOT / f".build/clang-module-cache-{cache_key}"
     module_cache.mkdir(parents=True, exist_ok=True)
     clang_module_cache.mkdir(parents=True, exist_ok=True)
     env["SWIFTPM_MODULECACHE_OVERRIDE"] = str(module_cache)

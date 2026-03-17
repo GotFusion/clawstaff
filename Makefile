@@ -9,43 +9,48 @@ ASSIST_TARGET := OpenStaffAssistCLI
 REPLAY_VERIFY_TARGET := OpenStaffReplayVerifyCLI
 OPENCLAW_TARGET := OpenStaffOpenClawCLI
 STUDENT_TARGET := OpenStaffStudentCLI
+SWIFT_WRAPPER := ./scripts/dev/with_xcode_env.sh
+SWIFT := $(SWIFT_WRAPPER) swift
 ARGS ?=
 
-.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample benchmark-personal test test-unit test-integration test-e2e release-regression release-preflight
+.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample benchmark-personal test-swift test test-unit test-integration test-e2e release-regression release-preflight
 
 build:
-	swift build --package-path $(APP_PACKAGE_PATH)
+	$(SWIFT) build --package-path $(APP_PACKAGE_PATH)
 
 dev:
-	swift build --package-path $(APP_PACKAGE_PATH) --product $(APP_TARGET)
-	"$$(swift build --package-path $(APP_PACKAGE_PATH) --show-bin-path)/$(APP_TARGET)"
+	$(SWIFT) build --package-path $(APP_PACKAGE_PATH) --product $(APP_TARGET)
+	"$$($(SWIFT) build --package-path $(APP_PACKAGE_PATH) --show-bin-path)/$(APP_TARGET)"
 
 xcode-open:
 	./scripts/dev/open_xcode_workspace.sh
 
 capture:
-	swift run --package-path $(APP_PACKAGE_PATH) $(CAPTURE_TARGET) $(ARGS)
+	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(CAPTURE_TARGET) $(ARGS)
 
 slice:
-	swift run --package-path $(APP_PACKAGE_PATH) $(SLICE_TARGET) $(ARGS)
+	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(SLICE_TARGET) $(ARGS)
 
 knowledge:
-	swift run --package-path $(APP_PACKAGE_PATH) $(KNOWLEDGE_TARGET) $(ARGS)
+	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(KNOWLEDGE_TARGET) $(ARGS)
 
 orchestrator:
-	swift run --package-path $(APP_PACKAGE_PATH) $(ORCHESTRATOR_TARGET) $(ARGS)
+	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(ORCHESTRATOR_TARGET) $(ARGS)
 
 assist:
-	swift run --package-path $(APP_PACKAGE_PATH) $(ASSIST_TARGET) $(ARGS)
+	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(ASSIST_TARGET) $(ARGS)
 
 replay-verify:
-	swift run --package-path $(APP_PACKAGE_PATH) $(REPLAY_VERIFY_TARGET) $(ARGS)
+	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(REPLAY_VERIFY_TARGET) $(ARGS)
 
 openclaw:
-	swift run --package-path $(APP_PACKAGE_PATH) $(OPENCLAW_TARGET) $(ARGS)
+	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(OPENCLAW_TARGET) $(ARGS)
 
 student:
-	swift run --package-path $(APP_PACKAGE_PATH) $(STUDENT_TARGET) $(ARGS)
+	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(STUDENT_TARGET) $(ARGS)
+
+test-swift:
+	$(SWIFT) test --package-path $(APP_PACKAGE_PATH) $(ARGS)
 
 llm-prompts:
 	python3 scripts/llm/render_knowledge_prompts.py --knowledge-item core/knowledge/examples/knowledge-item.sample.json --out-dir /tmp/openstaff-llm-prompts

@@ -25,6 +25,7 @@ make llm-retry
 make skill-build
 make skills-sample
 make skills-validate-sample
+make test-swift
 make test
 make test-unit
 make test-integration
@@ -41,6 +42,7 @@ make release-preflight
 
 - `make build`：构建 `apps/macos` 最小壳应用。
 - `make dev`：启动 macOS 最小空应用（Phase 0 验收命令）。
+- `make test-swift`：运行 `apps/macos` Swift Package 的 `swift test`。若系统当前 `xcode-select` 指向 Command Line Tools，Makefile 会自动切到 `/Applications/Xcode.app/Contents/Developer` 以恢复 `XCTest`。
 - `make xcode-open`：在 Xcode 中打开 `apps/macos/Package.swift`，可直接点击 Run 启动 `OpenStaffApp`。
 - `make capture`：启动 Phase 1.3 采集 CLI（全局点击监听 + 上下文抓取 + JSONL 落盘轮转）。
 - `make slice`：启动 Phase 2.1 任务切片 CLI（session raw-events -> task chunks）。

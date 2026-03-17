@@ -18,6 +18,22 @@ make replay-verify
 
 ```bash
 make build
+make test-swift
+```
+
+仓库内所有 `make` 触发的 Swift 命令都会通过 `scripts/dev/with_xcode_env.sh` 自动检查当前 developer dir。
+如果本机装有完整 Xcode 且 `xcode-select` 仍指向 `CommandLineTools`，wrapper 会自动注入：
+
+```bash
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+```
+
+因此在这个仓库里运行 `make build`、`make dev`、`make test-swift` 时，不需要再手工处理 `XCTest` 缺失问题。
+
+若你想直接手敲 `swift test`，可用：
+
+```bash
+./scripts/dev/with_xcode_env.sh swift test --package-path apps/macos
 ```
 
 ## Layout

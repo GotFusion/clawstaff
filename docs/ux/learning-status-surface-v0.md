@@ -74,7 +74,7 @@
 
 - v0 还没有完整的隐私 / 排除面板，详细配置放到 `TODO 11.0.3`
 - 当前排除规则以内建默认值和环境变量扩展为主
-- `swift test` 在当前 CLI 环境下受 `XCTest` 模块缺失影响，已用 `swift build` 验证应用可编译
+- 仓库内 `make` 触发的 Swift 命令现已通过 `scripts/dev/with_xcode_env.sh` 自动切到完整 Xcode，避免 `CommandLineTools` 环境下的 `XCTest` 缺失问题
 
 ## 验收对照
 
