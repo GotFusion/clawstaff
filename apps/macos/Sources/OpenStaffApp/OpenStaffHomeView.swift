@@ -15,6 +15,7 @@ struct OpenStaffHomeView: View {
                     headerCard
                     primaryActionsCard
                     modeQuickEntryCard
+                    quickFeedbackCard
                     summaryCard
                 }
                 .padding(20)
@@ -204,6 +205,54 @@ struct OpenStaffHomeView: View {
                 Text("状态工作台提供完整状态、学习记录与审阅反馈。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var quickFeedbackCard: some View {
+        if let selectedExecutionLog = dashboardViewModel.selectedExecutionLog {
+            OpenStaffHomeCard(
+                title: "快速反馈",
+                subtitle: "对当前选中的执行日志直接给出老师快评"
+            ) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(selectedExecutionLog.message)
+                        .font(.headline)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text(
+                        "\(dashboardViewModel.modeDisplayName(for: selectedExecutionLog.mode)) · \(selectedExecutionLog.sessionId) · \(selectedExecutionLog.taskId ?? "no-task") · \(OpenStaffDateFormatter.displayString(from: selectedExecutionLog.timestamp))"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                    if let latestFeedback = dashboardViewModel.latestFeedbackForSelectedLog {
+                        Text("最近反馈：\(latestFeedback.decision.displayName)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    TeacherQuickFeedbackBar(
+                        actions: dashboardViewModel.quickFeedbackActions,
+                        note: $dashboardViewModel.quickFeedbackNoteInput,
+                        statusMessage: dashboardViewModel.quickFeedbackStatusMessage,
+                        statusSucceeded: dashboardViewModel.quickFeedbackWriteSucceeded,
+                        disabledReason: dashboardViewModel.quickFeedbackDisabledReason(for:),
+                        onSubmit: dashboardViewModel.submitTeacherFeedback(decision:)
+                    )
+
+                    HStack(spacing: 8) {
+                        Button("打开状态工作台查看更多日志") {
+                            openStatusWorkbench()
+                        }
+                        .buttonStyle(.bordered)
+
+                        Text("默认针对当前选中的最新日志，可继续到工作台查看三栏对照。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
     }

@@ -6,7 +6,7 @@ Local-only runtime data for development and demos.
 - `task-chunks/`: intermediate TaskChunk files (`{yyyy-mm-dd}/{taskId}.json`).
 - `knowledge/`: final KnowledgeItem files (`{yyyy-mm-dd}/{taskId}.json`).
 - `logs/`: runtime and execution logs.
-- `feedback/`: teacher feedback records (`{yyyy-mm-dd}/{sessionId}-{taskId}-teacher-feedback.jsonl`).
+- `feedback/`: teacher feedback records (`{yyyy-mm-dd}/{sessionId}-{taskId}-teacher-feedback.jsonl`), each line now embeds a normalized `teacherReview` evidence payload for quick feedback actions.
 - `benchmarks/`: frozen regression corpora and generated benchmark artifacts (`personal-desktop/*`).
 
 This directory is the default storage root in baseline mode.

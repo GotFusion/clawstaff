@@ -31,10 +31,10 @@
 - [x] 暂停 / 恢复在 `1` 次点击内完成
 
 ### TODO 11.0.2 落地 `Quick Feedback Bar`
-- [ ] 固定支持 `通过 / 驳回 / 修 locator / 重示教 / 太危险 / 顺序不对 / 风格不对`
-- [ ] 每个 quick action 都写成标准化 `teacherReview` evidence
-- [ ] 支持可选短备注，不要求长文本
-- [ ] 为 quick actions 预留统一快捷键定义
+- [x] 固定支持 `通过 / 驳回 / 修 locator / 重示教 / 太危险 / 顺序不对 / 风格不对`
+- [x] 每个 quick action 都写成标准化 `teacherReview` evidence
+- [x] 支持可选短备注，不要求长文本
+- [x] 为 quick actions 预留统一快捷键定义
 
 **输出物**
 - `core/contracts/TeacherQuickFeedbackContracts.swift`

@@ -19,6 +19,7 @@ Shared contracts for cross-module communication.
 - `AssistModeContracts.swift`: `AssistSuggestion`, `AssistConfirmationDecision`, `AssistExecutionOutcome`, `AssistLoopLogEntry`.
 - `StudentModeContracts.swift`: `StudentExecutionPlan`, `StudentStepExecutionResult`, `StudentReviewReport`, `StudentLoopLogEntry`.
 - `OpenClawExecutionContracts.swift`: `OpenClawExecutionRequest`, `OpenClawExecutionResult`, `OpenClawGatewayExecutionPayload`, `OpenClawExecutionReview`.
+- `TeacherQuickFeedbackContracts.swift`: `TeacherQuickFeedbackAction`, `TeacherQuickFeedbackShortcut`, `TeacherReviewEvidence`.
 
 ## Rule
 

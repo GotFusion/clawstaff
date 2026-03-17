@@ -25,29 +25,6 @@ struct ExecutionLogSummary: Identifiable {
     let lineNumber: Int
 }
 
-enum TeacherFeedbackDecision: String, Codable, CaseIterable {
-    case approved
-    case rejected
-    case needsRevision
-    case fixLocator
-    case reteach
-
-    var displayName: String {
-        switch self {
-        case .approved:
-            return "通过"
-        case .rejected:
-            return "驳回"
-        case .needsRevision:
-            return "修正"
-        case .fixLocator:
-            return "修复 locator"
-        case .reteach:
-            return "重新示教"
-        }
-    }
-}
-
 struct TeacherFeedbackSummary {
     let feedbackId: String
     let timestamp: Date
@@ -69,6 +46,7 @@ struct TeacherFeedbackWriteEntry: Codable {
     let timestamp: String
     let reviewerRole: String
     let decision: TeacherFeedbackDecision
+    let teacherReview: TeacherReviewEvidence
     let note: String?
     let sessionId: String
     let taskId: String?
@@ -97,11 +75,15 @@ struct TeacherFeedbackWriteEntry: Codable {
         skillName: String? = nil,
         skillDirectoryPath: String? = nil
     ) {
-        self.schemaVersion = "teacher.feedback.v1"
+        self.schemaVersion = "teacher.feedback.v2"
         self.feedbackId = feedbackId
         self.timestamp = timestamp
         self.reviewerRole = "teacher"
         self.decision = decision
+        self.teacherReview = decision.makeTeacherReviewEvidence(
+            note: note,
+            repairActionType: repairActionType
+        )
         self.note = note
         self.sessionId = sessionId
         self.taskId = taskId

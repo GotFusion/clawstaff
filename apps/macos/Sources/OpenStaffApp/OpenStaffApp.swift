@@ -997,45 +997,19 @@ struct OpenStaffDashboardView: View {
                                         }
 
                                         VStack(alignment: .leading, spacing: 6) {
-                                            Text("填写反馈备注（失败原因、定位线索、示教意图可写在这里）")
+                                            Text("Quick Feedback Bar")
+                                                .font(.headline)
+                                            Text("固定 7 个快评动作，可选补一句短备注。")
                                                 .font(.caption)
                                                 .foregroundStyle(.secondary)
-                                            TextEditor(text: $viewModel.feedbackInput)
-                                                .frame(minHeight: 84)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 6)
-                                                        .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
-                                                )
-                                        }
-
-                                        HStack(spacing: 8) {
-                                            Button("通过") {
-                                                viewModel.submitTeacherFeedback(decision: .approved)
-                                            }
-                                            .buttonStyle(.borderedProminent)
-
-                                            Button("驳回") {
-                                                viewModel.submitTeacherFeedback(decision: .rejected)
-                                            }
-                                            .buttonStyle(.bordered)
-
-                                            Button("修复 locator") {
-                                                viewModel.submitTeacherFeedback(decision: .fixLocator)
-                                            }
-                                            .buttonStyle(.bordered)
-                                            .disabled(viewModel.selectedExecutionReviewDetail?.locatorRepairAction == nil)
-
-                                            Button("重新示教") {
-                                                viewModel.submitTeacherFeedback(decision: .reteach)
-                                            }
-                                            .buttonStyle(.bordered)
-                                            .disabled(viewModel.selectedExecutionReviewDetail?.reteachAction == nil)
-                                        }
-
-                                        if let feedbackStatusMessage = viewModel.feedbackStatusMessage {
-                                            Text(feedbackStatusMessage)
-                                                .font(.caption)
-                                                .foregroundStyle(viewModel.feedbackWriteSucceeded ? .green : .red)
+                                            TeacherQuickFeedbackBar(
+                                                actions: viewModel.quickFeedbackActions,
+                                                note: $viewModel.quickFeedbackNoteInput,
+                                                statusMessage: viewModel.quickFeedbackStatusMessage,
+                                                statusSucceeded: viewModel.quickFeedbackWriteSucceeded,
+                                                disabledReason: viewModel.quickFeedbackDisabledReason(for:),
+                                                onSubmit: viewModel.submitTeacherFeedback(decision:)
+                                            )
                                         }
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -1294,11 +1268,11 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     @Published var selectedLearningTaskId: String?
     @Published private(set) var executionLogs: [ExecutionLogSummary]
     @Published var selectedExecutionLogId: String?
-    @Published var feedbackInput = ""
+    @Published var quickFeedbackNoteInput = ""
     @Published private(set) var latestFeedbackForSelectedLog: TeacherFeedbackSummary?
     @Published private(set) var selectedExecutionReviewDetail: ExecutionReviewDetail?
-    @Published private(set) var feedbackStatusMessage: String?
-    @Published private(set) var feedbackWriteSucceeded = false
+    @Published private(set) var quickFeedbackStatusMessage: String?
+    @Published private(set) var quickFeedbackWriteSucceeded = false
     @Published private(set) var emergencyStopActive = false
     @Published private(set) var emergencyStopActivatedAt: Date?
     @Published private(set) var emergencyStopSource: EmergencyStopSource?
@@ -1518,6 +1492,10 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             return nil
         }
         return executionReviewSnapshot.logById[selectedExecutionLogId]
+    }
+
+    var quickFeedbackActions: [TeacherQuickFeedbackAction] {
+        TeacherQuickFeedbackAction.quickActions
     }
 
     var selectedLearnedSkill: LearnedSkillSummary? {
@@ -1830,7 +1808,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
 
     func selectExecutionLog(_ logId: String?) {
         selectedExecutionLogId = logId
-        feedbackStatusMessage = nil
+        quickFeedbackStatusMessage = nil
         refreshSelectedLogFeedback()
         refreshSelectedExecutionReviewDetail()
     }
@@ -2046,15 +2024,15 @@ final class OpenStaffDashboardViewModel: ObservableObject {
 
     func submitTeacherFeedback(decision: TeacherFeedbackDecision) {
         guard let selectedExecutionLog else {
-            feedbackWriteSucceeded = false
-            feedbackStatusMessage = "未选择执行日志，无法提交反馈。"
+            quickFeedbackWriteSucceeded = false
+            quickFeedbackStatusMessage = "未选择执行日志，无法提交反馈。"
             return
         }
 
-        let trimmedNote = feedbackInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedNote = quickFeedbackNoteInput.trimmingCharacters(in: .whitespacesAndNewlines)
         if decision == .needsRevision && trimmedNote.isEmpty {
-            feedbackWriteSucceeded = false
-            feedbackStatusMessage = "修正反馈需填写备注。"
+            quickFeedbackWriteSucceeded = false
+            quickFeedbackStatusMessage = "修正反馈需填写备注。"
             return
         }
 
@@ -2069,8 +2047,8 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         }
 
         if (decision == .fixLocator || decision == .reteach), repairAction == nil {
-            feedbackWriteSucceeded = false
-            feedbackStatusMessage = "当前日志未关联到可修复的 skill，无法直接发起修复动作。"
+            quickFeedbackWriteSucceeded = false
+            quickFeedbackStatusMessage = "当前日志未关联到可修复的 skill，无法直接发起修复动作。"
             return
         }
 
@@ -2094,30 +2072,30 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         do {
             try executionReviewStore.appendTeacherFeedback(entry)
         } catch {
-            feedbackWriteSucceeded = false
-            feedbackStatusMessage = "反馈保存失败：\(error.localizedDescription)"
+            quickFeedbackWriteSucceeded = false
+            quickFeedbackStatusMessage = "反馈保存失败：\(error.localizedDescription)"
             return
         }
 
         if let repairAction {
             do {
                 try appendRepairRequest(for: repairAction)
-                feedbackInput = ""
-                feedbackWriteSucceeded = true
-                feedbackStatusMessage = "反馈已保存，并已发起修复动作：\(repairAction.title)"
+                quickFeedbackNoteInput = ""
+                quickFeedbackWriteSucceeded = true
+                quickFeedbackStatusMessage = "反馈已保存，并已发起修复动作：\(repairAction.title)"
                 refreshExecutionReview()
             } catch {
-                feedbackInput = ""
-                feedbackWriteSucceeded = false
-                feedbackStatusMessage = "反馈已保存，但修复动作写入失败：\(error.localizedDescription)"
+                quickFeedbackNoteInput = ""
+                quickFeedbackWriteSucceeded = false
+                quickFeedbackStatusMessage = "反馈已保存，但修复动作写入失败：\(error.localizedDescription)"
                 refreshExecutionReview()
             }
             return
         }
 
-        feedbackInput = ""
-        feedbackWriteSucceeded = true
-        feedbackStatusMessage = "反馈已保存：\(decision.displayName)"
+        quickFeedbackNoteInput = ""
+        quickFeedbackWriteSucceeded = true
+        quickFeedbackStatusMessage = "反馈已保存：\(decision.displayName)"
         refreshExecutionReview()
     }
 
@@ -2144,8 +2122,6 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         emergencyStopSource = source
         guardInputs.emergencyStopActive = true
 
-        feedbackWriteSucceeded = true
-        feedbackStatusMessage = "安全控制：紧急停止已激活。"
         refreshLearningStatusSurface(forceTeacherPaused: false)
     }
 
@@ -2155,9 +2131,28 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         emergencyStopSource = nil
         guardInputs.emergencyStopActive = false
 
-        feedbackWriteSucceeded = true
-        feedbackStatusMessage = "安全控制：紧急停止已解除。"
         refreshLearningStatusSurface(forceTeacherPaused: false)
+    }
+
+    func quickFeedbackDisabledReason(for action: TeacherQuickFeedbackAction) -> String? {
+        guard selectedExecutionLog != nil else {
+            return "未选择执行日志。"
+        }
+
+        switch action {
+        case .fixLocator:
+            if selectedExecutionReviewDetail?.locatorRepairAction == nil {
+                return "当前日志没有可修 locator 的结构化修复入口。"
+            }
+        case .reteach:
+            if selectedExecutionReviewDetail?.reteachAction == nil {
+                return "当前日志没有可重示教的结构化修复入口。"
+            }
+        case .approved, .rejected, .needsRevision, .tooDangerous, .wrongOrder, .wrongStyle:
+            break
+        }
+
+        return nil
     }
 
     private func handleCapturedEventCountUpdate(_ count: Int) {

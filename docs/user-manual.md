@@ -105,13 +105,17 @@ make student ARGS="--goal 在 Safari 中复现点击流程 --knowledge core/know
 4. 根据判断点击：
    - `通过`
    - `驳回`
-   - `修复 locator`
-   - `重新示教`
-5. 如有需要，在备注框写明失败原因、线索或示教意图。  
+   - `修 locator`
+   - `重示教`
+   - `太危险`
+   - `顺序不对`
+   - `风格不对`
+5. 如有需要，在短备注框补一句失败原因、线索或示教意图，不需要写长段说明。  
 
 说明：
-- `修复 locator` / `重新示教` 会同时写入 `data/feedback/{yyyy-mm-dd}/*.jsonl` 与 `data/skills/repairs/{yyyy-mm-dd}/skill-repair.jsonl`。
-- 若日志未成功关联到 skill，上述两个修复按钮会自动禁用。
+- `修 locator` / `重示教` 会同时写入 `data/feedback/{yyyy-mm-dd}/*.jsonl` 与 `data/skills/repairs/{yyyy-mm-dd}/skill-repair.jsonl`。
+- 所有快评动作都会在反馈记录中落一条标准化 `teacherReview` evidence，并带上统一快捷键定义（`Cmd+1` 到 `Cmd+7`）。
+- 若日志未成功关联到 skill，`修 locator` / `重示教` 会自动禁用。
 
 ## 4. LLM 与 Skill 工作流
 
