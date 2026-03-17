@@ -85,6 +85,9 @@
 - [ ] 定义 `InteractionTurnReviewLink`
 - [ ] 为每条记录保留 `turnId`、`traceId`、`sessionId`、`taskId`、`stepId`
 - [ ] 增加 `learningState`、`privacyTags` 字段，记录学习状态与排除上下文
+- [ ] 增加 `observationRef` 或等价字段，能回指点击前后截图、窗口签名、AX / OCR sidecar
+- [ ] 增加 `actionKind`，第一版固定区分 `nativeAction` / `guiAction`
+- [ ] 对 `guiAction` 记录 `semanticTargetSetRef` 或等价 locator 候选引用
 - [ ] 建立与 `KnowledgeItem`、skill、execution log、review report 的关联字段
 
 **输出物**
@@ -95,6 +98,7 @@
 **验收标准**
 - [ ] 任意主线步骤都可映射为一个 `InteractionTurn`
 - [ ] `InteractionTurn` 可追溯回原始 capture / knowledge / skill / review 工件
+- [ ] 抽样回看时，可恢复该步的窗口上下文和 locator 候选，而不只是文本摘要
 
 ### TODO 11.1.3 定义 `NextStateEvidence` 契约
 - [ ] 定义 evidence source 枚举：
@@ -107,6 +111,10 @@
 - [ ] 定义 evidence payload 的统一摘要字段与原始引用字段
 - [ ] 定义 evidence confidence / severity / timestamp
 - [ ] 区分 `evaluative` 与 `directive` 的原始证据类型
+- [ ] 为 GUI 执行失败保留标准化 failure bucket：
+  - `locator_resolution_failed`
+  - `action_kind_mismatch`
+  - `risk_blocked`
 
 **输出物**
 - `core/contracts/NextStateEvidenceContracts.swift`
@@ -122,6 +130,7 @@
 - [ ] 汇总 execution log、review report、repair request、benchmark linkage
 - [ ] 记录 build diagnostics，标明哪些字段缺失
 - [ ] 支持离线回填旧样本
+- [ ] 优先复用现有 `raw-events`、窗口签名、`SemanticTarget`，补 sidecar 引用而不是复制原始大对象
 - [ ] 首批回填至少覆盖 teaching / assist / student 三类历史任务
 
 **输出物**
@@ -347,10 +356,13 @@
 
 ### TODO 11.4.2 Skill mapper 偏好装配
 - [ ] 让 skill 生成过程接入：
+  - `nativeAction` / `guiAction` 分流
   - locator preference
   - procedure preference
   - style / note preference
   - safety preference
+- [ ] `nativeAction` 优先映射到 `Shortcuts / AppleScript / CLI / app adapter`
+- [ ] `guiAction` 固定按 `AX -> text anchor -> image anchor -> relative coordinate -> absolute coordinate` 生成 locator 候选
 - [ ] 在 skill metadata 中记录所用偏好规则
 
 **输出物**
