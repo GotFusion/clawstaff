@@ -49,6 +49,16 @@ struct OpenStaffHomeView: View {
                         .foregroundStyle(dashboardViewModel.lastTransitionAccepted ? .green : .red)
                 }
 
+                LearningStatusSurfaceCard(
+                    state: dashboardViewModel.learningSessionState,
+                    modeDisplayName: dashboardViewModel.modeDisplayName(for: dashboardViewModel.learningSessionState.mode),
+                    actionTitle: dashboardViewModel.learningPauseResumeActionTitle,
+                    actionEnabled: dashboardViewModel.canToggleLearningPauseResume,
+                    onAction: {
+                        dashboardViewModel.toggleLearningPauseResume()
+                    }
+                )
+
                 HStack(spacing: 8) {
                     Button("查看状态工作台详情") {
                         openStatusWorkbench()

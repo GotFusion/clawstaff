@@ -268,43 +268,66 @@ struct OpenStaffMenuBarContentView: View {
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        Button("打开控制台") {
-            openConsoleWindow()
-        }
+        VStack(alignment: .leading, spacing: 10) {
+            LearningStatusSurfaceCard(
+                state: dashboardViewModel.learningSessionState,
+                modeDisplayName: dashboardViewModel.modeDisplayName(for: dashboardViewModel.learningSessionState.mode),
+                actionTitle: dashboardViewModel.learningPauseResumeActionTitle,
+                actionEnabled: dashboardViewModel.canToggleLearningPauseResume,
+                onAction: {
+                    dashboardViewModel.toggleLearningPauseResume()
+                },
+                showsActionButton: false,
+                showsBackground: false
+            )
+            .frame(width: 320, alignment: .leading)
 
-        Button(desktopWidgetViewModel.isWidgetWindowVisible ? "隐藏前台部件" : "显示前台部件") {
-            toggleDesktopWidgetWindow()
-        }
+            Divider()
 
-        Menu("部件模式") {
-            modeMenuItem("精简模式", mode: .compact)
-            modeMenuItem("详细模式", mode: .detailed)
-        }
-
-        Divider()
-
-        Button("刷新任务视图") {
-            desktopWidgetViewModel.refresh()
-            dashboardViewModel.refreshDashboard(promptAccessibilityPermission: false)
-        }
-
-        if dashboardViewModel.emergencyStopActive {
-            Button("解除紧急停止") {
-                dashboardViewModel.releaseEmergencyStop()
+            Button(dashboardViewModel.learningPauseResumeActionTitle) {
+                dashboardViewModel.toggleLearningPauseResume()
             }
-        } else {
-            Button("触发紧急停止") {
-                dashboardViewModel.activateEmergencyStop(source: .uiButton)
+            .disabled(!dashboardViewModel.canToggleLearningPauseResume)
+
+            Button("打开控制台") {
+                openConsoleWindow()
+            }
+
+            Button(desktopWidgetViewModel.isWidgetWindowVisible ? "隐藏前台部件" : "显示前台部件") {
+                toggleDesktopWidgetWindow()
+            }
+
+            Menu("部件模式") {
+                modeMenuItem("精简模式", mode: .compact)
+                modeMenuItem("详细模式", mode: .detailed)
+            }
+
+            Divider()
+
+            Button("刷新任务视图") {
+                desktopWidgetViewModel.refresh()
+                dashboardViewModel.refreshDashboard(promptAccessibilityPermission: false)
+            }
+
+            if dashboardViewModel.emergencyStopActive {
+                Button("解除紧急停止") {
+                    dashboardViewModel.releaseEmergencyStop()
+                }
+            } else {
+                Button("触发紧急停止") {
+                    dashboardViewModel.activateEmergencyStop(source: .uiButton)
+                }
+                .foregroundStyle(.red)
+            }
+
+            Divider()
+
+            Button("退出程序") {
+                NSApplication.shared.terminate(nil)
             }
             .foregroundStyle(.red)
         }
-
-        Divider()
-
-        Button("退出程序") {
-            NSApplication.shared.terminate(nil)
-        }
-        .foregroundStyle(.red)
+        .padding(.vertical, 4)
     }
 
     @ViewBuilder
@@ -443,6 +466,7 @@ struct OpenStaffDesktopWidgetView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DesktopWidgetSpacing.widgetStack) {
             widgetHeader
+            learningStatusPanel
             compactBox
             modeControlPanel
 
@@ -471,6 +495,18 @@ struct OpenStaffDesktopWidgetView: View {
             viewModel.isWidgetWindowVisible = false
         }
         .animation(.easeInOut(duration: 0.25), value: viewModel.displayMode)
+    }
+
+    private var learningStatusPanel: some View {
+        LearningStatusSurfaceCard(
+            state: dashboardViewModel.learningSessionState,
+            modeDisplayName: dashboardViewModel.modeDisplayName(for: dashboardViewModel.learningSessionState.mode),
+            actionTitle: dashboardViewModel.learningPauseResumeActionTitle,
+            actionEnabled: dashboardViewModel.canToggleLearningPauseResume,
+            onAction: {
+                dashboardViewModel.toggleLearningPauseResume()
+            }
+        )
     }
 
     private var modeControlPanel: some View {
@@ -860,9 +896,9 @@ private enum DesktopWidgetSpacing {
     static let widgetOuterPadding: CGFloat = 12
     static let widgetWindowCornerRadius: CGFloat = 24
     static let compactWindowWidth: CGFloat = 392
-    static let compactWindowHeight: CGFloat = 334
+    static let compactWindowHeight: CGFloat = 474
     static let detailedWindowWidth: CGFloat = 560
-    static let detailedWindowHeight: CGFloat = 700
+    static let detailedWindowHeight: CGFloat = 844
 
     static let headerHeight: CGFloat = 26
     static let headerCornerRadius: CGFloat = 10

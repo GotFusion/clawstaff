@@ -307,6 +307,19 @@ struct OpenStaffDashboardView: View {
                     .padding(.top, 4)
                 }
 
+                GroupBox("Learning Status Surface") {
+                    LearningStatusSurfaceCard(
+                        state: viewModel.learningSessionState,
+                        modeDisplayName: viewModel.modeDisplayName(for: viewModel.learningSessionState.mode),
+                        actionTitle: viewModel.learningPauseResumeActionTitle,
+                        actionEnabled: viewModel.canToggleLearningPauseResume,
+                        onAction: {
+                            viewModel.toggleLearningPauseResume()
+                        }
+                    )
+                    .padding(.top, 4)
+                }
+
                 HStack(alignment: .top, spacing: 12) {
                     GroupBox("当前状态") {
                         VStack(alignment: .leading, spacing: 8) {
@@ -1270,6 +1283,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     @Published var currentMode: OpenStaffMode
     @Published var selectedMode: OpenStaffMode
     @Published private(set) var runningMode: OpenStaffMode?
+    @Published private(set) var learningSessionState: LearningSessionState
     @Published var guardInputs = ModeGuardInput()
     @Published private(set) var transitionMessage: String?
     @Published private(set) var lastDecision: ModeTransitionDecision?
@@ -1325,6 +1339,22 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     private var safetyControlsStarted = false
     private var integratedWorkflowTask: Task<Void, Never>?
     private let modeObservationCapture: any ModeObservationCaptureControlling
+    private let learningContextSnapshotProvider: any LearningContextSnapshotProviding
+    private let learningLastSuccessfulWriteProvider: any LearningLastSuccessfulWriteProviding
+    private let learningExclusionPolicy: LearningAppExclusionPolicy
+    private let learningSensitiveScenePolicy: LearningSensitiveScenePolicy
+    private let nowProvider: () -> Date
+    private var learningStatusRefreshTimer: Timer?
+    private var learningStatusRefreshTimerTarget: DashboardLearningStatusRefreshTimerTarget?
+    private var latestLearningContextSnapshot = ContextSnapshot(
+        appName: "Unknown",
+        appBundleId: "unknown.bundle.id",
+        windowTitle: nil,
+        windowId: nil
+    )
+    private var lastSuccessfulLearningWriteAt: Date?
+    private var capturedEventBaseCount = 0
+    private var ignoreNextObservationResetCount = false
     private lazy var executionReviewStore = ExecutionReviewStore(
         logsRootDirectory: OpenStaffWorkspacePaths.logsDirectory,
         feedbackRootDirectory: OpenStaffWorkspacePaths.feedbackDirectory,
@@ -1350,7 +1380,12 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     init(
         initialMode: OpenStaffMode = .teaching,
         modeObservationCapture: any ModeObservationCaptureControlling = ModeObservationCaptureService(),
-        permissionSnapshotProvider: @escaping (Bool) -> PermissionSnapshot = PermissionSnapshot.capture
+        permissionSnapshotProvider: @escaping (Bool) -> PermissionSnapshot = PermissionSnapshot.capture,
+        learningContextSnapshotProvider: any LearningContextSnapshotProviding = SystemLearningContextSnapshotProvider(),
+        learningLastSuccessfulWriteProvider: any LearningLastSuccessfulWriteProviding = RawEventLastSuccessfulWriteProvider(),
+        learningExclusionPolicy: LearningAppExclusionPolicy = .default(),
+        learningSensitiveScenePolicy: LearningSensitiveScenePolicy = LearningSensitiveScenePolicy(),
+        nowProvider: @escaping () -> Date = Date.init
     ) {
         self.currentMode = initialMode
         self.selectedMode = initialMode
@@ -1374,8 +1409,21 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         self.activeObservationSessionId = nil
         self.modeObservationCapture = modeObservationCapture
         self.permissionSnapshotProvider = permissionSnapshotProvider
+        self.learningContextSnapshotProvider = learningContextSnapshotProvider
+        self.learningLastSuccessfulWriteProvider = learningLastSuccessfulWriteProvider
+        self.learningExclusionPolicy = learningExclusionPolicy
+        self.learningSensitiveScenePolicy = learningSensitiveScenePolicy
+        self.nowProvider = nowProvider
         self.stateMachine = ModeStateMachine(initialMode: initialMode, logger: logger)
         self.sessionId = "session-gui-\(UUID().uuidString.prefix(8).lowercased())"
+        self.lastSuccessfulLearningWriteAt = learningLastSuccessfulWriteProvider.latestSuccessfulWriteAt(
+            rawEventsRootDirectory: OpenStaffWorkspacePaths.rawEventsDirectory
+        )
+        self.learningSessionState = LearningSessionState.initial(
+            selectedMode: initialMode,
+            lastSuccessfulWriteAt: self.lastSuccessfulLearningWriteAt,
+            updatedAt: nowProvider()
+        )
 
         self.modeObservationCapture.onFatalError = { [weak self] error in
             DispatchQueue.main.async { [weak self] in
@@ -1384,13 +1432,21 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         }
         self.modeObservationCapture.onEventCaptured = { [weak self] count in
             DispatchQueue.main.async { [weak self] in
-                self?.capturedEventCount = count
+                self?.handleCapturedEventCountUpdate(count)
             }
         }
     }
 
     var isAnyModeRunning: Bool {
         runningMode != nil
+    }
+
+    var learningPauseResumeActionTitle: String {
+        learningSessionState.teacherPaused ? "恢复学习" : "暂停学习"
+    }
+
+    var canToggleLearningPauseResume: Bool {
+        learningSessionState.canPauseOrResumeInOneClick
     }
 
     var modeStatusSummary: String {
@@ -1429,6 +1485,18 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         }
         let sessionLabel = activeObservationSessionId ?? sessionId
         return "采集会话：\(sessionLabel) · 原始事件：\(capturedEventCount)"
+    }
+
+    func toggleLearningPauseResume() {
+        guard canToggleLearningPauseResume else {
+            return
+        }
+
+        if learningSessionState.teacherPaused {
+            resumeLearningCapture()
+        } else {
+            pauseLearningCapture()
+        }
     }
 
     var tasksForSelectedSession: [LearningTaskSummary] {
@@ -1601,6 +1669,20 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         return runningMode == mode
     }
 
+    func pauseLearningCapture() {
+        guard canToggleLearningPauseResume else {
+            return
+        }
+        refreshLearningStatusSurface(forceTeacherPaused: true)
+    }
+
+    func resumeLearningCapture() {
+        guard canToggleLearningPauseResume else {
+            return
+        }
+        refreshLearningStatusSurface(forceTeacherPaused: false)
+    }
+
     func startMode(_ mode: OpenStaffMode) {
         if let runningMode {
             if runningMode == mode {
@@ -1660,6 +1742,8 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         }
 
         runningMode = mode
+        capturedEventBaseCount = 0
+        capturedEventCount = 0
         do {
             try startObservationCaptureIfNeeded(for: mode)
         } catch {
@@ -1678,6 +1762,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         if transitionMessage == nil {
             transitionMessage = "\(modeDisplayName(for: mode))已开始运行。"
         }
+        refreshLearningStatusSurface()
         startIntegratedWorkflowIfNeeded(for: mode)
     }
 
@@ -1706,6 +1791,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             status: .modeStable,
             message: "\(modeDisplayName(for: mode))已停止。"
         )
+        refreshLearningStatusSurface(forceTeacherPaused: false)
 
         if let capturedTeachingSessionId {
             runTeachingPostProcessing(for: capturedTeachingSessionId)
@@ -1730,6 +1816,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         refreshLearnedSkills()
         refreshExecutorHelperPath()
         lastRefreshedAt = Date()
+        refreshLearningStatusSurface(updatePermissionSnapshot: false)
     }
 
     func selectLearningSession(_ sessionId: String?) {
@@ -2040,6 +2127,8 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         }
         safetyControlsStarted = true
         emergencyStopHotkeyMonitor.start()
+        startLearningStatusRefreshTimerIfNeeded()
+        refreshLearningStatusSurface()
     }
 
     func activateEmergencyStop(source: EmergencyStopSource) {
@@ -2057,6 +2146,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
 
         feedbackWriteSucceeded = true
         feedbackStatusMessage = "安全控制：紧急停止已激活。"
+        refreshLearningStatusSurface(forceTeacherPaused: false)
     }
 
     func releaseEmergencyStop() {
@@ -2067,6 +2157,116 @@ final class OpenStaffDashboardViewModel: ObservableObject {
 
         feedbackWriteSucceeded = true
         feedbackStatusMessage = "安全控制：紧急停止已解除。"
+        refreshLearningStatusSurface(forceTeacherPaused: false)
+    }
+
+    private func handleCapturedEventCountUpdate(_ count: Int) {
+        if ignoreNextObservationResetCount && count == 0 {
+            ignoreNextObservationResetCount = false
+            return
+        }
+
+        capturedEventCount = capturedEventBaseCount + count
+        if count > 0 {
+            lastSuccessfulLearningWriteAt = nowProvider()
+        }
+
+        refreshLearningStatusSurface(
+            updatePermissionSnapshot: false,
+            refreshContext: false,
+            syncObservationCapture: false
+        )
+    }
+
+    private func startLearningStatusRefreshTimerIfNeeded() {
+        guard learningStatusRefreshTimer == nil else {
+            return
+        }
+
+        let timerTarget = DashboardLearningStatusRefreshTimerTarget(owner: self)
+        learningStatusRefreshTimerTarget = timerTarget
+        learningStatusRefreshTimer = Timer.scheduledTimer(
+            timeInterval: 1.5,
+            target: timerTarget,
+            selector: #selector(DashboardLearningStatusRefreshTimerTarget.handleTick(_:)),
+            userInfo: nil,
+            repeats: true
+        )
+        if let learningStatusRefreshTimer {
+            RunLoop.main.add(learningStatusRefreshTimer, forMode: .common)
+        }
+    }
+
+    func refreshLearningStatusSurface(
+        forceTeacherPaused: Bool? = nil,
+        updatePermissionSnapshot: Bool = true,
+        refreshContext: Bool = true,
+        syncObservationCapture: Bool = true
+    ) {
+        if updatePermissionSnapshot {
+            permissionSnapshot = permissionSnapshotProvider(false)
+        }
+
+        if refreshContext {
+            latestLearningContextSnapshot = learningContextSnapshotProvider.snapshot(
+                includeWindowContext: permissionSnapshot.accessibilityTrusted
+            )
+        }
+
+        if lastSuccessfulLearningWriteAt == nil {
+            lastSuccessfulLearningWriteAt = learningLastSuccessfulWriteProvider.latestSuccessfulWriteAt(
+                rawEventsRootDirectory: OpenStaffWorkspacePaths.rawEventsDirectory
+            )
+        }
+
+        let teacherPaused = forceTeacherPaused ?? learningSessionState.teacherPaused
+        let observesTeacherActions = runningMode.map(shouldObserveTeacherActions(for:)) ?? false
+        let currentApp = LearningSurfaceAppContext(snapshot: latestLearningContextSnapshot)
+        let exclusionMatch = learningExclusionPolicy.match(for: currentApp)
+        let sensitiveMatch = learningSensitiveScenePolicy.match(for: currentApp)
+        let shouldRunCapture = runningMode != nil
+            && observesTeacherActions
+            && !teacherPaused
+            && !emergencyStopActive
+            && exclusionMatch == nil
+            && sensitiveMatch == nil
+
+        if syncObservationCapture {
+            do {
+                if shouldRunCapture, let runningMode {
+                    try ensureObservationCaptureRunning(
+                        for: runningMode,
+                        permissionSnapshot: permissionSnapshot,
+                        announceStatus: false
+                    )
+                } else if modeObservationCapture.isRunning {
+                    stopObservationCapture(
+                        clearSessionContext: runningMode == nil || !observesTeacherActions,
+                        resetCapturedEventCount: runningMode == nil || !observesTeacherActions
+                    )
+                }
+            } catch {
+                handleObservationCaptureFailure(error)
+                return
+            }
+        }
+
+        learningSessionState = LearningSessionStateResolver.resolve(
+            LearningSessionStateInput(
+                selectedMode: selectedMode,
+                runningMode: runningMode,
+                observesTeacherActions: observesTeacherActions,
+                captureRunning: modeObservationCapture.isRunning,
+                teacherPaused: teacherPaused,
+                currentApp: currentApp,
+                exclusionMatch: exclusionMatch,
+                sensitiveMatch: sensitiveMatch,
+                lastSuccessfulWriteAt: lastSuccessfulLearningWriteAt,
+                activeSessionId: activeObservationSessionId,
+                capturedEventCount: capturedEventCount,
+                updatedAt: nowProvider()
+            )
+        )
     }
 
     private func startObservationCaptureIfNeeded(for mode: OpenStaffMode) throws {
@@ -2079,22 +2279,40 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         let snapshot = permissionSnapshotProvider(false)
         permissionSnapshot = snapshot
 
-        guard snapshot.dataDirectoryWritable else {
+        try ensureObservationCaptureRunning(
+            for: mode,
+            permissionSnapshot: snapshot,
+            announceStatus: true
+        )
+    }
+
+    private func ensureObservationCaptureRunning(
+        for mode: OpenStaffMode,
+        permissionSnapshot: PermissionSnapshot,
+        announceStatus: Bool
+    ) throws {
+        guard permissionSnapshot.dataDirectoryWritable else {
             throw DashboardCaptureStartupError.dataDirectoryNotWritable(OpenStaffWorkspacePaths.dataDirectory.path)
         }
 
         if modeObservationCapture.isRunning {
-            transitionMessage = "\(modeDisplayName(for: mode))已开始运行，正在记录操作事件（sessionId=\(activeObservationSessionId ?? sessionId)）。"
+            if announceStatus {
+                transitionMessage = "\(modeDisplayName(for: mode))已开始运行，正在记录操作事件（sessionId=\(activeObservationSessionId ?? sessionId)）。"
+            }
             return
         }
 
-        let captureSessionId = makeObservationSessionId(for: mode)
+        let captureSessionId = activeObservationSessionId ?? makeObservationSessionId(for: mode)
         try modeObservationCapture.start(
             sessionId: captureSessionId,
-            includeWindowContext: snapshot.accessibilityTrusted
+            includeWindowContext: permissionSnapshot.accessibilityTrusted
         )
         activeObservationSessionId = captureSessionId
-        if snapshot.accessibilityTrusted {
+        if !announceStatus {
+            return
+        }
+
+        if permissionSnapshot.accessibilityTrusted {
             transitionMessage = "\(modeDisplayName(for: mode))已开始运行，正在记录操作事件（sessionId=\(captureSessionId)）。"
         } else {
             let executablePath = ProcessInfo.processInfo.arguments.first ?? "unknown"
@@ -2108,10 +2326,25 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         }
     }
 
-    private func stopObservationCapture() {
+    private func stopObservationCapture(
+        clearSessionContext: Bool = true,
+        resetCapturedEventCount: Bool = true
+    ) {
+        if clearSessionContext || resetCapturedEventCount {
+            capturedEventBaseCount = 0
+            ignoreNextObservationResetCount = false
+        } else {
+            capturedEventBaseCount = capturedEventCount
+            ignoreNextObservationResetCount = true
+        }
+
         modeObservationCapture.stop()
-        activeObservationSessionId = nil
-        capturedEventCount = 0
+        if clearSessionContext {
+            activeObservationSessionId = nil
+        }
+        if resetCapturedEventCount {
+            capturedEventCount = 0
+        }
     }
 
     private func shouldObserveTeacherActions(for mode: OpenStaffMode) -> Bool {
@@ -2142,6 +2375,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             errorCode: .guardConditionFailed,
             message: "屏幕操作监控已停止：\(error.localizedDescription)"
         )
+        refreshLearningStatusSurface(forceTeacherPaused: false)
     }
 
     private func startIntegratedWorkflowIfNeeded(for mode: OpenStaffMode) {

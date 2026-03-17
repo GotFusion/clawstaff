@@ -16,10 +16,10 @@
 ## 阶段 11.0：老师侧 UX 与隐私基线
 
 ### TODO 11.0.1 落地 `Learning Status Surface`
-- [ ] 提供菜单栏或悬浮学习状态
-- [ ] 显示当前模式、当前 app、learning `on / paused / excluded / sensitive-muted`
-- [ ] 显示最近一次成功落盘时间
-- [ ] 暴露一键暂停 / 恢复入口
+- [x] 提供菜单栏或悬浮学习状态
+- [x] 显示当前模式、当前 app、learning `on / paused / excluded / sensitive-muted`
+- [x] 显示最近一次成功落盘时间
+- [x] 暴露一键暂停 / 恢复入口
 
 **输出物**
 - `apps/macos/Sources/OpenStaffApp/*`
@@ -27,8 +27,8 @@
 - `docs/ux/learning-status-surface-v0.md`
 
 **验收标准**
-- [ ] 老师能在 `1` 次视线切换内知道系统是否正在学习
-- [ ] 暂停 / 恢复在 `1` 次点击内完成
+- [x] 老师能在 `1` 次视线切换内知道系统是否正在学习
+- [x] 暂停 / 恢复在 `1` 次点击内完成
 
 ### TODO 11.0.2 落地 `Quick Feedback Bar`
 - [ ] 固定支持 `通过 / 驳回 / 修 locator / 重示教 / 太危险 / 顺序不对 / 风格不对`
