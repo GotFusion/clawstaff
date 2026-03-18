@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openstaff.local/schemas/learning/preference-extraction-output.schema.json",
+  "title": "Preference Extraction Output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision",
+    "hint",
+    "signalType",
+    "scope",
+    "confidence"
+  ],
+  "properties": {
+    "decision": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "neutral"
+      ]
+    },
+    "hint": {
+      "type": "string",
+      "minLength": 1
+    },
+    "signalType": {
+      "type": "string",
+      "enum": [
+        "outcome",
+        "procedure",
+        "locator",
+        "style",
+        "risk",
+        "repair"
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "global",
+        "app",
+        "taskFamily",
+        "skillFamily",
+        "windowPattern"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}

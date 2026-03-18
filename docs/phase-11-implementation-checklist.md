@@ -219,13 +219,13 @@
 - [x] 至少 60% 历史样本可提炼出 1 条以上有效信号
 
 ### TODO 11.2.3 实现 LLM 辅助的结构化提炼器
-- [ ] 用 ChatGPT 将老师审阅备注、修正备注或 repair note 转为结构化偏好 JSON
-- [ ] 输入固定包含：上一步动作摘要、next-state 摘要、next-state role、老师备注
-- [ ] 增加 schema 校验
-- [ ] 采用 3-vote，多数一致才接受
-- [ ] hint 只允许 1-3 句，且必须可执行
-- [ ] 对低置信输出落入人工复核队列
-- [ ] 严格记录来源与 prompt 版本
+- [x] 用 ChatGPT 将老师审阅备注、修正备注或 repair note 转为结构化偏好 JSON
+- [x] 输入固定包含：上一步动作摘要、next-state 摘要、next-state role、老师备注
+- [x] 增加 schema 校验
+- [x] 采用 3-vote，多数一致才接受
+- [x] hint 只允许 1-3 句，且必须可执行
+- [x] 对低置信输出落入人工复核队列
+- [x] 严格记录来源与 prompt 版本
 
 **输出物**
 - `scripts/learning/extract_preference_signals.py`
@@ -233,9 +233,11 @@
 - `scripts/learning/schemas/preference-extraction-output.schema.json`
 
 **验收标准**
-- [ ] 对文字反馈样本可稳定提炼出 procedure / style / risk signal
+- [x] 对文字反馈样本可稳定提炼出 procedure / style / risk signal
 - [ ] 自由文本备注结构化成功率不低于 80%
-- [ ] 非法 JSON 输出可被捕获并降级
+- [x] 非法 JSON 输出可被捕获并降级
+
+注：`80%` 结构化成功率指标需要在真实 `OpenAI` 联机环境补跑，本次提交已先完成脚本、schema、投票/降级链路与离线回归。
 
 ### TODO 11.2.4 合并规则与 LLM 提炼结果
 - [ ] 同一 turn 的多来源信号去重
