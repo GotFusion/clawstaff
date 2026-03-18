@@ -15,7 +15,10 @@
 - `InteractionTurn`：一次可学习的主线动作单元，连接 capture、knowledge、skill、execution、review。
 - `NextStateEvidence`：动作之后出现的统一反馈证据，连接 teacher review、runtime、benchmark、replay、drift 与 LLM suggestion。
 - `PreferenceSignal`：从 `NextStateEvidence` 提炼出的结构化偏好信号，显式拆开 evaluative 与 directive 纠偏信息。
+- `PreferenceRule`：由重复 signal 晋升出的长期偏好规则，带回链 evidence 和生命周期状态。
+- `PreferenceProfile`：当前可生效的偏好快照，按 assist / skill / repair / review / planner 分段聚合。
 - `RuleBasedPreferenceSignalExtractor`：规则优先的 v0 提炼器，从 teacher review、replay、drift、benchmark、safety block 中生成基础 signal。
+- `PreferenceMemoryStore`：负责把 signals / rules / profiles / audit 落到 `data/preferences`，并维护最小查询索引。
 - `DirectiveHintBuilder`：把已接受的 directive signal 扇出成 `assist / skill mapper / repair planner / review suggestion` 可直接消费的 `DirectiveHint`。
 - `extract_preference_signals.py`：LLM 辅助的 v1 结构化提炼器，固定消费 `actionSummary / nextStateSummary / nextStateRole / teacherNote` 四段输入，输出 `accepted / needs_review` 报告。
 - `TurnLearningEligibility`：主线 / 非主线分类器，负责在偏好提炼前做显式降噪并输出 `reasonCode`。
@@ -27,9 +30,12 @@
 - `data/learning/turns/{date}/{sessionId}/{turnId}.json`
 - `data/learning/evidence/{date}/{sessionId}/{turnId}.jsonl`
 - `data/preferences/signals/{date}/{sessionId}/{turnId}.json`
+- `data/preferences/rules/{ruleId}.json`
+- `data/preferences/profiles/{profileVersion}.json`
+- `data/preferences/audit/{date}.jsonl`
 - `data/preferences/extractions/{date}/{sessionId}/{turnId}--{evidenceId}.json`
 - `data/preferences/needs-review/{date}/{sessionId}/{turnId}--{evidenceId}.json`
-- 后续 `PreferenceRule`、`PreferenceProfile` 也统一挂在 `data/preferences` 下，不再散落到 `core/storage` 或 `core/orchestrator`。
+- `PreferenceRule`、`PreferenceProfile` 与 audit 统一挂在 `data/preferences` 下，不再散落到 `core/orchestrator`。
 
 ## v0 约束
 

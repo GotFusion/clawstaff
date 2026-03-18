@@ -23,6 +23,8 @@ Shared contracts for cross-module communication.
 - `InteractionTurnContracts.swift`: `InteractionTurn`, `InteractionTurnStepReference`, `InteractionTurnExecutionLink`, `InteractionTurnReviewLink`.
 - `NextStateEvidenceContracts.swift`: `NextStateEvidence`, `NextStateEvidenceTurnContext`, `NextStateEvaluativeCandidate`, `NextStateDirectiveCandidate`.
 - `PreferenceSignalContracts.swift`: `PreferenceSignal`, `PreferenceSignalType`, `PreferenceSignalScopeReference`, `PreferenceSignalPromotionStatus`.
+- `PreferenceRuleContracts.swift`: `PreferenceRule`, `PreferenceRuleEvidence`, `PreferenceRuleActivationStatus`.
+- `PreferenceProfileContracts.swift`: `PreferenceProfile`, `PreferenceProfileDirective`, `PreferenceProfileSnapshot`.
 
 ## Rule
 

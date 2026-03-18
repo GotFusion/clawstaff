@@ -25,7 +25,7 @@ public enum InteractionTurnLearningState: String, Codable {
     case excluded
 }
 
-public enum InteractionTurnRiskLevel: String, Codable {
+public enum InteractionTurnRiskLevel: String, Codable, Sendable {
     case low
     case medium
     case high

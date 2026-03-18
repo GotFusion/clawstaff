@@ -2,7 +2,7 @@
 
 负责知识数据、日志与索引管理。
 
-## 当前实现（Phase 4.2 ~ 9.3）
+## 当前实现（Phase 4.2 ~ 11.3）
 - `AssistLoopLogWriter.swift`：辅助模式闭环日志回写（JSONL）：
   - 路径：`data/logs/{yyyy-mm-dd}/{sessionId}-assist.log`
   - 按步骤追加写入（预测、确认、执行）。
@@ -17,6 +17,11 @@
   - 读取 `data/logs/*/*.log`、`data/feedback/*/*.jsonl`、`data/reports/*/*.json`、`data/knowledge/**/*.json`、`data/skills/**/openstaff-skill.json`
   - 为 GUI 生成“老师原始步骤 / 当前 skill 步骤 / 本次实际执行结果”对照数据
   - 统一回写老师反馈（通过 / 驳回 / 修复 locator / 重新示教）
+- `PreferenceMemoryStore.swift`：偏好记忆事实源与索引层：
+  - 写入 `data/preferences/signals/{date}/{sessionId}/{turnId}.json`
+  - 写入 `data/preferences/rules/{ruleId}.json`、`data/preferences/profiles/{profileVersion}.json`
+  - 追加 `data/preferences/audit/{date}.jsonl`
+  - 维护 `signals/index/by-id` 与 `rules/index/{global,by-app,by-task-family,by-skill-family}`，支持按作用域快速查询与规则回滚追溯
 
 ## 后续实现
 - 知识文件存储结构与版本管理。

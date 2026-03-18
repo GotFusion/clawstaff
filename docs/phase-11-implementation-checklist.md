@@ -269,11 +269,13 @@
 
 ## 阶段 11.3：偏好记忆层
 
+> 注：`docs/phase-11-knowledge-reinforcement-roadmap.md` 中的 `TODO 11.3.1 PreferenceMemoryStore`，在本清单中细拆为 `11.3.1 contracts` + `11.3.2 store` 两步，便于实现和验收。
+
 ### TODO 11.3.1 定义 `PreferenceRule` 与 `PreferenceProfile` 契约
-- [ ] 定义 `PreferenceRule`
-- [ ] 定义 `PreferenceRuleEvidence`
-- [ ] 定义 `PreferenceProfile`
-- [ ] 定义 `PreferenceProfileSnapshot`
+- [x] 定义 `PreferenceRule`
+- [x] 定义 `PreferenceRuleEvidence`
+- [x] 定义 `PreferenceProfile`
+- [x] 定义 `PreferenceProfileSnapshot`
 
 **输出物**
 - `core/contracts/PreferenceRuleContracts.swift`
@@ -282,24 +284,25 @@
 - `core/learning/preference-profile-v0.md`
 
 **验收标准**
-- [ ] 规则和用户当前偏好快照有清晰区分
+- [x] 规则和用户当前偏好快照有清晰区分
 
 ### TODO 11.3.2 实现 `PreferenceMemoryStore`
-- [ ] 存储 candidate signals
-- [ ] 存储 promoted rules
-- [ ] 存储 superseded / revoked 规则
-- [ ] 存储 profile snapshot
-- [ ] 支持按 app / task family / skill family 查询
+- [x] 存储 candidate signals
+- [x] 存储 promoted rules
+- [x] 存储 superseded / revoked 规则
+- [x] 存储 profile snapshot
+- [x] 支持按 app / task family / skill family 查询
 
 **输出物**
 - `core/storage/PreferenceMemoryStore.swift`
 - `data/preferences/signals/`
 - `data/preferences/rules/`
 - `data/preferences/profiles/`
+- `data/preferences/audit/`
 
 **验收标准**
-- [ ] 规则查询无需遍历全部 review 工件
-- [ ] 数据结构支持审计与回滚
+- [x] 规则查询无需遍历全部 review 工件
+- [x] 数据结构支持审计与回滚
 
 ### TODO 11.3.3 实现规则晋升器
 - [ ] 将单次信号保持为 candidate
