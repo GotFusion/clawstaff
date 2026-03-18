@@ -899,7 +899,7 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
   - `pass`
   - `fail`
   - `neutral`
-- `directive` 必须包含：
+- `directive payload` 在存在 hindsight 时必须包含：
   - `hint`
   - `scope`
   - `proposedAction`

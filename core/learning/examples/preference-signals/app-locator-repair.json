@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "openstaff.learning.preference-signal.v0",
+  "signalId": "signal-locator-turn-assist-task-assist-example-001-step-001-01-2026-03-18T09-45-00Z",
+  "turnId": "turn-assist-taskProgression-task-assist-example-001-step-001",
+  "traceId": "trace-learning-assist-task-assist-example-001-step-001",
+  "sessionId": "session-assist-example-001",
+  "taskId": "task-assist-example-001",
+  "stepId": "step-001",
+  "type": "locator",
+  "evaluativeDecision": "fail",
+  "polarity": "discourage",
+  "scope": {
+    "level": "app",
+    "appBundleId": "com.apple.Safari",
+    "appName": "Safari",
+    "taskFamily": null,
+    "skillFamily": null,
+    "windowPattern": null
+  },
+  "hint": "Prefer AX role and text anchors before using coordinate fallback for this button.",
+  "confidence": 0.93,
+  "evidenceIds": [
+    "evidence-teacherReview-turn-assist-taskProgression-task-assist-example-001-step-001-01-2026-03-18T09-40-30Z",
+    "evidence-replayVerify-turn-assist-taskProgression-task-assist-example-001-step-001-01-2026-03-18T09-41-00Z"
+  ],
+  "proposedAction": "update_locator_priority",
+  "promotionStatus": "candidate",
+  "timestamp": "2026-03-18T09:45:00Z"
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "openstaff.learning.preference-signal.v0",
+  "signalId": "signal-outcome-turn-student-skillExecution-task-session-003-step-002-01-2026-03-18T10-10-00Z",
+  "turnId": "turn-student-skillExecution-task-003-step-002",
+  "traceId": "trace-003",
+  "sessionId": "session-003",
+  "taskId": "task-003",
+  "stepId": "step-002",
+  "type": "outcome",
+  "evaluativeDecision": "pass",
+  "polarity": "reinforce",
+  "scope": {
+    "level": "global",
+    "appBundleId": null,
+    "appName": null,
+    "taskFamily": null,
+    "skillFamily": null,
+    "windowPattern": null
+  },
+  "hint": null,
+  "confidence": 0.89,
+  "evidenceIds": [
+    "evidence-benchmarkResult-turn-student-skillExecution-task-003-step-002-01-2026-03-18T10-10-00Z"
+  ],
+  "proposedAction": null,
+  "promotionStatus": "candidate",
+  "timestamp": "2026-03-18T10:10:00Z"
+}

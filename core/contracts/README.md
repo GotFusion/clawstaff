@@ -22,6 +22,7 @@ Shared contracts for cross-module communication.
 - `TeacherQuickFeedbackContracts.swift`: `TeacherQuickFeedbackAction`, `TeacherQuickFeedbackShortcut`, `TeacherReviewEvidence`.
 - `InteractionTurnContracts.swift`: `InteractionTurn`, `InteractionTurnStepReference`, `InteractionTurnExecutionLink`, `InteractionTurnReviewLink`.
 - `NextStateEvidenceContracts.swift`: `NextStateEvidence`, `NextStateEvidenceTurnContext`, `NextStateEvaluativeCandidate`, `NextStateDirectiveCandidate`.
+- `PreferenceSignalContracts.swift`: `PreferenceSignal`, `PreferenceSignalType`, `PreferenceSignalScopeReference`, `PreferenceSignalPromotionStatus`.
 
 ## Rule
 

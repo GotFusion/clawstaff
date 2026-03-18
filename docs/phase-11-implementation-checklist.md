@@ -166,33 +166,34 @@
 ## 阶段 11.2：偏好信号提炼层
 
 ### TODO 11.2.1 定义 `PreferenceSignal` 契约
-- [ ] 定义 `PreferenceSignalType`
+- [x] 定义 `PreferenceSignalType`
   - `outcome`
   - `procedure`
   - `locator`
   - `style`
   - `risk`
   - `repair`
-- [ ] 定义 `PreferenceSignalPolarity`
+- [x] 定义 `PreferenceSignalPolarity`
   - `reinforce`
   - `discourage`
   - `neutral`
-- [ ] 定义 `PreferenceSignalScope`
+- [x] 定义 `PreferenceSignalScope`
   - `global`
   - `app`
   - `taskFamily`
   - `skillFamily`
   - `windowPattern`
-- [ ] 约定 v0 默认生效只优先使用 `global / app / taskFamily`
-- [ ] 定义 `promotionStatus`
+- [x] 约定 v0 默认生效只优先使用 `global / app / taskFamily`
+- [x] 定义 `promotionStatus`
   - `candidate`
   - `confirmed`
   - `rejected`
   - `superseded`
-- [ ] 定义 `evaluativeDecision`
+- [x] 定义 `evaluativeDecision`
   - `pass`
   - `fail`
   - `neutral`
+- [x] 约定 directive payload 在存在 hindsight 时必须同时包含 `hint / scope / proposedAction`
 
 **输出物**
 - `core/contracts/PreferenceSignalContracts.swift`
@@ -200,7 +201,7 @@
 - `core/learning/schemas/preference-signal.schema.json`
 
 **验收标准**
-- [ ] 可以覆盖 roadmap 中定义的偏好类型与作用域
+- [x] 可以覆盖 roadmap 中定义的偏好类型与作用域
 
 ### TODO 11.2.2 实现规则优先的信号提炼器
 - [ ] 从 review action 提炼 outcome / repair signal

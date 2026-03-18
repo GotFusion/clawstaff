@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openstaff.dev/schemas/preference-signal.schema.json",
+  "title": "PreferenceSignal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "signalId",
+    "turnId",
+    "sessionId",
+    "taskId",
+    "stepId",
+    "type",
+    "evaluativeDecision",
+    "polarity",
+    "scope",
+    "confidence",
+    "evidenceIds",
+    "promotionStatus",
+    "timestamp"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "openstaff.learning.preference-signal.v0"
+    },
+    "signalId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "turnId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "traceId": {
+      "type": ["string", "null"]
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "taskId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stepId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "outcome",
+        "procedure",
+        "locator",
+        "style",
+        "risk",
+        "repair"
+      ]
+    },
+    "evaluativeDecision": {
+      "type": "string",
+      "enum": ["pass", "fail", "neutral"]
+    },
+    "polarity": {
+      "type": "string",
+      "enum": ["reinforce", "discourage", "neutral"]
+    },
+    "scope": {
+      "$ref": "#/$defs/scope"
+    },
+    "hint": {
+      "type": ["string", "null"]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidenceIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "proposedAction": {
+      "type": ["string", "null"]
+    },
+    "promotionStatus": {
+      "type": "string",
+      "enum": ["candidate", "confirmed", "rejected", "superseded"]
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": [
+            "global",
+            "app",
+            "taskFamily",
+            "skillFamily",
+            "windowPattern"
+          ]
+        },
+        "appBundleId": {
+          "type": ["string", "null"]
+        },
+        "appName": {
+          "type": ["string", "null"]
+        },
+        "taskFamily": {
+          "type": ["string", "null"]
+        },
+        "skillFamily": {
+          "type": ["string", "null"]
+        },
+        "windowPattern": {
+          "type": ["string", "null"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "level": {
+                "const": "app"
+              }
+            },
+            "required": ["level"]
+          },
+          "then": {
+            "required": ["appBundleId"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "level": {
+                "const": "taskFamily"
+              }
+            },
+            "required": ["level"]
+          },
+          "then": {
+            "required": ["taskFamily"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "level": {
+                "const": "skillFamily"
+              }
+            },
+            "required": ["level"]
+          },
+          "then": {
+            "required": ["skillFamily"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "level": {
+                "const": "windowPattern"
+              }
+            },
+            "required": ["level"]
+          },
+          "then": {
+            "required": ["windowPattern"]
+          }
+        }
+      ]
+    }
+  }
+}
