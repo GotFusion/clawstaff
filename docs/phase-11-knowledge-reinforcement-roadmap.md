@@ -857,10 +857,12 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `core/contracts/NextStateEvidenceContracts.swift`
 - `core/learning/NextStateEvidenceBuilder.swift`
 - `core/learning/next-state-evidence-v0.md`
+- `core/learning/schemas/next-state-evidence.schema.json`
+- `scripts/learning/build_next_state_evidence.py`
 
 **验收标准**
-- [ ] 20 条 `InteractionTurn` 中，至少 15 条能补出 1 条以上 evidence。
-- [ ] evidence 只保留摘要和原始引用，不复制大文件正文。
+- [x] 20 条 `InteractionTurn` 中，至少 15 条能补出 1 条以上 evidence。
+- [x] evidence 只保留摘要和原始引用，不复制大文件正文。
 
 #### TODO 11.1.3 主线 / 非主线任务片段分类器
 

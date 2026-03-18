@@ -91,7 +91,7 @@
 
 ## 当前已知边界
 
-- v0 仅把 `teacherReview` evidence 内嵌在反馈 JSONL 中，尚未单独写入 `data/learning/evidence/*`
+- quick feedback 运行时仍先以内嵌 `teacherReview` evidence 的 `teacher.feedback.v2` 为主；Phase 11 已补齐独立 `NextStateEvidence` schema 与离线回填，可把已关联的 turn 写到 `data/learning/evidence/*`
 - `太危险` 目前只记录负反馈，不会自动联动 `紧急停止`
 - 首页默认绑定当前选中的最新日志；批量审阅仍建议在“状态工作台”完成
 

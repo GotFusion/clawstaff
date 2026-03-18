@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openstaff.dev/schemas/next-state-evidence.schema.json",
+  "title": "NextStateEvidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "evidenceId",
+    "turnId",
+    "sessionId",
+    "taskId",
+    "stepId",
+    "source",
+    "summary",
+    "rawRefs",
+    "timestamp",
+    "confidence",
+    "severity",
+    "role"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "openstaff.learning.next-state-evidence.v0"
+    },
+    "evidenceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "turnId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "traceId": {
+      "type": ["string", "null"]
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "taskId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stepId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "teacherReview",
+        "executionRuntime",
+        "replayVerify",
+        "driftDetection",
+        "chatgptSuggestion",
+        "benchmarkResult"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rawRefs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/rawRef"
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "error", "critical"]
+    },
+    "role": {
+      "type": "string",
+      "enum": ["evaluative", "directive", "mixed"]
+    },
+    "guiFailureBucket": {
+      "type": ["string", "null"],
+      "enum": [
+        "locator_resolution_failed",
+        "action_kind_mismatch",
+        "risk_blocked",
+        null
+      ]
+    },
+    "evaluativeCandidate": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/evaluativeCandidate"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "directiveCandidate": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/directiveCandidate"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "rawRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifactKind", "path"],
+      "properties": {
+        "artifactKind": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lineNumber": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "identifier": {
+          "type": ["string", "null"]
+        },
+        "note": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "evaluativeCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "polarity"],
+      "properties": {
+        "decision": {
+          "type": "string"
+        },
+        "polarity": {
+          "type": "string",
+          "enum": ["positive", "negative", "neutral"]
+        },
+        "rationale": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "directiveCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "hint"],
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        },
+        "repairActionType": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

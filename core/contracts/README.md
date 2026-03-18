@@ -21,6 +21,7 @@ Shared contracts for cross-module communication.
 - `OpenClawExecutionContracts.swift`: `OpenClawExecutionRequest`, `OpenClawExecutionResult`, `OpenClawGatewayExecutionPayload`, `OpenClawExecutionReview`.
 - `TeacherQuickFeedbackContracts.swift`: `TeacherQuickFeedbackAction`, `TeacherQuickFeedbackShortcut`, `TeacherReviewEvidence`.
 - `InteractionTurnContracts.swift`: `InteractionTurn`, `InteractionTurnStepReference`, `InteractionTurnExecutionLink`, `InteractionTurnReviewLink`.
+- `NextStateEvidenceContracts.swift`: `NextStateEvidence`, `NextStateEvidenceTurnContext`, `NextStateEvaluativeCandidate`, `NextStateDirectiveCandidate`.
 
 ## Rule
 

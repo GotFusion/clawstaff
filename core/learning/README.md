@@ -13,15 +13,18 @@
 ## 当前对象
 
 - `InteractionTurn`：一次可学习的主线动作单元，连接 capture、knowledge、skill、execution、review。
+- `NextStateEvidence`：动作之后出现的统一反馈证据，连接 teacher review、runtime、benchmark、replay、drift 与 LLM suggestion。
 - `LearningSessionState`：老师侧可见的 learning on/paused/excluded/sensitive-muted 状态。
 - `SensitiveScenePolicy`：隐私静默和排除规则。
 
 ## 文件落点
 
 - `data/learning/turns/{date}/{sessionId}/{turnId}.json`
-- 未来 `NextStateEvidence`、`PreferenceSignal`、`PreferenceProfile` 也统一挂在 `data/learning` / `data/preferences` 下，不再散落到 `core/storage` 或 `core/orchestrator`。
+- `data/learning/evidence/{date}/{sessionId}/{turnId}.jsonl`
+- 未来 `PreferenceSignal`、`PreferenceProfile` 也统一挂在 `data/learning` / `data/preferences` 下，不再散落到 `core/storage` 或 `core/orchestrator`。
 
 ## v0 约束
 
 - `InteractionTurn` 先接受 `ObservationBundle` 的等价 sidecar：允许仅回链 raw event log、task chunk、窗口上下文和 locator 候选。
+- `NextStateEvidence` 只保留摘要和原始引用，不复制 review report、execution log、benchmark review、drift report 的大段正文。
 - 历史回填优先复用现有 `benchmark`、`student report`、`teacher feedback` 工件，缺失字段必须显式保留 diagnostics 或空数组，而不是 silently drop。

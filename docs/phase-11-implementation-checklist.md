@@ -100,30 +100,33 @@
 - [x] `InteractionTurn` 可追溯回原始 capture / knowledge / skill / review 工件
 - [x] 抽样回看时，可恢复该步的窗口上下文和 locator 候选，而不只是文本摘要
 
-### TODO 11.1.3 定义 `NextStateEvidence` 契约
-- [ ] 定义 evidence source 枚举：
+### TODO 11.1.2 / 11.1.3 定义 `NextStateEvidence` 契约
+- [x] 定义 evidence source 枚举：
   - `teacherReview`
   - `executionRuntime`
   - `replayVerify`
   - `driftDetection`
   - `chatgptSuggestion`
   - `benchmarkResult`
-- [ ] 定义 evidence payload 的统一摘要字段与原始引用字段
-- [ ] 定义 evidence confidence / severity / timestamp
-- [ ] 区分 `evaluative` 与 `directive` 的原始证据类型
-- [ ] 为 GUI 执行失败保留标准化 failure bucket：
+- [x] 定义 evidence payload 的统一摘要字段与原始引用字段
+- [x] 定义 evidence confidence / severity / timestamp
+- [x] 区分 `evaluative` 与 `directive` 的原始证据类型
+- [x] 为 GUI 执行失败保留标准化 failure bucket：
   - `locator_resolution_failed`
   - `action_kind_mismatch`
   - `risk_blocked`
 
 **输出物**
 - `core/contracts/NextStateEvidenceContracts.swift`
+- `core/learning/NextStateEvidenceBuilder.swift`
 - `core/learning/next-state-evidence-v0.md`
 - `core/learning/schemas/next-state-evidence.schema.json`
+- `scripts/learning/build_next_state_evidence.py`
+- `core/learning/examples/next-state-evidence/*.jsonl`
 
 **验收标准**
-- [ ] 至少 6 类反馈源可统一编码为 `NextStateEvidence`
-- [ ] evidence 可保留原始路径引用，不需要复制原始大文件
+- [x] 至少 6 类反馈源可统一编码为 `NextStateEvidence`
+- [x] evidence 可保留原始路径引用，不需要复制原始大文件
 
 ### TODO 11.1.4 实现 `InteractionTurnBuilder`
 - [x] 从执行完成后的主链路生成 `InteractionTurn`

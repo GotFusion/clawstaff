@@ -36,6 +36,7 @@
 - 学生审阅报告：`data/reports/{yyyy-mm-dd}/{sessionId}-{taskId}-student-review.json`
 - 老师反馈：`data/feedback/{yyyy-mm-dd}/{sessionId}-{taskId}-teacher-feedback.jsonl`
 - 学习回合：`data/learning/turns/{yyyy-mm-dd}/{sessionId}/{turnId}.json`
+- 学习证据：`data/learning/evidence/{yyyy-mm-dd}/{sessionId}/{turnId}.jsonl`
 
 说明：
 - `sessionId`、`taskId` 使用小写字母+数字+短横线（UUID 推荐）。
