@@ -2567,7 +2567,9 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             ignoreNextObservationResetCount = true
         }
 
-        modeObservationCapture.stop()
+        if modeObservationCapture.isRunning {
+            modeObservationCapture.stop()
+        }
         if clearSessionContext {
             activeObservationSessionId = nil
         }

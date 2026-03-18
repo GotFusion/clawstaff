@@ -1,0 +1,74 @@
+[
+  {
+    "confidence": 0.88,
+    "consumer": "skill_mapper",
+    "createdAt": "2026-03-18T10:00:00Z",
+    "evidenceIds": [
+      "evidence-replay-001"
+    ],
+    "hint": "Refresh semantic target candidates before the next run.",
+    "hintId": "directive-hint-skill_mapper-signal-locator-evidence-replay-001",
+    "proposedAction": "relocalize",
+    "schemaVersion": "openstaff.learning.directive-hint.v0",
+    "scope": {
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari",
+      "level": "app"
+    },
+    "sessionId": "session-001",
+    "signalId": "signal-locator-evidence-replay-001",
+    "signalType": "locator",
+    "stepId": "step-001",
+    "taskId": "task-001",
+    "traceId": "trace-learning-assist-task-001-step-001",
+    "turnId": "turn-assist-taskProgression-task-001-step-001"
+  },
+  {
+    "confidence": 0.88,
+    "consumer": "repair_planner",
+    "createdAt": "2026-03-18T10:00:00Z",
+    "evidenceIds": [
+      "evidence-replay-001"
+    ],
+    "hint": "Refresh semantic target candidates before the next run.",
+    "hintId": "directive-hint-repair_planner-signal-locator-evidence-replay-001",
+    "proposedAction": "relocalize",
+    "schemaVersion": "openstaff.learning.directive-hint.v0",
+    "scope": {
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari",
+      "level": "app"
+    },
+    "sessionId": "session-001",
+    "signalId": "signal-locator-evidence-replay-001",
+    "signalType": "locator",
+    "stepId": "step-001",
+    "taskId": "task-001",
+    "traceId": "trace-learning-assist-task-001-step-001",
+    "turnId": "turn-assist-taskProgression-task-001-step-001"
+  },
+  {
+    "confidence": 0.88,
+    "consumer": "review_suggestion",
+    "createdAt": "2026-03-18T10:00:00Z",
+    "evidenceIds": [
+      "evidence-replay-001"
+    ],
+    "hint": "Refresh semantic target candidates before the next run.",
+    "hintId": "directive-hint-review_suggestion-signal-locator-evidence-replay-001",
+    "proposedAction": "relocalize",
+    "schemaVersion": "openstaff.learning.directive-hint.v0",
+    "scope": {
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari",
+      "level": "app"
+    },
+    "sessionId": "session-001",
+    "signalId": "signal-locator-evidence-replay-001",
+    "signalType": "locator",
+    "stepId": "step-001",
+    "taskId": "task-001",
+    "traceId": "trace-learning-assist-task-001-step-001",
+    "turnId": "turn-assist-taskProgression-task-001-step-001"
+  }
+]

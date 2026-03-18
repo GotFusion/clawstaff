@@ -251,18 +251,19 @@
 **验收标准**
 - [ ] 同一 turn 最终信号集合可解释、无明显重复
 
-### TODO 11.2.5 生成 directive hint
-- [ ] 从 procedure / locator / repair / style signal 生成一句或几句可执行 hint
-- [ ] hint 必须指向行为，不写空泛评价
-- [ ] hint 只服务 assist / skill mapper / repair planner / review suggestion
-- [ ] hint 需要区分适用范围
+### TODO 11.2.5 生成 directive hint（对应 roadmap 里的 TODO 11.2.4）
+- [x] 从 procedure / locator / repair / style / risk signal 生成一句或几句可执行 hint
+- [x] hint 必须指向行为，不写空泛评价
+- [x] hint 只服务 assist / skill mapper / repair planner / review suggestion
+- [x] hint 需要区分适用范围
 
 **输出物**
 - `core/learning/DirectiveHintBuilder.swift`
+- `core/learning/directive-hint-template-v0.md`
 - `core/learning/examples/directive-hints/*.json`
 
 **验收标准**
-- [ ] 每条 directive 类 signal 可生成至少 1 条可操作 hint
+- [x] 每条被接受的 directive 类 signal 可生成至少 1 条可操作 hint
 
 ---
 

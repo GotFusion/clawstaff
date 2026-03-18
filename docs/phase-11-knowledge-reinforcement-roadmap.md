@@ -970,13 +970,14 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
   - skill mapper
   - repair planner
   - review suggestion
+- checklist 中对应 `TODO 11.2.5`；两份文档的编号在本次实现后已通过说明对齐，不再把 `DirectiveHint` 与 signal merger 混写。
 
 **输出物**
 - `core/learning/DirectiveHintBuilder.swift`
 - `core/learning/directive-hint-template-v0.md`
 
 **验收标准**
-- [ ] 每条被接受的 directive signal 至少能生成 1 条可直接消费的 hint。
+- [x] 每条被接受的 directive signal 至少能生成 1 条可直接消费的 hint。
 
 ---
 

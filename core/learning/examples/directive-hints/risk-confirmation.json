@@ -1,0 +1,71 @@
+[
+  {
+    "confidence": 0.95,
+    "consumer": "assist_rerank",
+    "createdAt": "2026-03-18T10:02:00Z",
+    "evidenceIds": [
+      "evidence-benchmark-001"
+    ],
+    "hint": "Keep teacher confirmation enabled for similar high-risk steps.",
+    "hintId": "directive-hint-assist_rerank-signal-risk-evidence-benchmark-001",
+    "proposedAction": "require_teacher_confirmation",
+    "schemaVersion": "openstaff.learning.directive-hint.v0",
+    "scope": {
+      "level": "taskFamily",
+      "taskFamily": "student.execution"
+    },
+    "sessionId": "session-002",
+    "signalId": "signal-risk-evidence-benchmark-001",
+    "signalType": "risk",
+    "stepId": "step-001",
+    "taskId": "task-002",
+    "traceId": "trace-learning-student-task-002-step-001",
+    "turnId": "turn-student-skillExecution-task-002-step-001"
+  },
+  {
+    "confidence": 0.95,
+    "consumer": "skill_mapper",
+    "createdAt": "2026-03-18T10:02:00Z",
+    "evidenceIds": [
+      "evidence-benchmark-001"
+    ],
+    "hint": "Keep teacher confirmation enabled for similar high-risk steps.",
+    "hintId": "directive-hint-skill_mapper-signal-risk-evidence-benchmark-001",
+    "proposedAction": "require_teacher_confirmation",
+    "schemaVersion": "openstaff.learning.directive-hint.v0",
+    "scope": {
+      "level": "taskFamily",
+      "taskFamily": "student.execution"
+    },
+    "sessionId": "session-002",
+    "signalId": "signal-risk-evidence-benchmark-001",
+    "signalType": "risk",
+    "stepId": "step-001",
+    "taskId": "task-002",
+    "traceId": "trace-learning-student-task-002-step-001",
+    "turnId": "turn-student-skillExecution-task-002-step-001"
+  },
+  {
+    "confidence": 0.95,
+    "consumer": "review_suggestion",
+    "createdAt": "2026-03-18T10:02:00Z",
+    "evidenceIds": [
+      "evidence-benchmark-001"
+    ],
+    "hint": "Keep teacher confirmation enabled for similar high-risk steps.",
+    "hintId": "directive-hint-review_suggestion-signal-risk-evidence-benchmark-001",
+    "proposedAction": "require_teacher_confirmation",
+    "schemaVersion": "openstaff.learning.directive-hint.v0",
+    "scope": {
+      "level": "taskFamily",
+      "taskFamily": "student.execution"
+    },
+    "sessionId": "session-002",
+    "signalId": "signal-risk-evidence-benchmark-001",
+    "signalType": "risk",
+    "stepId": "step-001",
+    "taskId": "task-002",
+    "traceId": "trace-learning-student-task-002-step-001",
+    "turnId": "turn-student-skillExecution-task-002-step-001"
+  }
+]

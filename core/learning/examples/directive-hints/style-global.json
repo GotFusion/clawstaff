@@ -1,0 +1,68 @@
+[
+  {
+    "confidence": 0.79,
+    "consumer": "assist_rerank",
+    "createdAt": "2026-03-18T10:20:00Z",
+    "evidenceIds": [
+      "evidence-style-001"
+    ],
+    "hint": "Keep review text concise and conclusion-first.",
+    "hintId": "directive-hint-assist_rerank-signal-style-evidence-style-001",
+    "proposedAction": "shorten_review_copy",
+    "schemaVersion": "openstaff.learning.directive-hint.v0",
+    "scope": {
+      "level": "global"
+    },
+    "sessionId": "session-003",
+    "signalId": "signal-style-evidence-style-001",
+    "signalType": "style",
+    "stepId": "step-004",
+    "taskId": "task-003",
+    "traceId": "trace-learning-assist-task-003-step-004",
+    "turnId": "turn-assist-taskProgression-task-003-step-004"
+  },
+  {
+    "confidence": 0.79,
+    "consumer": "skill_mapper",
+    "createdAt": "2026-03-18T10:20:00Z",
+    "evidenceIds": [
+      "evidence-style-001"
+    ],
+    "hint": "Keep review text concise and conclusion-first.",
+    "hintId": "directive-hint-skill_mapper-signal-style-evidence-style-001",
+    "proposedAction": "shorten_review_copy",
+    "schemaVersion": "openstaff.learning.directive-hint.v0",
+    "scope": {
+      "level": "global"
+    },
+    "sessionId": "session-003",
+    "signalId": "signal-style-evidence-style-001",
+    "signalType": "style",
+    "stepId": "step-004",
+    "taskId": "task-003",
+    "traceId": "trace-learning-assist-task-003-step-004",
+    "turnId": "turn-assist-taskProgression-task-003-step-004"
+  },
+  {
+    "confidence": 0.79,
+    "consumer": "review_suggestion",
+    "createdAt": "2026-03-18T10:20:00Z",
+    "evidenceIds": [
+      "evidence-style-001"
+    ],
+    "hint": "Keep review text concise and conclusion-first.",
+    "hintId": "directive-hint-review_suggestion-signal-style-evidence-style-001",
+    "proposedAction": "shorten_review_copy",
+    "schemaVersion": "openstaff.learning.directive-hint.v0",
+    "scope": {
+      "level": "global"
+    },
+    "sessionId": "session-003",
+    "signalId": "signal-style-evidence-style-001",
+    "signalType": "style",
+    "stepId": "step-004",
+    "taskId": "task-003",
+    "traceId": "trace-learning-assist-task-003-step-004",
+    "turnId": "turn-assist-taskProgression-task-003-step-004"
+  }
+]
