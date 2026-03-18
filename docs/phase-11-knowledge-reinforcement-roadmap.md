@@ -878,11 +878,12 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 **输出物**
 - `core/learning/TurnLearningEligibility.swift`
+- `core/learning/turn-learning-eligibility-v0.md`
 - `docs/adr/ADR-0011-mainline-vs-side-turns.md`
 
 **验收标准**
 - [ ] 抽查 50 条历史记录时，学习无关片段不会自动进入偏好更新流程。
-- [ ] 每条被排除记录都能说明“为什么不学”。
+- [x] 每条被排除记录都能说明“为什么不学”。
 
 ---
 

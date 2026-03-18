@@ -14,6 +14,7 @@
 
 - `InteractionTurn`：一次可学习的主线动作单元，连接 capture、knowledge、skill、execution、review。
 - `NextStateEvidence`：动作之后出现的统一反馈证据，连接 teacher review、runtime、benchmark、replay、drift 与 LLM suggestion。
+- `TurnLearningEligibility`：主线 / 非主线分类器，负责在偏好提炼前做显式降噪并输出 `reasonCode`。
 - `LearningSessionState`：老师侧可见的 learning on/paused/excluded/sensitive-muted 状态。
 - `SensitiveScenePolicy`：隐私静默和排除规则。
 

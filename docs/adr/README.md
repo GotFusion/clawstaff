@@ -9,3 +9,4 @@
 - [ADR-0007 OpenClaw Companion Boundary](./ADR-0007-openclaw-companion-boundary.md)
 - [ADR-0008 Skill Preflight And Repair](./ADR-0008-skill-preflight-and-repair.md)
 - [ADR-0009 Skill Drift Detection And Repair](./ADR-0009-skill-drift-repair.md)
+- [ADR-0011 Mainline Vs Side Turns](./ADR-0011-mainline-vs-side-turns.md)

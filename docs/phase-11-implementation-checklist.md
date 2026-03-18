@@ -100,7 +100,7 @@
 - [x] `InteractionTurn` 可追溯回原始 capture / knowledge / skill / review 工件
 - [x] 抽样回看时，可恢复该步的窗口上下文和 locator 候选，而不只是文本摘要
 
-### TODO 11.1.2 / 11.1.3 定义 `NextStateEvidence` 契约
+### TODO 11.1.2 定义 `NextStateEvidence` 契约
 - [x] 定义 evidence source 枚举：
   - `teacherReview`
   - `executionRuntime`
@@ -146,19 +146,20 @@
 - [x] 对至少 20 条历史样本批量构建成功
 - [ ] 缺失字段时不会崩溃，而是给出结构化 diagnostics
 
-### TODO 11.1.5 主线 / 支线学习资格判断
-- [ ] 定义 `TurnLearningEligibility`
-- [ ] 支持 `eligible / ineligible / needs_review`
-- [ ] 对 assist 预判、student 自主执行、repair、纯状态展示/说明类片段建立分类规则
-- [ ] 输出排除原因
+### TODO 11.1.3 主线 / 支线学习资格判断
+- [x] 定义 `TurnLearningEligibility`
+- [x] 支持 `eligible / ineligible / needs_review`
+- [x] 对 assist 预判、student 自主执行、repair、纯状态展示/说明类片段建立分类规则
+- [x] 输出排除原因
 
 **输出物**
 - `core/learning/TurnLearningEligibility.swift`
 - `core/learning/turn-learning-eligibility-v0.md`
+- `docs/adr/ADR-0011-mainline-vs-side-turns.md`
 
 **验收标准**
 - [ ] 纯展示、纯日志、无操作推进价值的记录片段不进入偏好学习
-- [ ] 排除行为可解释，不是黑盒过滤
+- [x] 排除行为可解释，不是黑盒过滤
 
 ---
 
