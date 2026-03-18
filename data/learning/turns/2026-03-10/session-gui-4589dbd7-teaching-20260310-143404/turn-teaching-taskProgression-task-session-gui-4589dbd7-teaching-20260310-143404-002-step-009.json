@@ -1,0 +1,125 @@
+{
+  "actionKind": "nativeAction",
+  "actionSummary": "执行第 9 步点击操作（源事件 d16befed-d155-4dfd-ac1b-43e63efbecb5）。",
+  "appContext": {
+    "appBundleId": "com.tencent.qq",
+    "appName": "QQ",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": null
+  },
+  "endedAt": "2026-03-10T06:34:42.429Z",
+  "execution": null,
+  "intentSummary": "在 QQ 中复现任务 task-session-gui-4589dbd7-teaching-20260310-143404-002 的操作流程",
+  "learningState": "reviewed",
+  "mode": "teaching",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.tencent.qq",
+      "appName": "QQ",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": null
+    },
+    "axRefs": [],
+    "eventIds": [
+      "d16befed-d155-4dfd-ac1b-43e63efbecb5"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-4589dbd7-teaching-20260310-143404.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/source-record.json",
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-002.json"
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": null,
+    "rawRef": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/review-result.json",
+    "reviewId": "benchmark-review-pdb-007-qq-chat-navigation",
+    "reviewedAt": "2026-03-14T01:54:09+08:00",
+    "source": "benchmarkResult",
+    "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked"
+  },
+  "riskLevel": "medium",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 0,
+    "preferredLocatorType": null,
+    "semanticTargets": [],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/benchmark-pdb-007-qq-chat-navigation/openstaff-skill.json",
+    "sourceStepId": "step-009"
+  },
+  "sessionId": "session-gui-4589dbd7-teaching-20260310-143404",
+  "sourceRefs": [
+    {
+      "artifactKind": "sourceRecord",
+      "identifier": "pdb-007-qq-chat-navigation",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/source-record.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "caseReport",
+      "identifier": "pdb-007-qq-chat-navigation",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/case-report.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-4589dbd7-teaching-20260310-143404",
+      "path": "data/raw-events/2026-03-10/session-gui-4589dbd7-teaching-20260310-143404.jsonl",
+      "sha256": "a46e52401bf4ce2137348e373623a343c3681ac01b8078eeaf68686e4497de55"
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-4589dbd7-teaching-20260310-143404-002",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-002.json",
+      "sha256": "67c8dc4bdd1318f87cd9ef357017046eb454b264e9982336223df5cb69eec862"
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-4589dbd7-teaching-20260310-143404-002",
+      "path": "data/knowledge/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-002.json",
+      "sha256": "0eaccb6d94f2eaeed2c631ed61adbfa0a3ae31b1a220c1c355f3e792cc1c020a"
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-007-qq-chat-navigation",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/benchmark-pdb-007-qq-chat-navigation/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "executionResult",
+      "identifier": "trace-openclaw-run-a98af2de-aa01-44c2-ba54-4c65f5bf8b02",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/execution-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "benchmarkReview",
+      "identifier": "pdb-007-qq-chat-navigation",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-007-qq-chat-navigation/review-result.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-10T06:34:42.429Z",
+  "status": "captured",
+  "stepId": "step-009",
+  "stepIndex": 9,
+  "stepReference": {
+    "instruction": "执行第 9 步点击操作（源事件 d16befed-d155-4dfd-ac1b-43e63efbecb5）。",
+    "knowledgeItemId": "ki-task-session-gui-4589dbd7-teaching-20260310-143404-002",
+    "knowledgeStepId": "step-009",
+    "planStepId": null,
+    "skillStepId": "step-009",
+    "sourceEventIds": [
+      "d16befed-d155-4dfd-ac1b-43e63efbecb5"
+    ],
+    "stepId": "step-009",
+    "stepIndex": 9
+  },
+  "taskId": "task-session-gui-4589dbd7-teaching-20260310-143404-002",
+  "traceId": "trace-learning-teaching-task-session-gui-4589dbd7-teaching-20260310-143404-002-step-009",
+  "turnId": "turn-teaching-taskProgression-task-session-gui-4589dbd7-teaching-20260310-143404-002-step-009",
+  "turnKind": "taskProgression"
+}

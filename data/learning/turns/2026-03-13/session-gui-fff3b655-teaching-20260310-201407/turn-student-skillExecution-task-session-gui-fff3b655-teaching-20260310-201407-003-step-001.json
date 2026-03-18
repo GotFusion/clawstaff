@@ -1,0 +1,137 @@
+{
+  "actionKind": "guiAction",
+  "actionSummary": "执行第 1 步快捷键 return（源事件 d72a604e-d461-4596-af31-5c313d130f80）。",
+  "appContext": {
+    "appBundleId": "com.apple.Safari",
+    "appName": "Safari浏览器",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": "个人 — 百度一下，你就知道"
+  },
+  "endedAt": "2026-03-13T17:54:11.266Z",
+  "execution": {
+    "component": "student.openclaw.runner.step",
+    "errorCode": null,
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/logs/2026-03-13/session-gui-fff3b655-teaching-20260310-201407-openclaw.log",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/execution-result.json",
+    "planId": null,
+    "planStepId": null,
+    "reviewId": "openclaw-review-trace-openclaw-run-ebe484dd-9278-4344-8661-300135ced394",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b",
+    "skillName": "benchmark-pdb-021-safari-baidu-b",
+    "status": "succeeded",
+    "traceId": "trace-openclaw-run-ebe484dd-9278-4344-8661-300135ced394"
+  },
+  "intentSummary": "在 Safari浏览器 中复现任务 task-session-gui-fff3b655-teaching-20260310-201407-003 的操作流程",
+  "learningState": "reviewed",
+  "mode": "student",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari浏览器",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": "个人 — 百度一下，你就知道"
+    },
+    "axRefs": [],
+    "eventIds": [
+      "d72a604e-d461-4596-af31-5c313d130f80"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-fff3b655-teaching-20260310-201407.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/source-record.json",
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-fff3b655-teaching-20260310-201407-003.json"
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": "Benchmark runner injects teacher confirmation to validate deterministic runtime execution for confirmation-gated skills.",
+    "rawRef": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/review-result.json",
+    "reviewId": "benchmark-review-pdb-021-safari-baidu-b",
+    "reviewedAt": "2026-03-14T01:54:11+08:00",
+    "source": "benchmarkResult",
+    "summary": "skill preflight=needs_teacher_confirmation; runtime=succeeded; steps=2/2; expectedPreflight=needs_teacher_confirmation; expectedRuntime=succeeded"
+  },
+  "riskLevel": "low",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 0,
+    "preferredLocatorType": null,
+    "semanticTargets": [],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b/openstaff-skill.json",
+    "sourceStepId": "step-001"
+  },
+  "sessionId": "session-gui-fff3b655-teaching-20260310-201407",
+  "sourceRefs": [
+    {
+      "artifactKind": "sourceRecord",
+      "identifier": "pdb-021-safari-baidu-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/source-record.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "caseReport",
+      "identifier": "pdb-021-safari-baidu-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/case-report.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-fff3b655-teaching-20260310-201407",
+      "path": "data/raw-events/2026-03-10/session-gui-fff3b655-teaching-20260310-201407.jsonl",
+      "sha256": "5489a05925ce5755b56f3cb375cd6c106eb1042aff562dc1d8637a09709fc2e4"
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-fff3b655-teaching-20260310-201407-003",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-fff3b655-teaching-20260310-201407-003.json",
+      "sha256": "950d39567327fe091a43be1aa92b498af7db5ac47169c2bbd4303cc88d97f437"
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-fff3b655-teaching-20260310-201407-003",
+      "path": "data/knowledge/2026-03-10/task-session-gui-fff3b655-teaching-20260310-201407-003.json",
+      "sha256": "16aa74ab32da438178d077f0f437d280f0b62938bba0d64e641992337fe08302"
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-021-safari-baidu-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/benchmark-pdb-021-safari-baidu-b/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "executionResult",
+      "identifier": "trace-openclaw-run-ebe484dd-9278-4344-8661-300135ced394",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/execution-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "benchmarkReview",
+      "identifier": "pdb-021-safari-baidu-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-021-safari-baidu-b/review-result.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-13T17:54:11.266Z",
+  "status": "succeeded",
+  "stepId": "step-001",
+  "stepIndex": 1,
+  "stepReference": {
+    "instruction": "执行第 1 步快捷键 return（源事件 d72a604e-d461-4596-af31-5c313d130f80）。",
+    "knowledgeItemId": "ki-task-session-gui-fff3b655-teaching-20260310-201407-003",
+    "knowledgeStepId": "step-001",
+    "planStepId": null,
+    "skillStepId": "step-001",
+    "sourceEventIds": [
+      "d72a604e-d461-4596-af31-5c313d130f80"
+    ],
+    "stepId": "step-001",
+    "stepIndex": 1
+  },
+  "taskId": "task-session-gui-fff3b655-teaching-20260310-201407-003",
+  "traceId": "trace-openclaw-run-ebe484dd-9278-4344-8661-300135ced394",
+  "turnId": "turn-student-skillExecution-task-session-gui-fff3b655-teaching-20260310-201407-003-step-001",
+  "turnKind": "skillExecution"
+}

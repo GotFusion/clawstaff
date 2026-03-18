@@ -1,0 +1,125 @@
+{
+  "actionKind": "nativeAction",
+  "actionSummary": "执行第 1 步点击操作（源事件 f0912c9c-5f6b-48ef-9e91-59d7968fe5d5）。",
+  "appContext": {
+    "appBundleId": "com.apple.dt.Xcode",
+    "appName": "Xcode",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": null
+  },
+  "endedAt": "2026-03-10T08:03:28.311Z",
+  "execution": null,
+  "intentSummary": "在 Xcode 中复现任务 task-session-gui-f03aebb3-teaching-20260310-160325-001 的操作流程",
+  "learningState": "reviewed",
+  "mode": "teaching",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.apple.dt.Xcode",
+      "appName": "Xcode",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": null
+    },
+    "axRefs": [],
+    "eventIds": [
+      "f0912c9c-5f6b-48ef-9e91-59d7968fe5d5"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-f03aebb3-teaching-20260310-160325.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/source-record.json",
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-f03aebb3-teaching-20260310-160325-001.json"
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": null,
+    "rawRef": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/review-result.json",
+    "reviewId": "benchmark-review-pdb-014-xcode-focus-b",
+    "reviewedAt": "2026-03-14T01:54:10+08:00",
+    "source": "benchmarkResult",
+    "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked"
+  },
+  "riskLevel": "medium",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 0,
+    "preferredLocatorType": null,
+    "semanticTargets": [],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/benchmark-pdb-014-xcode-focus-b/openstaff-skill.json",
+    "sourceStepId": "step-001"
+  },
+  "sessionId": "session-gui-f03aebb3-teaching-20260310-160325",
+  "sourceRefs": [
+    {
+      "artifactKind": "sourceRecord",
+      "identifier": "pdb-014-xcode-focus-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/source-record.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "caseReport",
+      "identifier": "pdb-014-xcode-focus-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/case-report.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-f03aebb3-teaching-20260310-160325",
+      "path": "data/raw-events/2026-03-10/session-gui-f03aebb3-teaching-20260310-160325.jsonl",
+      "sha256": "c8f21f1fb6792bd02e7cb09b5dfae71789102ca0bb6f0e9d71eb51496fd93a69"
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-f03aebb3-teaching-20260310-160325-001",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-f03aebb3-teaching-20260310-160325-001.json",
+      "sha256": "afd3ec4df21457ba03ef87ae3af95929133d522a7d15a0183a5c3b22108d4352"
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-f03aebb3-teaching-20260310-160325-001",
+      "path": "data/knowledge/2026-03-10/task-session-gui-f03aebb3-teaching-20260310-160325-001.json",
+      "sha256": "a186c617def63eae7b82eac7c51a836d51d4a4a6c8fa9b1f68c33842096702d9"
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-014-xcode-focus-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/benchmark-pdb-014-xcode-focus-b/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "executionResult",
+      "identifier": "trace-openclaw-run-5366e3e1-5073-4fb6-9864-1687079e70cd",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/execution-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "benchmarkReview",
+      "identifier": "pdb-014-xcode-focus-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-014-xcode-focus-b/review-result.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-10T08:03:28.311Z",
+  "status": "captured",
+  "stepId": "step-001",
+  "stepIndex": 1,
+  "stepReference": {
+    "instruction": "执行第 1 步点击操作（源事件 f0912c9c-5f6b-48ef-9e91-59d7968fe5d5）。",
+    "knowledgeItemId": "ki-task-session-gui-f03aebb3-teaching-20260310-160325-001",
+    "knowledgeStepId": "step-001",
+    "planStepId": null,
+    "skillStepId": "step-001",
+    "sourceEventIds": [
+      "f0912c9c-5f6b-48ef-9e91-59d7968fe5d5"
+    ],
+    "stepId": "step-001",
+    "stepIndex": 1
+  },
+  "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-001",
+  "traceId": "trace-learning-teaching-task-session-gui-f03aebb3-teaching-20260310-160325-001-step-001",
+  "turnId": "turn-teaching-taskProgression-task-session-gui-f03aebb3-teaching-20260310-160325-001-step-001",
+  "turnKind": "taskProgression"
+}

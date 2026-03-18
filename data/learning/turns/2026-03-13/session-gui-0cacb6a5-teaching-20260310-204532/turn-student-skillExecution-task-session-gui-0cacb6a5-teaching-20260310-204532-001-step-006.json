@@ -1,0 +1,152 @@
+{
+  "actionKind": "guiAction",
+  "actionSummary": "执行第 6 步点击操作（x=756, y=779，源事件 cbf104dc-8fea-43d0-8bcb-c0a45344d1ee）。",
+  "appContext": {
+    "appBundleId": "com.apple.dt.Xcode",
+    "appName": "Xcode",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": "macos — Package.swift"
+  },
+  "endedAt": "2026-03-13T17:54:08.889Z",
+  "execution": {
+    "component": "student.openclaw.runner.step",
+    "errorCode": null,
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/logs/2026-03-13/session-gui-0cacb6a5-teaching-20260310-204532-openclaw.log",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/execution-result.json",
+    "planId": null,
+    "planStepId": null,
+    "reviewId": "openclaw-review-trace-openclaw-run-78411950-990f-4087-ab3d-51732f230513",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/benchmark-pdb-002-xcode-package-navigation-b",
+    "skillName": "benchmark-pdb-002-xcode-package-navigation-b",
+    "status": "succeeded",
+    "traceId": "trace-openclaw-run-78411950-990f-4087-ab3d-51732f230513"
+  },
+  "intentSummary": "在 Xcode 中复现任务 task-session-gui-0cacb6a5-teaching-20260310-204532-001 的操作流程",
+  "learningState": "reviewed",
+  "mode": "student",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.apple.dt.Xcode",
+      "appName": "Xcode",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": "macos — Package.swift"
+    },
+    "axRefs": [],
+    "eventIds": [
+      "cbf104dc-8fea-43d0-8bcb-c0a45344d1ee"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-0cacb6a5-teaching-20260310-204532.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/source-record.json",
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-0cacb6a5-teaching-20260310-204532-001.json"
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": "Benchmark runner injects teacher confirmation to validate deterministic runtime execution for confirmation-gated skills.",
+    "rawRef": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/review-result.json",
+    "reviewId": "benchmark-review-pdb-002-xcode-package-navigation-b",
+    "reviewedAt": "2026-03-14T01:54:08+08:00",
+    "source": "benchmarkResult",
+    "summary": "skill preflight=needs_teacher_confirmation; runtime=succeeded; steps=6/6; expectedPreflight=needs_teacher_confirmation; expectedRuntime=succeeded"
+  },
+  "riskLevel": "high",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 1,
+    "preferredLocatorType": "coordinateFallback",
+    "semanticTargets": [
+      {
+        "appBundleId": "com.apple.dt.Xcode",
+        "boundingRect": {
+          "coordinateSpace": "screen",
+          "height": 1,
+          "width": 1,
+          "x": 756,
+          "y": 779
+        },
+        "confidence": 0.24,
+        "locatorType": "coordinateFallback",
+        "source": "skill-mapper-fallback",
+        "windowTitlePattern": "^macos\\ —\\ Package\\.swift$"
+      }
+    ],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/benchmark-pdb-002-xcode-package-navigation-b/openstaff-skill.json",
+    "sourceStepId": "step-006"
+  },
+  "sessionId": "session-gui-0cacb6a5-teaching-20260310-204532",
+  "sourceRefs": [
+    {
+      "artifactKind": "sourceRecord",
+      "identifier": "pdb-002-xcode-package-navigation-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/source-record.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "caseReport",
+      "identifier": "pdb-002-xcode-package-navigation-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/case-report.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-0cacb6a5-teaching-20260310-204532",
+      "path": "data/raw-events/2026-03-10/session-gui-0cacb6a5-teaching-20260310-204532.jsonl",
+      "sha256": "9195616eb786c00defa85c4668f38cfef751bde855ab1a71d987b5f94fabae51"
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-0cacb6a5-teaching-20260310-204532-001",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-0cacb6a5-teaching-20260310-204532-001.json",
+      "sha256": "0a00989c3b5dcef5b23bb9d91772a813f4cf423e5ce0c046ee2ede391c3056c9"
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-0cacb6a5-teaching-20260310-204532-001",
+      "path": "data/knowledge/2026-03-10/task-session-gui-0cacb6a5-teaching-20260310-204532-001.json",
+      "sha256": "f912212907d0c3988666335d66997a5ee61d9a68e2f42c7f378befc86694ea9d"
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-002-xcode-package-navigation-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/benchmark-pdb-002-xcode-package-navigation-b/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "executionResult",
+      "identifier": "trace-openclaw-run-78411950-990f-4087-ab3d-51732f230513",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/execution-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "benchmarkReview",
+      "identifier": "pdb-002-xcode-package-navigation-b",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-002-xcode-package-navigation-b/review-result.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-13T17:54:08.889Z",
+  "status": "succeeded",
+  "stepId": "step-006",
+  "stepIndex": 6,
+  "stepReference": {
+    "instruction": "执行第 6 步点击操作（x=756, y=779，源事件 cbf104dc-8fea-43d0-8bcb-c0a45344d1ee）。",
+    "knowledgeItemId": "ki-task-session-gui-0cacb6a5-teaching-20260310-204532-001",
+    "knowledgeStepId": "step-006",
+    "planStepId": null,
+    "skillStepId": "step-006",
+    "sourceEventIds": [
+      "cbf104dc-8fea-43d0-8bcb-c0a45344d1ee"
+    ],
+    "stepId": "step-006",
+    "stepIndex": 6
+  },
+  "taskId": "task-session-gui-0cacb6a5-teaching-20260310-204532-001",
+  "traceId": "trace-openclaw-run-78411950-990f-4087-ab3d-51732f230513",
+  "turnId": "turn-student-skillExecution-task-session-gui-0cacb6a5-teaching-20260310-204532-001-step-006",
+  "turnKind": "skillExecution"
+}

@@ -35,6 +35,7 @@
 - 执行日志：`data/logs/{yyyy-mm-dd}/{sessionId}-{component}.log`
 - 学生审阅报告：`data/reports/{yyyy-mm-dd}/{sessionId}-{taskId}-student-review.json`
 - 老师反馈：`data/feedback/{yyyy-mm-dd}/{sessionId}-{taskId}-teacher-feedback.jsonl`
+- 学习回合：`data/learning/turns/{yyyy-mm-dd}/{sessionId}/{turnId}.json`
 
 说明：
 - `sessionId`、`taskId` 使用小写字母+数字+短横线（UUID 推荐）。
@@ -46,6 +47,14 @@
 - 环境覆盖：`config/{env}.yaml`（如 `dev`/`staging`/`prod`）
 - 本机私有环境变量：`.env.local`（不提交敏感值）
 - 配置模板：`.env.example`
+
+### 3.4 learning 目录约定
+
+- `core/learning/` 只存学习层对象、builder、提炼器与治理逻辑，不再把学习工件散落到 `core/storage` / `core/orchestrator`。
+- `core/learning/schemas/` 放学习层 JSON Schema。
+- `core/learning/examples/` 放最小可读样例。
+- `core/learning/fixtures/` 放脚本或测试直接消费的固定样本。
+- `InteractionTurn`、`NextStateEvidence`、`PreferenceSignal` 这类跨模块对象本体仍定义在 `core/contracts/`，`core/learning/` 负责它们的构建与落盘。
 
 ## 4. JSON 字段命名
 

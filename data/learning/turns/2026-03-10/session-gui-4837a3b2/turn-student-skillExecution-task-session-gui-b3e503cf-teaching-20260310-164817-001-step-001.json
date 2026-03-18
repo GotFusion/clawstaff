@@ -1,0 +1,117 @@
+{
+  "actionKind": "guiAction",
+  "actionSummary": "执行第 1 步点击操作（源事件 11345c2b-d203-4241-9c7f-68f9478d6fd4）。",
+  "appContext": {
+    "appBundleId": "com.apple.systempreferences",
+    "appName": "系统设置",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": null
+  },
+  "endedAt": "2026-03-10T09:04:38.091Z",
+  "execution": {
+    "component": "student.loop",
+    "errorCode": null,
+    "executionLogPath": "data/logs/2026-03-10/session-gui-4837a3b2-student.log",
+    "executionResultPath": "data/reports/2026-03-10/session-gui-4837a3b2-task-session-gui-b3e503cf-teaching-20260310-164817-001-student-review.json",
+    "planId": "student-plan-task-session-gui-b3e503cf-teaching-20260310-164817-001",
+    "planStepId": "plan-step-001",
+    "reviewId": "student-review-session-gui-4837a3b2-task-session-gui-b3e503cf-teaching-20260310-164817-001",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/benchmark-pdb-013-system-settings-navigation",
+    "skillName": "benchmark-pdb-013-system-settings-navigation",
+    "status": "succeeded",
+    "traceId": "trace-gui-student-9400bc3f-85f7-424c-a749-3ad3b63d9265"
+  },
+  "intentSummary": "在 系统设置 中复现任务 task-session-gui-b3e503cf-teaching-20260310-164817-001 的操作流程",
+  "learningState": "linked",
+  "mode": "student",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.apple.systempreferences",
+      "appName": "系统设置",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": null
+    },
+    "axRefs": [],
+    "eventIds": [
+      "11345c2b-d203-4241-9c7f-68f9478d6fd4"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-b3e503cf-teaching-20260310-164817.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": null,
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-b3e503cf-teaching-20260310-164817-001.json"
+  },
+  "privacyTags": [],
+  "review": null,
+  "riskLevel": "low",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 0,
+    "preferredLocatorType": null,
+    "semanticTargets": [],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/benchmark-pdb-013-system-settings-navigation/openstaff-skill.json",
+    "sourceStepId": "step-001"
+  },
+  "sessionId": "session-gui-4837a3b2",
+  "sourceRefs": [
+    {
+      "artifactKind": "studentReview",
+      "identifier": "student-review-session-gui-4837a3b2-task-session-gui-b3e503cf-teaching-20260310-164817-001",
+      "path": "data/reports/2026-03-10/session-gui-4837a3b2-task-session-gui-b3e503cf-teaching-20260310-164817-001-student-review.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "studentLog",
+      "identifier": "trace-gui-student-9400bc3f-85f7-424c-a749-3ad3b63d9265",
+      "path": "data/logs/2026-03-10/session-gui-4837a3b2-student.log",
+      "sha256": null
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-b3e503cf-teaching-20260310-164817-001",
+      "path": "data/knowledge/2026-03-10/task-session-gui-b3e503cf-teaching-20260310-164817-001.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-013-system-settings-navigation",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-013-system-settings-navigation/benchmark-pdb-013-system-settings-navigation/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-b3e503cf-teaching-20260310-164817-001",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-b3e503cf-teaching-20260310-164817-001.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-b3e503cf-teaching-20260310-164817",
+      "path": "data/raw-events/2026-03-10/session-gui-b3e503cf-teaching-20260310-164817.jsonl",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-10T09:04:38.091Z",
+  "status": "succeeded",
+  "stepId": "step-001",
+  "stepIndex": 1,
+  "stepReference": {
+    "instruction": "执行第 1 步点击操作（源事件 11345c2b-d203-4241-9c7f-68f9478d6fd4）。",
+    "knowledgeItemId": "ki-task-session-gui-b3e503cf-teaching-20260310-164817-001",
+    "knowledgeStepId": "step-001",
+    "planStepId": "plan-step-001",
+    "skillStepId": "step-001",
+    "sourceEventIds": [
+      "11345c2b-d203-4241-9c7f-68f9478d6fd4"
+    ],
+    "stepId": "step-001",
+    "stepIndex": 1
+  },
+  "taskId": "task-session-gui-b3e503cf-teaching-20260310-164817-001",
+  "traceId": "trace-gui-student-9400bc3f-85f7-424c-a749-3ad3b63d9265",
+  "turnId": "turn-student-skillExecution-task-session-gui-b3e503cf-teaching-20260310-164817-001-step-001",
+  "turnKind": "skillExecution"
+}

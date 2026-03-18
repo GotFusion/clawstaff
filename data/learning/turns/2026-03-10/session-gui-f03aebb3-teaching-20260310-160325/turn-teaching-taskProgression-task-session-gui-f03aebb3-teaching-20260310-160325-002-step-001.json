@@ -1,0 +1,143 @@
+{
+  "actionKind": "nativeAction",
+  "actionSummary": "执行第 1 步点击操作（源事件 fc1c4088-1a75-4c3f-a019-767c2c203640）。",
+  "appContext": {
+    "appBundleId": "com.apple.Safari",
+    "appName": "Safari浏览器",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": null
+  },
+  "endedAt": "2026-03-10T08:03:30.374Z",
+  "execution": null,
+  "intentSummary": "在 Safari浏览器 中复现任务 task-session-gui-f03aebb3-teaching-20260310-160325-002 的操作流程",
+  "learningState": "reviewed",
+  "mode": "teaching",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari浏览器",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": null
+    },
+    "axRefs": [],
+    "eventIds": [
+      "fc1c4088-1a75-4c3f-a019-767c2c203640"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-f03aebb3-teaching-20260310-160325.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/source-record.json",
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-f03aebb3-teaching-20260310-160325-002.json"
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": "Found 3 legacy student review artifact(s).",
+    "rawRef": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/review-result.json",
+    "reviewId": "benchmark-review-pdb-015-safari-focus",
+    "reviewedAt": "2026-03-14T01:54:10+08:00",
+    "source": "benchmarkResult",
+    "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked"
+  },
+  "riskLevel": "medium",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 0,
+    "preferredLocatorType": null,
+    "semanticTargets": [],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/benchmark-pdb-015-safari-focus/openstaff-skill.json",
+    "sourceStepId": "step-001"
+  },
+  "sessionId": "session-gui-f03aebb3-teaching-20260310-160325",
+  "sourceRefs": [
+    {
+      "artifactKind": "sourceRecord",
+      "identifier": "pdb-015-safari-focus",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/source-record.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "caseReport",
+      "identifier": "pdb-015-safari-focus",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/case-report.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-f03aebb3-teaching-20260310-160325",
+      "path": "data/raw-events/2026-03-10/session-gui-f03aebb3-teaching-20260310-160325.jsonl",
+      "sha256": "c8f21f1fb6792bd02e7cb09b5dfae71789102ca0bb6f0e9d71eb51496fd93a69"
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-f03aebb3-teaching-20260310-160325-002",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-f03aebb3-teaching-20260310-160325-002.json",
+      "sha256": "08d7fbc71daa1a69cd43fe08dffa6371a2cd9af3bd5b61573e17befb7bc0ab06"
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-f03aebb3-teaching-20260310-160325-002",
+      "path": "data/knowledge/2026-03-10/task-session-gui-f03aebb3-teaching-20260310-160325-002.json",
+      "sha256": "bfede5b6f397c0d3cbf98f40f6def3307362c940ab3c749cefd4e044e1d89669"
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-015-safari-focus",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/benchmark-pdb-015-safari-focus/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "executionResult",
+      "identifier": "trace-openclaw-run-0aea6640-5511-4f42-a154-c34e691f24cf",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/execution-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "benchmarkReview",
+      "identifier": "pdb-015-safari-focus",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-015-safari-focus/review-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "studentReview",
+      "identifier": null,
+      "path": "data/reports/2026-03-10/session-gui-98c8dec0-task-session-gui-f03aebb3-teaching-20260310-160325-002-student-review.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "studentReview",
+      "identifier": null,
+      "path": "data/reports/2026-03-10/session-gui-de6e4f36-task-session-gui-f03aebb3-teaching-20260310-160325-002-student-review.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "studentReview",
+      "identifier": null,
+      "path": "data/reports/2026-03-10/session-gui-f03aebb3-task-session-gui-f03aebb3-teaching-20260310-160325-002-student-review.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-10T08:03:30.374Z",
+  "status": "captured",
+  "stepId": "step-001",
+  "stepIndex": 1,
+  "stepReference": {
+    "instruction": "执行第 1 步点击操作（源事件 fc1c4088-1a75-4c3f-a019-767c2c203640）。",
+    "knowledgeItemId": "ki-task-session-gui-f03aebb3-teaching-20260310-160325-002",
+    "knowledgeStepId": "step-001",
+    "planStepId": null,
+    "skillStepId": "step-001",
+    "sourceEventIds": [
+      "fc1c4088-1a75-4c3f-a019-767c2c203640"
+    ],
+    "stepId": "step-001",
+    "stepIndex": 1
+  },
+  "taskId": "task-session-gui-f03aebb3-teaching-20260310-160325-002",
+  "traceId": "trace-learning-teaching-task-session-gui-f03aebb3-teaching-20260310-160325-002-step-001",
+  "turnId": "turn-teaching-taskProgression-task-session-gui-f03aebb3-teaching-20260310-160325-002-step-001",
+  "turnKind": "taskProgression"
+}

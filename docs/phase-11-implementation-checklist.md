@@ -66,39 +66,39 @@
 ## 阶段 11.1：学习数据层
 
 ### TODO 11.1.1 新建 `core/learning/` 目录基线
-- [ ] 新增 `core/learning/README.md`，说明该目录负责任务回合级学习对象、偏好提炼、偏好规则与治理。
-- [ ] 约定 `schemas/`、`examples/`、`fixtures/`、`builders/` 子目录职责。
-- [ ] 在 `docs/coding-conventions.md` 中补充 `learning` 相关命名规范。
+- [x] 新增 `core/learning/README.md`，说明该目录负责任务回合级学习对象、偏好提炼、偏好规则与治理。
+- [x] 约定 `schemas/`、`examples/`、`fixtures/`、`builders/` 子目录职责。
+- [x] 在 `docs/coding-conventions.md` 中补充 `learning` 相关命名规范。
 
 **输出物**
-- `core/learning/README.md`
-- `core/learning/schemas/`
-- `core/learning/examples/`
+- [x] `core/learning/README.md`
+- [x] `core/learning/schemas/`
+- [x] `core/learning/examples/`
 
 **验收标准**
-- [ ] 新增 learning 相关文件有统一落点，不再散落在 `core/storage` / `core/orchestrator` 中。
+- [x] 新增 learning 相关文件有统一落点，不再散落在 `core/storage` / `core/orchestrator` 中。
 
 ### TODO 11.1.2 定义 `InteractionTurn` 契约
-- [ ] 定义 `InteractionTurn`
-- [ ] 定义 `InteractionTurnStepReference`
-- [ ] 定义 `InteractionTurnExecutionLink`
-- [ ] 定义 `InteractionTurnReviewLink`
-- [ ] 为每条记录保留 `turnId`、`traceId`、`sessionId`、`taskId`、`stepId`
-- [ ] 增加 `learningState`、`privacyTags` 字段，记录学习状态与排除上下文
-- [ ] 增加 `observationRef` 或等价字段，能回指点击前后截图、窗口签名、AX / OCR sidecar
-- [ ] 增加 `actionKind`，第一版固定区分 `nativeAction` / `guiAction`
-- [ ] 对 `guiAction` 记录 `semanticTargetSetRef` 或等价 locator 候选引用
-- [ ] 建立与 `KnowledgeItem`、skill、execution log、review report 的关联字段
+- [x] 定义 `InteractionTurn`
+- [x] 定义 `InteractionTurnStepReference`
+- [x] 定义 `InteractionTurnExecutionLink`
+- [x] 定义 `InteractionTurnReviewLink`
+- [x] 为每条记录保留 `turnId`、`traceId`、`sessionId`、`taskId`、`stepId`
+- [x] 增加 `learningState`、`privacyTags` 字段，记录学习状态与排除上下文
+- [x] 增加 `observationRef` 或等价字段，能回指点击前后截图、窗口签名、AX / OCR sidecar
+- [x] 增加 `actionKind`，第一版固定区分 `nativeAction` / `guiAction`
+- [x] 对 `guiAction` 记录 `semanticTargetSetRef` 或等价 locator 候选引用
+- [x] 建立与 `KnowledgeItem`、skill、execution log、review report 的关联字段
 
 **输出物**
-- `core/contracts/InteractionTurnContracts.swift`
-- `core/learning/interaction-turn-v0.md`
-- `core/learning/schemas/interaction-turn.schema.json`
+- [x] `core/contracts/InteractionTurnContracts.swift`
+- [x] `core/learning/interaction-turn-v0.md`
+- [x] `core/learning/schemas/interaction-turn.schema.json`
 
 **验收标准**
-- [ ] 任意主线步骤都可映射为一个 `InteractionTurn`
-- [ ] `InteractionTurn` 可追溯回原始 capture / knowledge / skill / review 工件
-- [ ] 抽样回看时，可恢复该步的窗口上下文和 locator 候选，而不只是文本摘要
+- [x] 任意主线步骤都可映射为一个 `InteractionTurn`
+- [x] `InteractionTurn` 可追溯回原始 capture / knowledge / skill / review 工件
+- [x] 抽样回看时，可恢复该步的窗口上下文和 locator 候选，而不只是文本摘要
 
 ### TODO 11.1.3 定义 `NextStateEvidence` 契约
 - [ ] 定义 evidence source 枚举：
@@ -126,20 +126,21 @@
 - [ ] evidence 可保留原始路径引用，不需要复制原始大文件
 
 ### TODO 11.1.4 实现 `InteractionTurnBuilder`
-- [ ] 从执行完成后的主链路生成 `InteractionTurn`
+- [x] 从执行完成后的主链路生成 `InteractionTurn`
 - [ ] 汇总 execution log、review report、repair request、benchmark linkage
 - [ ] 记录 build diagnostics，标明哪些字段缺失
-- [ ] 支持离线回填旧样本
-- [ ] 优先复用现有 `raw-events`、窗口签名、`SemanticTarget`，补 sidecar 引用而不是复制原始大对象
+- [x] 支持离线回填旧样本
+- [x] 优先复用现有 `raw-events`、窗口签名、`SemanticTarget`，补 sidecar 引用而不是复制原始大对象
 - [ ] 首批回填至少覆盖 teaching / assist / student 三类历史任务
+  说明：当前仓库已回填 teaching / student 真实样本，并提供 assist 示例 turn；待真实 assist log 样本入库后再补历史批量回填。
 
 **输出物**
-- `core/learning/InteractionTurnBuilder.swift`
-- `scripts/learning/build_interaction_turns.py`
-- `core/learning/examples/interaction-turns/*.json`
+- [x] `core/learning/InteractionTurnBuilder.swift`
+- [x] `scripts/learning/build_interaction_turns.py`
+- [x] `core/learning/examples/interaction-turns/*.json`
 
 **验收标准**
-- [ ] 对至少 20 条历史样本批量构建成功
+- [x] 对至少 20 条历史样本批量构建成功
 - [ ] 缺失字段时不会崩溃，而是给出结构化 diagnostics
 
 ### TODO 11.1.5 主线 / 支线学习资格判断

@@ -1,0 +1,117 @@
+{
+  "actionKind": "guiAction",
+  "actionSummary": "执行第 1 步点击操作（源事件 49153b44-2ee7-41e4-a12d-855652e81075）。",
+  "appContext": {
+    "appBundleId": "com.apple.dt.Xcode",
+    "appName": "Xcode",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": "macos — Package.swift"
+  },
+  "endedAt": "2026-03-10T06:58:27.861Z",
+  "execution": {
+    "component": "student.loop",
+    "errorCode": null,
+    "executionLogPath": "data/logs/2026-03-10/session-gui-f23128c2-student.log",
+    "executionResultPath": "data/reports/2026-03-10/session-gui-f23128c2-task-session-gui-f23128c2-teaching-20260310-145427-001-student-review.json",
+    "planId": "student-plan-task-session-gui-f23128c2-teaching-20260310-145427-001",
+    "planStepId": "plan-step-001",
+    "reviewId": "student-review-session-gui-f23128c2-task-session-gui-f23128c2-teaching-20260310-145427-001",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/benchmark-pdb-016-xcode-package-single-click",
+    "skillName": "benchmark-pdb-016-xcode-package-single-click",
+    "status": "succeeded",
+    "traceId": "trace-gui-student-6a4b2e0d-8685-4873-b0d7-696ee20cd331"
+  },
+  "intentSummary": "在 Xcode 中复现任务 task-session-gui-f23128c2-teaching-20260310-145427-001 的操作流程",
+  "learningState": "linked",
+  "mode": "student",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.apple.dt.Xcode",
+      "appName": "Xcode",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": "macos — Package.swift"
+    },
+    "axRefs": [],
+    "eventIds": [
+      "49153b44-2ee7-41e4-a12d-855652e81075"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-f23128c2-teaching-20260310-145427.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": null,
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-f23128c2-teaching-20260310-145427-001.json"
+  },
+  "privacyTags": [],
+  "review": null,
+  "riskLevel": "low",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 0,
+    "preferredLocatorType": null,
+    "semanticTargets": [],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/benchmark-pdb-016-xcode-package-single-click/openstaff-skill.json",
+    "sourceStepId": "step-001"
+  },
+  "sessionId": "session-gui-f23128c2",
+  "sourceRefs": [
+    {
+      "artifactKind": "studentReview",
+      "identifier": "student-review-session-gui-f23128c2-task-session-gui-f23128c2-teaching-20260310-145427-001",
+      "path": "data/reports/2026-03-10/session-gui-f23128c2-task-session-gui-f23128c2-teaching-20260310-145427-001-student-review.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "studentLog",
+      "identifier": "trace-gui-student-6a4b2e0d-8685-4873-b0d7-696ee20cd331",
+      "path": "data/logs/2026-03-10/session-gui-f23128c2-student.log",
+      "sha256": null
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-f23128c2-teaching-20260310-145427-001",
+      "path": "data/knowledge/2026-03-10/task-session-gui-f23128c2-teaching-20260310-145427-001.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-016-xcode-package-single-click",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-016-xcode-package-single-click/benchmark-pdb-016-xcode-package-single-click/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-f23128c2-teaching-20260310-145427-001",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-f23128c2-teaching-20260310-145427-001.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-f23128c2-teaching-20260310-145427",
+      "path": "data/raw-events/2026-03-10/session-gui-f23128c2-teaching-20260310-145427.jsonl",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-10T06:58:27.860Z",
+  "status": "succeeded",
+  "stepId": "step-001",
+  "stepIndex": 1,
+  "stepReference": {
+    "instruction": "执行第 1 步点击操作（源事件 49153b44-2ee7-41e4-a12d-855652e81075）。",
+    "knowledgeItemId": "ki-task-session-gui-f23128c2-teaching-20260310-145427-001",
+    "knowledgeStepId": "step-001",
+    "planStepId": "plan-step-001",
+    "skillStepId": "step-001",
+    "sourceEventIds": [
+      "49153b44-2ee7-41e4-a12d-855652e81075"
+    ],
+    "stepId": "step-001",
+    "stepIndex": 1
+  },
+  "taskId": "task-session-gui-f23128c2-teaching-20260310-145427-001",
+  "traceId": "trace-gui-student-6a4b2e0d-8685-4873-b0d7-696ee20cd331",
+  "turnId": "turn-student-skillExecution-task-session-gui-f23128c2-teaching-20260310-145427-001-step-001",
+  "turnKind": "skillExecution"
+}

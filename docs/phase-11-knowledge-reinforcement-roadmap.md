@@ -822,8 +822,8 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
   - `data/learning/turns/{date}/{sessionId}/{turnId}.json`
 - 历史回填先做 `20` 条样本，至少覆盖：
   - teaching
-  - assist
   - student
+  - assist（仓库当前先以 example fixture 固化 schema；真实 assist log 入库后再补历史批量回填）
 
 **输出物**
 - `core/contracts/InteractionTurnContracts.swift`
@@ -832,9 +832,9 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `core/learning/examples/interaction-turns/*.json`
 
 **验收标准**
-- [ ] 20 条历史任务能批量回填成 `InteractionTurn`。
-- [ ] 任意一条 `InteractionTurn` 都能追溯到 capture、skill、execution、review 原工件。
-- [ ] 抽查样本时，能从 `InteractionTurn` 回看该步的窗口上下文、截图引用与 locator 候选。
+- [x] 20 条历史任务能批量回填成 `InteractionTurn`。
+- [x] 任意一条 benchmark-backed `InteractionTurn` 都能追溯到 capture、skill、execution、review 原工件。
+- [x] 抽查样本时，能从 `InteractionTurn` 回看该步的窗口上下文、raw-event sidecar 引用与 locator 候选；截图 / AX / OCR refs 待 `ObservationBundle` 正式落盘后补齐。
 
 #### TODO 11.1.2 定义并落盘 `NextStateEvidence`
 

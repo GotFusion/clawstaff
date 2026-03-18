@@ -1,0 +1,125 @@
+{
+  "actionKind": "nativeAction",
+  "actionSummary": "执行第 1 步点击操作（源事件 193981a2-8710-47e6-ab4a-d38531da5d05）。",
+  "appContext": {
+    "appBundleId": "com.openai.codex",
+    "appName": "Codex",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": "Codex"
+  },
+  "endedAt": "2026-03-10T06:44:35.595Z",
+  "execution": null,
+  "intentSummary": "在 Codex 中复现任务 task-session-gui-5c113c56-teaching-20260310-144428-001 的操作流程",
+  "learningState": "reviewed",
+  "mode": "teaching",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.openai.codex",
+      "appName": "Codex",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": "Codex"
+    },
+    "axRefs": [],
+    "eventIds": [
+      "193981a2-8710-47e6-ab4a-d38531da5d05"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-5c113c56-teaching-20260310-144428.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/source-record.json",
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-001.json"
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": null,
+    "rawRef": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/review-result.json",
+    "reviewId": "benchmark-review-pdb-008-codex-focus-a",
+    "reviewedAt": "2026-03-14T01:54:09+08:00",
+    "source": "benchmarkResult",
+    "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked"
+  },
+  "riskLevel": "medium",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 0,
+    "preferredLocatorType": null,
+    "semanticTargets": [],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/benchmark-pdb-008-codex-focus-a/openstaff-skill.json",
+    "sourceStepId": "step-001"
+  },
+  "sessionId": "session-gui-5c113c56-teaching-20260310-144428",
+  "sourceRefs": [
+    {
+      "artifactKind": "sourceRecord",
+      "identifier": "pdb-008-codex-focus-a",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/source-record.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "caseReport",
+      "identifier": "pdb-008-codex-focus-a",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/case-report.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-5c113c56-teaching-20260310-144428",
+      "path": "data/raw-events/2026-03-10/session-gui-5c113c56-teaching-20260310-144428.jsonl",
+      "sha256": "485690e64e87d4249c4a89e4698b003fd09be8cd40127c3945e463dba855aa1e"
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-5c113c56-teaching-20260310-144428-001",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-001.json",
+      "sha256": "673cbca65105c0adb9b197188cbe6db04e0fe4bdfffd420be2180a0c8c4f8410"
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-5c113c56-teaching-20260310-144428-001",
+      "path": "data/knowledge/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-001.json",
+      "sha256": "8e0e2b590812b0c9b4d23921f08645f2cab2788ee4873dafa24abeb991d67e88"
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-008-codex-focus-a",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/benchmark-pdb-008-codex-focus-a/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "executionResult",
+      "identifier": "trace-openclaw-run-bfb12231-6f21-4c1a-b4d2-8a5bf0818ad4",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/execution-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "benchmarkReview",
+      "identifier": "pdb-008-codex-focus-a",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-008-codex-focus-a/review-result.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-10T06:44:35.595Z",
+  "status": "captured",
+  "stepId": "step-001",
+  "stepIndex": 1,
+  "stepReference": {
+    "instruction": "执行第 1 步点击操作（源事件 193981a2-8710-47e6-ab4a-d38531da5d05）。",
+    "knowledgeItemId": "ki-task-session-gui-5c113c56-teaching-20260310-144428-001",
+    "knowledgeStepId": "step-001",
+    "planStepId": null,
+    "skillStepId": "step-001",
+    "sourceEventIds": [
+      "193981a2-8710-47e6-ab4a-d38531da5d05"
+    ],
+    "stepId": "step-001",
+    "stepIndex": 1
+  },
+  "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-001",
+  "traceId": "trace-learning-teaching-task-session-gui-5c113c56-teaching-20260310-144428-001-step-001",
+  "turnId": "turn-teaching-taskProgression-task-session-gui-5c113c56-teaching-20260310-144428-001-step-001",
+  "turnKind": "taskProgression"
+}

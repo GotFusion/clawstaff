@@ -1,0 +1,151 @@
+{
+  "actionKind": "guiAction",
+  "actionSummary": "执行第 1 步点击操作（x=543, y=30，源事件 536208db-4a5d-4c4a-9776-20ef4e24f940）。",
+  "appContext": {
+    "appBundleId": "com.apple.finder",
+    "appName": "访达",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": null
+  },
+  "endedAt": "2026-03-10T12:25:21.639Z",
+  "execution": {
+    "component": "student.openclaw.runner.step",
+    "errorCode": null,
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/logs/2026-03-13/session-gui-8ec4947b-teaching-20260310-202519-openclaw.log",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/execution-result.json",
+    "planId": null,
+    "planStepId": null,
+    "reviewId": "openclaw-review-trace-openclaw-run-7d8e0b7e-a91d-4182-8f4c-d36e834dc875",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/benchmark-pdb-011-finder-window-navigation",
+    "skillName": "benchmark-pdb-011-finder-window-navigation",
+    "status": "succeeded",
+    "traceId": "trace-openclaw-run-7d8e0b7e-a91d-4182-8f4c-d36e834dc875"
+  },
+  "intentSummary": "在 访达 中复现任务 task-session-gui-8ec4947b-teaching-20260310-202519-001 的操作流程",
+  "learningState": "reviewed",
+  "mode": "teaching",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.apple.finder",
+      "appName": "访达",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": null
+    },
+    "axRefs": [],
+    "eventIds": [
+      "536208db-4a5d-4c4a-9776-20ef4e24f940"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-8ec4947b-teaching-20260310-202519.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/source-record.json",
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-8ec4947b-teaching-20260310-202519-001.json"
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": "Benchmark runner injects teacher confirmation to validate deterministic runtime execution for confirmation-gated skills.",
+    "rawRef": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/review-result.json",
+    "reviewId": "benchmark-review-pdb-011-finder-window-navigation",
+    "reviewedAt": "2026-03-14T01:54:10+08:00",
+    "source": "benchmarkResult",
+    "summary": "skill preflight=needs_teacher_confirmation; runtime=succeeded; steps=3/3; expectedPreflight=needs_teacher_confirmation; expectedRuntime=succeeded"
+  },
+  "riskLevel": "high",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 1,
+    "preferredLocatorType": "coordinateFallback",
+    "semanticTargets": [
+      {
+        "appBundleId": "com.apple.finder",
+        "boundingRect": {
+          "coordinateSpace": "screen",
+          "height": 1,
+          "width": 1,
+          "x": 543,
+          "y": 30
+        },
+        "confidence": 0.24,
+        "locatorType": "coordinateFallback",
+        "source": "skill-mapper-fallback"
+      }
+    ],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/benchmark-pdb-011-finder-window-navigation/openstaff-skill.json",
+    "sourceStepId": "step-001"
+  },
+  "sessionId": "session-gui-8ec4947b-teaching-20260310-202519",
+  "sourceRefs": [
+    {
+      "artifactKind": "sourceRecord",
+      "identifier": "pdb-011-finder-window-navigation",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/source-record.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "caseReport",
+      "identifier": "pdb-011-finder-window-navigation",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/case-report.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-8ec4947b-teaching-20260310-202519",
+      "path": "data/raw-events/2026-03-10/session-gui-8ec4947b-teaching-20260310-202519.jsonl",
+      "sha256": "72e789fcca5994faa4ccc325ee34a3d08761c123dfbff151cc995e695e4444dc"
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-8ec4947b-teaching-20260310-202519-001",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-8ec4947b-teaching-20260310-202519-001.json",
+      "sha256": "a256d003de5a55a7d2ddfc21ce07ac55ab9b8fd1ff1cd0a4b5da5c76fb65b12f"
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-8ec4947b-teaching-20260310-202519-001",
+      "path": "data/knowledge/2026-03-10/task-session-gui-8ec4947b-teaching-20260310-202519-001.json",
+      "sha256": "b0d58bc1d254d696492e77490fa5e7889565336ac9042dfc451d3faa7e0b5e45"
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-011-finder-window-navigation",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/benchmark-pdb-011-finder-window-navigation/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "executionResult",
+      "identifier": "trace-openclaw-run-7d8e0b7e-a91d-4182-8f4c-d36e834dc875",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/execution-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "benchmarkReview",
+      "identifier": "pdb-011-finder-window-navigation",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-011-finder-window-navigation/review-result.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-10T12:25:21.639Z",
+  "status": "captured",
+  "stepId": "step-001",
+  "stepIndex": 1,
+  "stepReference": {
+    "instruction": "执行第 1 步点击操作（x=543, y=30，源事件 536208db-4a5d-4c4a-9776-20ef4e24f940）。",
+    "knowledgeItemId": "ki-task-session-gui-8ec4947b-teaching-20260310-202519-001",
+    "knowledgeStepId": "step-001",
+    "planStepId": null,
+    "skillStepId": "step-001",
+    "sourceEventIds": [
+      "536208db-4a5d-4c4a-9776-20ef4e24f940"
+    ],
+    "stepId": "step-001",
+    "stepIndex": 1
+  },
+  "taskId": "task-session-gui-8ec4947b-teaching-20260310-202519-001",
+  "traceId": "trace-learning-teaching-task-session-gui-8ec4947b-teaching-20260310-202519-001-step-001",
+  "turnId": "turn-teaching-taskProgression-task-session-gui-8ec4947b-teaching-20260310-202519-001-step-001",
+  "turnKind": "taskProgression"
+}

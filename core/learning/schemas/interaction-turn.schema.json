@@ -1,0 +1,283 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openstaff.dev/schemas/interaction-turn.schema.json",
+  "title": "InteractionTurn",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "turnId",
+    "traceId",
+    "sessionId",
+    "taskId",
+    "stepId",
+    "mode",
+    "turnKind",
+    "stepIndex",
+    "intentSummary",
+    "actionSummary",
+    "actionKind",
+    "status",
+    "learningState",
+    "privacyTags",
+    "riskLevel",
+    "appContext",
+    "observationRef",
+    "stepReference",
+    "sourceRefs",
+    "startedAt",
+    "endedAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "openstaff.learning.interaction-turn.v0"
+    },
+    "turnId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "traceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "taskId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stepId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["teaching", "assist", "student"]
+    },
+    "turnKind": {
+      "type": "string",
+      "enum": ["taskProgression", "skillExecution", "repair"]
+    },
+    "stepIndex": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "intentSummary": {
+      "type": "string"
+    },
+    "actionSummary": {
+      "type": "string"
+    },
+    "actionKind": {
+      "type": "string",
+      "enum": ["nativeAction", "guiAction"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["captured", "succeeded", "failed", "blocked"]
+    },
+    "learningState": {
+      "type": "string",
+      "enum": ["captured", "linked", "reviewed", "excluded"]
+    },
+    "privacyTags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "riskLevel": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "appContext": {
+      "$ref": "#/$defs/appContext"
+    },
+    "observationRef": {
+      "$ref": "#/$defs/observationRef"
+    },
+    "semanticTargetSetRef": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/semanticTargetSetRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "stepReference": {
+      "$ref": "#/$defs/stepReference"
+    },
+    "execution": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/executionLink"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "review": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/reviewLink"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sourceRefs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sourceRef"
+      }
+    },
+    "startedAt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "endedAt": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "appContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["appName", "appBundleId"],
+      "properties": {
+        "appName": { "type": "string" },
+        "appBundleId": { "type": "string" },
+        "windowTitle": { "type": ["string", "null"] },
+        "windowId": { "type": ["string", "null"] },
+        "windowSignature": { "type": ["string", "null"] }
+      }
+    },
+    "observationRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventIds",
+        "screenshotRefs",
+        "axRefs",
+        "ocrRefs",
+        "appContext"
+      ],
+      "properties": {
+        "sourceRecordPath": { "type": ["string", "null"] },
+        "rawEventLogPath": { "type": ["string", "null"] },
+        "taskChunkPath": { "type": ["string", "null"] },
+        "eventIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "screenshotRefs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "axRefs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "ocrRefs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "appContext": {
+          "$ref": "#/$defs/appContext"
+        },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "semanticTargetSetRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateCount", "semanticTargets"],
+      "properties": {
+        "sourcePath": { "type": ["string", "null"] },
+        "sourceStepId": { "type": ["string", "null"] },
+        "preferredLocatorType": { "type": ["string", "null"] },
+        "candidateCount": { "type": "integer", "minimum": 0 },
+        "semanticTargets": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "stepReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stepId",
+        "stepIndex",
+        "instruction",
+        "sourceEventIds"
+      ],
+      "properties": {
+        "stepId": { "type": "string" },
+        "stepIndex": { "type": "integer", "minimum": 1 },
+        "instruction": { "type": "string" },
+        "knowledgeItemId": { "type": ["string", "null"] },
+        "knowledgeStepId": { "type": ["string", "null"] },
+        "skillStepId": { "type": ["string", "null"] },
+        "planStepId": { "type": ["string", "null"] },
+        "sourceEventIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "executionLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["traceId", "component", "status"],
+      "properties": {
+        "traceId": { "type": "string" },
+        "component": { "type": "string" },
+        "skillName": { "type": ["string", "null"] },
+        "skillDirectoryPath": { "type": ["string", "null"] },
+        "planId": { "type": ["string", "null"] },
+        "planStepId": { "type": ["string", "null"] },
+        "status": { "type": "string" },
+        "errorCode": { "type": ["string", "null"] },
+        "executionLogPath": { "type": ["string", "null"] },
+        "executionResultPath": { "type": ["string", "null"] },
+        "reviewId": { "type": ["string", "null"] }
+      }
+    },
+    "reviewLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewId", "source", "decision", "summary", "reviewedAt"],
+      "properties": {
+        "reviewId": { "type": "string" },
+        "source": { "type": "string" },
+        "decision": { "type": "string" },
+        "summary": { "type": "string" },
+        "note": { "type": ["string", "null"] },
+        "reviewedAt": { "type": "string" },
+        "rawRef": { "type": ["string", "null"] }
+      }
+    },
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifactKind", "path"],
+      "properties": {
+        "artifactKind": { "type": "string" },
+        "path": { "type": "string" },
+        "identifier": { "type": ["string", "null"] },
+        "sha256": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

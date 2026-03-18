@@ -1,0 +1,125 @@
+{
+  "actionKind": "nativeAction",
+  "actionSummary": "执行第 1 步点击操作（源事件 29374208-eabd-4ac2-8c33-0b5579887a59）。",
+  "appContext": {
+    "appBundleId": "com.microsoft.VSCode",
+    "appName": "Code",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": null
+  },
+  "endedAt": "2026-03-10T06:34:14.218Z",
+  "execution": null,
+  "intentSummary": "在 Code 中复现任务 task-session-gui-4589dbd7-teaching-20260310-143404-001 的操作流程",
+  "learningState": "reviewed",
+  "mode": "teaching",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.microsoft.VSCode",
+      "appName": "Code",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": null
+    },
+    "axRefs": [],
+    "eventIds": [
+      "29374208-eabd-4ac2-8c33-0b5579887a59"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-4589dbd7-teaching-20260310-143404.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/source-record.json",
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-001.json"
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": null,
+    "rawRef": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/review-result.json",
+    "reviewId": "benchmark-review-pdb-006-vscode-focus",
+    "reviewedAt": "2026-03-14T01:54:09+08:00",
+    "source": "benchmarkResult",
+    "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked"
+  },
+  "riskLevel": "medium",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 0,
+    "preferredLocatorType": null,
+    "semanticTargets": [],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/benchmark-pdb-006-vscode-focus/openstaff-skill.json",
+    "sourceStepId": "step-001"
+  },
+  "sessionId": "session-gui-4589dbd7-teaching-20260310-143404",
+  "sourceRefs": [
+    {
+      "artifactKind": "sourceRecord",
+      "identifier": "pdb-006-vscode-focus",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/source-record.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "caseReport",
+      "identifier": "pdb-006-vscode-focus",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/case-report.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-4589dbd7-teaching-20260310-143404",
+      "path": "data/raw-events/2026-03-10/session-gui-4589dbd7-teaching-20260310-143404.jsonl",
+      "sha256": "a46e52401bf4ce2137348e373623a343c3681ac01b8078eeaf68686e4497de55"
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-4589dbd7-teaching-20260310-143404-001",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-001.json",
+      "sha256": "955be3a0972759dbfd69be6169212047170526c263db23e1add70a7745f8c5fc"
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-4589dbd7-teaching-20260310-143404-001",
+      "path": "data/knowledge/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-001.json",
+      "sha256": "a584a6c894fcd34eba06cf7bbe82bc1e158160e0b0145464e887e5282a2eca44"
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-006-vscode-focus",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/benchmark-pdb-006-vscode-focus/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "executionResult",
+      "identifier": "trace-openclaw-run-691ef217-8523-4125-a7f2-885ecdfc348f",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/execution-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "benchmarkReview",
+      "identifier": "pdb-006-vscode-focus",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-006-vscode-focus/review-result.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-10T06:34:14.218Z",
+  "status": "captured",
+  "stepId": "step-001",
+  "stepIndex": 1,
+  "stepReference": {
+    "instruction": "执行第 1 步点击操作（源事件 29374208-eabd-4ac2-8c33-0b5579887a59）。",
+    "knowledgeItemId": "ki-task-session-gui-4589dbd7-teaching-20260310-143404-001",
+    "knowledgeStepId": "step-001",
+    "planStepId": null,
+    "skillStepId": "step-001",
+    "sourceEventIds": [
+      "29374208-eabd-4ac2-8c33-0b5579887a59"
+    ],
+    "stepId": "step-001",
+    "stepIndex": 1
+  },
+  "taskId": "task-session-gui-4589dbd7-teaching-20260310-143404-001",
+  "traceId": "trace-learning-teaching-task-session-gui-4589dbd7-teaching-20260310-143404-001-step-001",
+  "turnId": "turn-teaching-taskProgression-task-session-gui-4589dbd7-teaching-20260310-143404-001-step-001",
+  "turnKind": "taskProgression"
+}

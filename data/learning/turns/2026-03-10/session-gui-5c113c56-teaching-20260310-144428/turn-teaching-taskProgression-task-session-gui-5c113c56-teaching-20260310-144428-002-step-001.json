@@ -1,0 +1,125 @@
+{
+  "actionKind": "nativeAction",
+  "actionSummary": "执行第 1 步点击操作（源事件 e400d1d1-d26b-4e71-be75-4c5c8dfdab81）。",
+  "appContext": {
+    "appBundleId": "com.apple.Safari",
+    "appName": "Safari浏览器",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": "个人 — 起始页"
+  },
+  "endedAt": "2026-03-10T06:44:37.124Z",
+  "execution": null,
+  "intentSummary": "在 Safari浏览器 中复现任务 task-session-gui-5c113c56-teaching-20260310-144428-002 的操作流程",
+  "learningState": "reviewed",
+  "mode": "teaching",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari浏览器",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": "个人 — 起始页"
+    },
+    "axRefs": [],
+    "eventIds": [
+      "e400d1d1-d26b-4e71-be75-4c5c8dfdab81"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-5c113c56-teaching-20260310-144428.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/source-record.json",
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-002.json"
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": null,
+    "rawRef": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/review-result.json",
+    "reviewId": "benchmark-review-pdb-009-safari-start-page-a",
+    "reviewedAt": "2026-03-14T01:54:09+08:00",
+    "source": "benchmarkResult",
+    "summary": "skill preflight=failed; runtime=blocked; steps=0/0; expectedPreflight=failed; expectedRuntime=blocked"
+  },
+  "riskLevel": "medium",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 0,
+    "preferredLocatorType": null,
+    "semanticTargets": [],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/benchmark-pdb-009-safari-start-page-a/openstaff-skill.json",
+    "sourceStepId": "step-001"
+  },
+  "sessionId": "session-gui-5c113c56-teaching-20260310-144428",
+  "sourceRefs": [
+    {
+      "artifactKind": "sourceRecord",
+      "identifier": "pdb-009-safari-start-page-a",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/source-record.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "caseReport",
+      "identifier": "pdb-009-safari-start-page-a",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/case-report.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-5c113c56-teaching-20260310-144428",
+      "path": "data/raw-events/2026-03-10/session-gui-5c113c56-teaching-20260310-144428.jsonl",
+      "sha256": "485690e64e87d4249c4a89e4698b003fd09be8cd40127c3945e463dba855aa1e"
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-5c113c56-teaching-20260310-144428-002",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-002.json",
+      "sha256": "3da2fbc514e05188d27683142c91f5ef88efb320ca53f414f851877776069b5c"
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-5c113c56-teaching-20260310-144428-002",
+      "path": "data/knowledge/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-002.json",
+      "sha256": "5d84acf2369055e8b95951680f8b90e95ec4c02e151435b6ff5af752ac976d51"
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-009-safari-start-page-a",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/benchmark-pdb-009-safari-start-page-a/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "executionResult",
+      "identifier": "trace-openclaw-run-bc157f80-c226-4706-ae4d-b76a19564174",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/execution-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "benchmarkReview",
+      "identifier": "pdb-009-safari-start-page-a",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-009-safari-start-page-a/review-result.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-10T06:44:37.124Z",
+  "status": "captured",
+  "stepId": "step-001",
+  "stepIndex": 1,
+  "stepReference": {
+    "instruction": "执行第 1 步点击操作（源事件 e400d1d1-d26b-4e71-be75-4c5c8dfdab81）。",
+    "knowledgeItemId": "ki-task-session-gui-5c113c56-teaching-20260310-144428-002",
+    "knowledgeStepId": "step-001",
+    "planStepId": null,
+    "skillStepId": "step-001",
+    "sourceEventIds": [
+      "e400d1d1-d26b-4e71-be75-4c5c8dfdab81"
+    ],
+    "stepId": "step-001",
+    "stepIndex": 1
+  },
+  "taskId": "task-session-gui-5c113c56-teaching-20260310-144428-002",
+  "traceId": "trace-learning-teaching-task-session-gui-5c113c56-teaching-20260310-144428-002-step-001",
+  "turnId": "turn-teaching-taskProgression-task-session-gui-5c113c56-teaching-20260310-144428-002-step-001",
+  "turnKind": "taskProgression"
+}

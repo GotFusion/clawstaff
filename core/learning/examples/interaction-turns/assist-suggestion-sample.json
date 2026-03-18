@@ -1,0 +1,117 @@
+{
+  "actionKind": "guiAction",
+  "actionSummary": "辅助模式已给出下一步点击建议，并在老师确认后执行。",
+  "appContext": {
+    "appBundleId": "com.apple.Safari",
+    "appName": "Safari",
+    "windowId": "assist-window-001",
+    "windowSignature": null,
+    "windowTitle": "OpenStaff - Pull Requests"
+  },
+  "endedAt": "2026-03-18T09:00:07+08:00",
+  "execution": {
+    "component": "assist.loop",
+    "errorCode": null,
+    "executionLogPath": null,
+    "executionResultPath": null,
+    "planId": null,
+    "planStepId": null,
+    "reviewId": "assist-feedback-example-001",
+    "skillDirectoryPath": null,
+    "skillName": null,
+    "status": "STATUS_EXE_ASSIST_EXECUTION_COMPLETED",
+    "traceId": "trace-assist-loop-example-001"
+  },
+  "intentSummary": "在 Safari 中继续处理 Pull Request，系统预测老师下一步会点击 Merge。",
+  "learningState": "reviewed",
+  "mode": "assist",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari",
+      "windowId": "assist-window-001",
+      "windowSignature": null,
+      "windowTitle": "OpenStaff - Pull Requests"
+    },
+    "axRefs": [],
+    "eventIds": [
+      "evt-assist-example-001"
+    ],
+    "note": "Synthetic example for assist mode until real assist history is frozen into the repository.",
+    "ocrRefs": [],
+    "rawEventLogPath": null,
+    "screenshotRefs": [],
+    "sourceRecordPath": null,
+    "taskChunkPath": null
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": null,
+    "rawRef": "core/learning/examples/interaction-turns/assist-suggestion-sample.json",
+    "reviewId": "assist-feedback-example-001",
+    "reviewedAt": "2026-03-18T09:00:08+08:00",
+    "source": "example",
+    "summary": "老师接受了辅助模式建议并确认执行结果符合预期。"
+  },
+  "riskLevel": "low",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 1,
+    "preferredLocatorType": "roleAndTitle",
+    "semanticTargets": [
+      {
+        "appBundleId": "com.apple.Safari",
+        "axPath": null,
+        "boundingRect": {
+          "coordinateSpace": "screen",
+          "height": 32,
+          "width": 88,
+          "x": 1120,
+          "y": 428
+        },
+        "confidence": 0.92,
+        "elementIdentifier": "merge",
+        "elementRole": "AXButton",
+        "elementTitle": "Merge",
+        "imageAnchor": null,
+        "locatorType": "roleAndTitle",
+        "source": "capture",
+        "textAnchor": null,
+        "windowSignature": null,
+        "windowTitlePattern": "^OpenStaff\\ -\\ Pull\\ Requests$"
+      }
+    ],
+    "sourcePath": null,
+    "sourceStepId": "step-001"
+  },
+  "sessionId": "session-assist-example-20260318-090000",
+  "sourceRefs": [
+    {
+      "artifactKind": "exampleFixture",
+      "identifier": "assist-example-001",
+      "path": "core/learning/examples/interaction-turns/assist-suggestion-sample.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-18T09:00:01+08:00",
+  "status": "succeeded",
+  "stepId": "step-001",
+  "stepIndex": 1,
+  "stepReference": {
+    "instruction": "点击 Merge 按钮。",
+    "knowledgeItemId": "ki-assist-example-001",
+    "knowledgeStepId": "step-001",
+    "planStepId": null,
+    "skillStepId": null,
+    "sourceEventIds": [
+      "evt-assist-example-001"
+    ],
+    "stepId": "step-001",
+    "stepIndex": 1
+  },
+  "taskId": "task-assist-example-001",
+  "traceId": "trace-learning-assist-task-assist-example-001-step-001",
+  "turnId": "turn-assist-taskProgression-task-assist-example-001-step-001",
+  "turnKind": "taskProgression"
+}

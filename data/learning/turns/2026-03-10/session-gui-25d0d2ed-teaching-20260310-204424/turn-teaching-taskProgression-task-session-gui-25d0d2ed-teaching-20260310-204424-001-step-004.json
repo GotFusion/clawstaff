@@ -1,0 +1,169 @@
+{
+  "actionKind": "guiAction",
+  "actionSummary": "执行第 4 步输入\"www\u0003。baidu。com\"并按回车（源事件 7679bec0-6d19-4d20-9049-157fdf57c250, 2c3eb6a4-6715-4c52-adf8-bd839a6a8ea2, a0a3b568-4c48-4fac-a36c-9dcb3fb2d6f0, 2cfd2b89-294f-42f9-8e99-3c65368e889d, ca5130cb-7eee-439c-8e21-ca6c46236726, eba00006-f365-438e-8b57-1ff6d633fb68, c06b8be4-eeae-4729-82a9-eacd1cf08e1e, 0056a6ec-f11d-4e7b-8226-dec7220a3300, 2032651e-71d6-4c0e-a6d7-4116ff9ac151, a6769f52-8d54-4f32-bcfc-b8e8e9999719, aa278bd3-91db-4b47-bbff-501cb27b3552, adfac90a-8806-45a2-8d08-eab312221d05, cef2f62a-fca3-4455-b4d9-ac2d4813d299, c9767350-fa3f-462d-b45d-f5074f808f05, 8cdb9c85-a74d-434f-ab10-c7cf5274cc66, 5344ede9-3c70-4dec-919c-b52518ac319c, 35b50653-9dea-4aeb-ba6d-c69c202b7b30）。",
+  "appContext": {
+    "appBundleId": "com.apple.dt.Xcode",
+    "appName": "Xcode",
+    "windowId": null,
+    "windowSignature": null,
+    "windowTitle": "macos — Package.swift"
+  },
+  "endedAt": "2026-03-10T12:44:40.551Z",
+  "execution": {
+    "component": "student.openclaw.runner.step",
+    "errorCode": null,
+    "executionLogPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/logs/2026-03-13/session-gui-25d0d2ed-teaching-20260310-204424-openclaw.log",
+    "executionResultPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/execution-result.json",
+    "planId": null,
+    "planStepId": null,
+    "reviewId": "openclaw-review-trace-openclaw-run-e1624bfe-db72-449c-a388-af4138951395",
+    "skillDirectoryPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/benchmark-pdb-003-xcode-package-navigation-c",
+    "skillName": "benchmark-pdb-003-xcode-package-navigation-c",
+    "status": "succeeded",
+    "traceId": "trace-openclaw-run-e1624bfe-db72-449c-a388-af4138951395"
+  },
+  "intentSummary": "在 Xcode 中复现任务 task-session-gui-25d0d2ed-teaching-20260310-204424-001 的操作流程",
+  "learningState": "reviewed",
+  "mode": "teaching",
+  "observationRef": {
+    "appContext": {
+      "appBundleId": "com.apple.dt.Xcode",
+      "appName": "Xcode",
+      "windowId": null,
+      "windowSignature": null,
+      "windowTitle": "macos — Package.swift"
+    },
+    "axRefs": [],
+    "eventIds": [
+      "7679bec0-6d19-4d20-9049-157fdf57c250",
+      "2c3eb6a4-6715-4c52-adf8-bd839a6a8ea2",
+      "a0a3b568-4c48-4fac-a36c-9dcb3fb2d6f0",
+      "2cfd2b89-294f-42f9-8e99-3c65368e889d",
+      "ca5130cb-7eee-439c-8e21-ca6c46236726",
+      "eba00006-f365-438e-8b57-1ff6d633fb68",
+      "c06b8be4-eeae-4729-82a9-eacd1cf08e1e",
+      "0056a6ec-f11d-4e7b-8226-dec7220a3300",
+      "2032651e-71d6-4c0e-a6d7-4116ff9ac151",
+      "a6769f52-8d54-4f32-bcfc-b8e8e9999719",
+      "aa278bd3-91db-4b47-bbff-501cb27b3552",
+      "adfac90a-8806-45a2-8d08-eab312221d05",
+      "cef2f62a-fca3-4455-b4d9-ac2d4813d299",
+      "c9767350-fa3f-462d-b45d-f5074f808f05",
+      "8cdb9c85-a74d-434f-ab10-c7cf5274cc66",
+      "5344ede9-3c70-4dec-919c-b52518ac319c",
+      "35b50653-9dea-4aeb-ba6d-c69c202b7b30"
+    ],
+    "note": "Backfilled from raw event sidecar; screenshot/AX/OCR refs stay empty until ObservationBundle lands.",
+    "ocrRefs": [],
+    "rawEventLogPath": "data/raw-events/2026-03-10/session-gui-25d0d2ed-teaching-20260310-204424.jsonl",
+    "screenshotRefs": [],
+    "sourceRecordPath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/source-record.json",
+    "taskChunkPath": "data/task-chunks/2026-03-10/task-session-gui-25d0d2ed-teaching-20260310-204424-001.json"
+  },
+  "privacyTags": [],
+  "review": {
+    "decision": "approved",
+    "note": "Benchmark runner injects teacher confirmation to validate deterministic runtime execution for confirmation-gated skills.",
+    "rawRef": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/review-result.json",
+    "reviewId": "benchmark-review-pdb-003-xcode-package-navigation-c",
+    "reviewedAt": "2026-03-14T01:54:09+08:00",
+    "source": "benchmarkResult",
+    "summary": "skill preflight=needs_teacher_confirmation; runtime=succeeded; steps=8/8; expectedPreflight=needs_teacher_confirmation; expectedRuntime=succeeded"
+  },
+  "riskLevel": "low",
+  "schemaVersion": "openstaff.learning.interaction-turn.v0",
+  "semanticTargetSetRef": {
+    "candidateCount": 0,
+    "preferredLocatorType": null,
+    "semanticTargets": [],
+    "sourcePath": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/benchmark-pdb-003-xcode-package-navigation-c/openstaff-skill.json",
+    "sourceStepId": "step-004"
+  },
+  "sessionId": "session-gui-25d0d2ed-teaching-20260310-204424",
+  "sourceRefs": [
+    {
+      "artifactKind": "sourceRecord",
+      "identifier": "pdb-003-xcode-package-navigation-c",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/source-record.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "caseReport",
+      "identifier": "pdb-003-xcode-package-navigation-c",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/case-report.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "rawEventLog",
+      "identifier": "session-gui-25d0d2ed-teaching-20260310-204424",
+      "path": "data/raw-events/2026-03-10/session-gui-25d0d2ed-teaching-20260310-204424.jsonl",
+      "sha256": "7f941e851138baf3656df8bcc9f2ceac26eddc8b831d96f8f4c762ca80c70c61"
+    },
+    {
+      "artifactKind": "taskChunk",
+      "identifier": "task-session-gui-25d0d2ed-teaching-20260310-204424-001",
+      "path": "data/task-chunks/2026-03-10/task-session-gui-25d0d2ed-teaching-20260310-204424-001.json",
+      "sha256": "8c0072c79543de12c29a00665e89ed2869229d7505cb2277af20ac7382ae4659"
+    },
+    {
+      "artifactKind": "knowledgeItem",
+      "identifier": "ki-task-session-gui-25d0d2ed-teaching-20260310-204424-001",
+      "path": "data/knowledge/2026-03-10/task-session-gui-25d0d2ed-teaching-20260310-204424-001.json",
+      "sha256": "75b8f27521e9bd5310a420cff8dcbff8eb9e9eeb58252624783e69e2c8312dff"
+    },
+    {
+      "artifactKind": "skillBundle",
+      "identifier": "benchmark-pdb-003-xcode-package-navigation-c",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/benchmark-pdb-003-xcode-package-navigation-c/openstaff-skill.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "executionResult",
+      "identifier": "trace-openclaw-run-e1624bfe-db72-449c-a388-af4138951395",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/execution-result.json",
+      "sha256": null
+    },
+    {
+      "artifactKind": "benchmarkReview",
+      "identifier": "pdb-003-xcode-package-navigation-c",
+      "path": "data/benchmarks/personal-desktop/generated/pdb-003-xcode-package-navigation-c/review-result.json",
+      "sha256": null
+    }
+  ],
+  "startedAt": "2026-03-10T12:44:31.877Z",
+  "status": "captured",
+  "stepId": "step-004",
+  "stepIndex": 4,
+  "stepReference": {
+    "instruction": "执行第 4 步输入\"www\u0003。baidu。com\"并按回车（源事件 7679bec0-6d19-4d20-9049-157fdf57c250, 2c3eb6a4-6715-4c52-adf8-bd839a6a8ea2, a0a3b568-4c48-4fac-a36c-9dcb3fb2d6f0, 2cfd2b89-294f-42f9-8e99-3c65368e889d, ca5130cb-7eee-439c-8e21-ca6c46236726, eba00006-f365-438e-8b57-1ff6d633fb68, c06b8be4-eeae-4729-82a9-eacd1cf08e1e, 0056a6ec-f11d-4e7b-8226-dec7220a3300, 2032651e-71d6-4c0e-a6d7-4116ff9ac151, a6769f52-8d54-4f32-bcfc-b8e8e9999719, aa278bd3-91db-4b47-bbff-501cb27b3552, adfac90a-8806-45a2-8d08-eab312221d05, cef2f62a-fca3-4455-b4d9-ac2d4813d299, c9767350-fa3f-462d-b45d-f5074f808f05, 8cdb9c85-a74d-434f-ab10-c7cf5274cc66, 5344ede9-3c70-4dec-919c-b52518ac319c, 35b50653-9dea-4aeb-ba6d-c69c202b7b30）。",
+    "knowledgeItemId": "ki-task-session-gui-25d0d2ed-teaching-20260310-204424-001",
+    "knowledgeStepId": "step-004",
+    "planStepId": null,
+    "skillStepId": "step-004",
+    "sourceEventIds": [
+      "7679bec0-6d19-4d20-9049-157fdf57c250",
+      "2c3eb6a4-6715-4c52-adf8-bd839a6a8ea2",
+      "a0a3b568-4c48-4fac-a36c-9dcb3fb2d6f0",
+      "2cfd2b89-294f-42f9-8e99-3c65368e889d",
+      "ca5130cb-7eee-439c-8e21-ca6c46236726",
+      "eba00006-f365-438e-8b57-1ff6d633fb68",
+      "c06b8be4-eeae-4729-82a9-eacd1cf08e1e",
+      "0056a6ec-f11d-4e7b-8226-dec7220a3300",
+      "2032651e-71d6-4c0e-a6d7-4116ff9ac151",
+      "a6769f52-8d54-4f32-bcfc-b8e8e9999719",
+      "aa278bd3-91db-4b47-bbff-501cb27b3552",
+      "adfac90a-8806-45a2-8d08-eab312221d05",
+      "cef2f62a-fca3-4455-b4d9-ac2d4813d299",
+      "c9767350-fa3f-462d-b45d-f5074f808f05",
+      "8cdb9c85-a74d-434f-ab10-c7cf5274cc66",
+      "5344ede9-3c70-4dec-919c-b52518ac319c",
+      "35b50653-9dea-4aeb-ba6d-c69c202b7b30"
+    ],
+    "stepId": "step-004",
+    "stepIndex": 4
+  },
+  "taskId": "task-session-gui-25d0d2ed-teaching-20260310-204424-001",
+  "traceId": "trace-learning-teaching-task-session-gui-25d0d2ed-teaching-20260310-204424-001-step-004",
+  "turnId": "turn-teaching-taskProgression-task-session-gui-25d0d2ed-teaching-20260310-204424-001-step-004",
+  "turnKind": "taskProgression"
+}
