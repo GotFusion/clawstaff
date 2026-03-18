@@ -1,0 +1,30 @@
+[
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-locator-evidence-replay-001",
+    "turnId": "turn-student-skillExecution-task-001-step-001",
+    "traceId": "trace-learning-student-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "locator",
+    "evaluativeDecision": "fail",
+    "polarity": "discourage",
+    "scope": {
+      "level": "app",
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari",
+      "taskFamily": null,
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": "Refresh semantic target candidates before the next run.",
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-replay-001"
+    ],
+    "proposedAction": "relocalize",
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T10:00:00Z"
+  }
+]

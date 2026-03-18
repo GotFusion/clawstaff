@@ -1,0 +1,58 @@
+[
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-outcome-evidence-benchmark-001",
+    "turnId": "turn-student-skillExecution-task-001-step-001",
+    "traceId": "trace-learning-student-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "outcome",
+    "evaluativeDecision": "pass",
+    "polarity": "reinforce",
+    "scope": {
+      "level": "taskFamily",
+      "appBundleId": null,
+      "appName": null,
+      "taskFamily": "student.execution",
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": null,
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-benchmark-001"
+    ],
+    "proposedAction": null,
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T10:02:00Z"
+  },
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-risk-evidence-benchmark-001",
+    "turnId": "turn-student-skillExecution-task-001-step-001",
+    "traceId": "trace-learning-student-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "risk",
+    "evaluativeDecision": "pass",
+    "polarity": "reinforce",
+    "scope": {
+      "level": "taskFamily",
+      "appBundleId": null,
+      "appName": null,
+      "taskFamily": "student.execution",
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": "Keep teacher confirmation enabled for similar high-risk steps.",
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-benchmark-001"
+    ],
+    "proposedAction": "require_teacher_confirmation",
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T10:02:00Z"
+  }
+]

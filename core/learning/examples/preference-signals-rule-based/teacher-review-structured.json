@@ -1,0 +1,142 @@
+[
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-outcome-evidence-teacher-rejected",
+    "turnId": "turn-assist-taskProgression-task-001-step-001",
+    "traceId": "trace-learning-assist-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "outcome",
+    "evaluativeDecision": "fail",
+    "polarity": "discourage",
+    "scope": {
+      "level": "taskFamily",
+      "appBundleId": null,
+      "appName": null,
+      "taskFamily": "browser.navigation",
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": null,
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-teacher-rejected"
+    ],
+    "proposedAction": null,
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T09:40:00Z"
+  },
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-repair-evidence-teacher-fix-locator",
+    "turnId": "turn-assist-taskProgression-task-001-step-001",
+    "traceId": "trace-learning-assist-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "repair",
+    "evaluativeDecision": "fail",
+    "polarity": "discourage",
+    "scope": {
+      "level": "taskFamily",
+      "appBundleId": null,
+      "appName": null,
+      "taskFamily": "browser.navigation",
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": "Update the stale button title from Save to Submit.",
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-teacher-fix-locator"
+    ],
+    "proposedAction": "updateSkillLocator",
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T09:40:10Z"
+  },
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-procedure-evidence-teacher-wrong-order",
+    "turnId": "turn-assist-taskProgression-task-001-step-001",
+    "traceId": "trace-learning-assist-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "procedure",
+    "evaluativeDecision": "fail",
+    "polarity": "discourage",
+    "scope": {
+      "level": "taskFamily",
+      "appBundleId": null,
+      "appName": null,
+      "taskFamily": "browser.navigation",
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": null,
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-teacher-wrong-order"
+    ],
+    "proposedAction": null,
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T09:40:20Z"
+  },
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-style-evidence-teacher-wrong-style",
+    "turnId": "turn-assist-taskProgression-task-001-step-001",
+    "traceId": "trace-learning-assist-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "style",
+    "evaluativeDecision": "fail",
+    "polarity": "discourage",
+    "scope": {
+      "level": "global",
+      "appBundleId": null,
+      "appName": null,
+      "taskFamily": null,
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": null,
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-teacher-wrong-style"
+    ],
+    "proposedAction": null,
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T09:40:30Z"
+  },
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-risk-evidence-teacher-dangerous",
+    "turnId": "turn-assist-taskProgression-task-001-step-001",
+    "traceId": "trace-learning-assist-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "risk",
+    "evaluativeDecision": "fail",
+    "polarity": "discourage",
+    "scope": {
+      "level": "app",
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari",
+      "taskFamily": null,
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": "Require teacher confirmation before executing similar high-risk steps.",
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-teacher-dangerous"
+    ],
+    "proposedAction": "require_teacher_confirmation",
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T09:40:40Z"
+  }
+]

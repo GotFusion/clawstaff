@@ -1,0 +1,30 @@
+[
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-risk-evidence-runtime-blocked-001",
+    "turnId": "turn-student-skillExecution-task-001-step-001",
+    "traceId": "trace-learning-student-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "risk",
+    "evaluativeDecision": "fail",
+    "polarity": "discourage",
+    "scope": {
+      "level": "app",
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari",
+      "taskFamily": null,
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": "Similar steps should stay blocked or require teacher confirmation.",
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-runtime-blocked-001"
+    ],
+    "proposedAction": "require_teacher_confirmation",
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T10:03:00Z"
+  }
+]

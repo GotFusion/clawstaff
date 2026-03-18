@@ -1,0 +1,58 @@
+[
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-locator-evidence-drift-001",
+    "turnId": "turn-student-skillExecution-task-001-step-001",
+    "traceId": "trace-learning-student-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "locator",
+    "evaluativeDecision": "fail",
+    "polarity": "discourage",
+    "scope": {
+      "level": "app",
+      "appBundleId": "com.apple.Safari",
+      "appName": "Safari",
+      "taskFamily": null,
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": "Update the saved title/text anchor from Save to Submit.",
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-drift-001"
+    ],
+    "proposedAction": "updateSkillLocator",
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T10:01:00Z"
+  },
+  {
+    "schemaVersion": "openstaff.learning.preference-signal.v0",
+    "signalId": "signal-repair-evidence-drift-001",
+    "turnId": "turn-student-skillExecution-task-001-step-001",
+    "traceId": "trace-learning-student-task-001-step-001",
+    "sessionId": "session-001",
+    "taskId": "task-001",
+    "stepId": "step-001",
+    "type": "repair",
+    "evaluativeDecision": "fail",
+    "polarity": "discourage",
+    "scope": {
+      "level": "taskFamily",
+      "appBundleId": null,
+      "appName": null,
+      "taskFamily": "student.execution",
+      "skillFamily": null,
+      "windowPattern": null
+    },
+    "hint": "Update the saved title/text anchor from Save to Submit.",
+    "confidence": 0.9,
+    "evidenceIds": [
+      "evidence-drift-001"
+    ],
+    "proposedAction": "updateSkillLocator",
+    "promotionStatus": "candidate",
+    "timestamp": "2026-03-18T10:01:00Z"
+  }
+]

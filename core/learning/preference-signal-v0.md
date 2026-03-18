@@ -54,6 +54,13 @@
 
 `skillFamily / windowPattern` 先作为扩展位落盘保留，避免 schema 未来再破坏性升级。
 
+规则优先提炼器 `v0` 的额外约定：
+
+- `locator` 默认落到 `app` scope。
+- `style` 默认落到 `global` scope。
+- `outcome / procedure / repair` 优先落到 `taskFamily`。
+- 当调用方还没有显式 task family 分类器时，先用 `"{mode}.{turnKind}"` 作为粗粒度回退值。
+
 ## 推荐提炼映射
 
 - `outcome`：老师通过、benchmark 成功、runtime 成功
@@ -67,6 +74,7 @@
 
 - 单 turn 信号文件：`data/preferences/signals/{date}/{sessionId}/{turnId}.json`
 - 一个 turn 可以写多条 signal
+- `RuleBasedPreferenceSignalExtractor` v0 落盘时，文件 payload 固定为 `PreferenceSignal[]`
 - 第一版仍以文件为事实源，后续存储层只做索引与查询加速
 
 ## v0 说明

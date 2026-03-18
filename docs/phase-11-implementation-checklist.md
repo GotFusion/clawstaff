@@ -204,19 +204,19 @@
 - [x] 可以覆盖 roadmap 中定义的偏好类型与作用域
 
 ### TODO 11.2.2 实现规则优先的信号提炼器
-- [ ] 从 review action 提炼 outcome / repair signal
-- [ ] 从 replay verify 提炼 locator signal
-- [ ] 从 drift reason 提炼 repair / locator signal
-- [ ] 从 benchmark result 提炼 outcome / risk signal
-- [ ] 从 safety block 提炼 risk signal
+- [x] 从 review action 提炼 outcome / repair signal
+- [x] 从 replay verify 提炼 locator signal
+- [x] 从 drift reason 提炼 repair / locator signal
+- [x] 从 benchmark result 提炼 outcome / risk signal
+- [x] 从 safety block 提炼 risk signal
 
 **输出物**
 - `core/learning/RuleBasedPreferenceSignalExtractor.swift`
 - `core/learning/examples/preference-signals-rule-based/*.json`
 
 **验收标准**
-- [ ] 对无 LLM 场景也可提炼基础信号
-- [ ] 至少 60% 历史样本可提炼出 1 条以上有效信号
+- [x] 对无 LLM 场景也可提炼基础信号
+- [x] 至少 60% 历史样本可提炼出 1 条以上有效信号
 
 ### TODO 11.2.3 实现 LLM 辅助的结构化提炼器
 - [ ] 用 ChatGPT 将老师审阅备注、修正备注或 repair note 转为结构化偏好 JSON
