@@ -1002,8 +1002,9 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `docs/adr/ADR-0014-preference-memory-store.md`
 
 **验收标准**
-- [ ] 所有规则都能追溯到原始 signal 和 evidence。
+- [x] 所有规则都能追溯到原始 signal 和 evidence。
 - [ ] 删除某条规则后，可从 signal 重新计算 profile。
+  - 当前 `PreferenceMemoryStore` 已保留 `signals / rules / profiles / audit` 事实源与回链信息，但自动重建 profile 的 builder / rollback 流程仍待 `11.3.3` 与 `11.6.3` 完成。
 
 #### TODO 11.3.2 固化默认晋升与冲突策略
 
