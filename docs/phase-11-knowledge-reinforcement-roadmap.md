@@ -910,7 +910,7 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `core/learning/schemas/preference-signal.schema.json`
 
 **验收标准**
-- [ ] outcome / procedure / locator / style / risk / repair 六类信号均可表达。
+- [x] outcome / procedure / locator / style / risk / repair 六类信号均可表达。
 
 #### TODO 11.2.2 先做规则优先提炼器 v0
 
