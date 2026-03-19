@@ -237,9 +237,25 @@ final class IntegratedModeWorkflowRunner {
         }
 
         let stateMachine = ModeStateMachine(initialMode: .assist, logger: InMemoryOrchestratorStateLogger())
+        let planner: any StudentTaskPlanning
+        if isPreferenceAwareStudentPlannerEnabled() {
+            let preferenceSnapshot: PreferenceProfileSnapshot?
+            do {
+                preferenceSnapshot = try PreferenceMemoryStore(
+                    preferencesRootDirectory: OpenStaffWorkspacePaths.preferencesDirectory
+                ).loadLatestProfileSnapshot()
+            } catch {
+                preferenceSnapshot = nil
+            }
+            planner = PreferenceAwareStudentPlanner(
+                preferenceProfile: preferenceSnapshot?.profile
+            )
+        } else {
+            planner = RuleBasedStudentTaskPlanner()
+        }
         let orchestrator = StudentModeLoopOrchestrator(
             modeStateMachine: stateMachine,
-            planner: RuleBasedStudentTaskPlanner(),
+            planner: planner,
             skillExecutor: StudentSkillExecutor(),
             logWriter: StudentLoopLogWriter(logsRootDirectory: OpenStaffWorkspacePaths.logsDirectory),
             reportWriter: StudentReviewReportWriter(reportsRootDirectory: OpenStaffWorkspacePaths.reportsDirectory)
@@ -280,6 +296,31 @@ final class IntegratedModeWorkflowRunner {
             }
         }
         return fallbackItem.goal
+    }
+
+    private func isPreferenceAwareStudentPlannerEnabled() -> Bool {
+        let environment = ProcessInfo.processInfo.environment
+        return parseBooleanFeatureFlag(
+            environment["OPENSTAFF_ENABLE_PREFERENCE_AWARE_STUDENT_PLANNER"]
+        ) && parseBooleanFeatureFlag(
+            environment["OPENSTAFF_STUDENT_PLANNER_BENCHMARK_SAFE"]
+        )
+    }
+
+    private func parseBooleanFeatureFlag(_ value: String?) -> Bool {
+        guard let normalized = value?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased(),
+            !normalized.isEmpty else {
+            return false
+        }
+
+        switch normalized {
+        case "1", "true", "yes", "on", "enabled":
+            return true
+        default:
+            return false
+        }
     }
 
     private func resolveDateKeyForCapturedSession(sessionId: String) throws -> String {

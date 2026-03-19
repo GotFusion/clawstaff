@@ -414,17 +414,23 @@
 - [x] review 建议可解释，不只是静态模板
 
 ### TODO 11.4.5 Student planner 偏好装配（Feature Flag）
-- [ ] 根据 `PreferenceProfile` 调整 planning prompt / planning constraints
-- [ ] 区分保守与积极执行策略
-- [ ] 失败后优先 repair 还是 re-teach 可由偏好控制
-- [ ] 默认挂在 feature flag 后，不作为 Phase 11 默认行为
+- [x] 根据 `PreferenceProfile` 调整 planning prompt / planning constraints
+- [x] 区分保守与积极执行策略
+- [x] 失败后优先 repair 还是 re-teach 可由偏好控制
+- [x] 默认挂在 feature flag 后，不作为 Phase 11 默认行为
 
 **输出物**
 - `core/orchestrator/PreferenceAwareStudentPlanner.swift`
+- `core/contracts/PlanningPreferenceContracts.swift`
 - `scripts/llm/prompts/student/*`
 
 **验收标准**
-- [ ] student 模式只有在 benchmark 无安全回归时才允许启用
+- [x] student 模式只有在 benchmark 无安全回归时才允许启用
+
+补充说明：
+- CLI 仅在同时传入 `--enable-preference-aware-planner` 与 `--student-planner-benchmark-safe` 时启用偏好装配，否则回退 `rule-v0`。
+- App 内 student workflow 仅在环境变量 `OPENSTAFF_ENABLE_PREFERENCE_AWARE_STUDENT_PLANNER=1` 与 `OPENSTAFF_STUDENT_PLANNER_BENCHMARK_SAFE=1` 同时满足时启用。
+- 默认 student 模式仍输出 `ruleV0 / rule-v0`，不会因为 Phase 11 自动放开。
 
 ### TODO 11.4.6 记录 `PolicyAssemblyDecision`
 - [ ] 每次 assist / student / skill generation / repair 输出一条 assembly log

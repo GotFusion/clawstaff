@@ -88,6 +88,9 @@ class ThreeModeCLIRoundtripTests(unittest.TestCase):
             self.assertEqual(student.returncode, 0, msg=student.stderr or student.stdout)
             student_result = extract_last_json_object(student.stdout)
             self.assertEqual(student_result.get("finalStatus"), "completed")
+            self.assertEqual(student_result["plan"]["strategy"], "ruleV0")
+            self.assertEqual(student_result["plan"]["plannerVersion"], "rule-v0")
+            self.assertIsNone(student_result["plan"].get("preferenceDecision"))
 
             student_log_path = Path(student_result["logFilePath"])
             report_file_path = Path(student_result["reportFilePath"])

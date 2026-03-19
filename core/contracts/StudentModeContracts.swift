@@ -4,6 +4,7 @@ import Foundation
 
 public enum StudentPlanningStrategy: String, Codable, Sendable {
     case ruleV0
+    case preferenceAwareRuleV1
     case modelV1Placeholder
 }
 
@@ -40,6 +41,7 @@ public struct StudentExecutionPlan: Codable, Equatable, Sendable {
     public let strategy: StudentPlanningStrategy
     public let plannerVersion: String
     public let steps: [StudentPlannedStep]
+    public let preferenceDecision: StudentPlanningPreferenceDecision?
 
     public init(
         planId: String,
@@ -48,7 +50,8 @@ public struct StudentExecutionPlan: Codable, Equatable, Sendable {
         selectedTaskId: String,
         strategy: StudentPlanningStrategy,
         plannerVersion: String = "rule-v0",
-        steps: [StudentPlannedStep]
+        steps: [StudentPlannedStep],
+        preferenceDecision: StudentPlanningPreferenceDecision? = nil
     ) {
         self.planId = planId
         self.goal = goal
@@ -57,6 +60,7 @@ public struct StudentExecutionPlan: Codable, Equatable, Sendable {
         self.strategy = strategy
         self.plannerVersion = plannerVersion
         self.steps = steps
+        self.preferenceDecision = preferenceDecision
     }
 }
 

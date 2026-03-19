@@ -1,7 +1,7 @@
 # OpenStaff 用户使用说明书
 
-版本：v0.6.5  
-更新时间：2026-03-14
+版本：v0.6.6  
+更新时间：2026-03-19
 
 ## 1. 产品简介
 
@@ -38,6 +38,8 @@ cp .env.example .env.local
 按需填写：
 - `OPENAI_API_KEY`：使用在线 OpenAI provider 时必填。
 - `OPENCLAW_CLI_PATH`：OpenClaw 可执行文件路径；阶段 8.2 的 `OpenClawRunner` / `OpenStaffOpenClawCLI` 会优先使用它，未设置时回退到本地 gateway。
+- `OPENSTAFF_ENABLE_PREFERENCE_AWARE_STUDENT_PLANNER`：当值为 `1/true/yes/on` 时，请求启用 student planner 偏好装配。
+- `OPENSTAFF_STUDENT_PLANNER_BENCHMARK_SAFE`：当值为 `1/true/yes/on` 时，表示已完成人工 benchmark-safe attestation；需与上一项同时设置，App 内 student workflow 才会真正切到偏好装配 planner。
 
 ### 2.4 配置文件
 - 默认配置：`config/default.yaml`
@@ -84,6 +86,9 @@ make assist ARGS="--knowledge-item core/knowledge/examples/knowledge-item.sample
 推荐方式（已集成到 OpenStaff App）：
 - 选择“学生模式”并点击“开始”。
 - App 会直接执行“规划 -> 执行 -> 审阅报告写入”。
+- 默认仍使用 `rule-v0` planner；若要在 App 内启用偏好装配 student planner，需要同时设置：
+  - `OPENSTAFF_ENABLE_PREFERENCE_AWARE_STUDENT_PLANNER=1`
+  - `OPENSTAFF_STUDENT_PLANNER_BENCHMARK_SAFE=1`
 - 在“状态工作台 -> 审阅与反馈”选中对应执行日志后，可直接看到：
   - 老师原始步骤
   - 当前 skill 步骤
@@ -93,6 +98,9 @@ make assist ARGS="--knowledge-item core/knowledge/examples/knowledge-item.sample
 兼容调试命令：
 ```bash
 make student ARGS="--goal 在 Safari 中复现点击流程 --knowledge core/knowledge/examples/knowledge-item.sample.json"
+
+# 仅在 benchmark-safe attestation 后启用偏好装配 planner
+make student ARGS="--goal 在 Safari 中复现点击流程 --knowledge core/knowledge/examples/knowledge-item.sample.json --enable-preference-aware-planner --student-planner-benchmark-safe --preferences-root data/preferences"
 ```
 
 ### 3.4 审阅台闭环（Review Desk）

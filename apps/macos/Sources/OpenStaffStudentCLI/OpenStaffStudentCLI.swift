@@ -20,10 +20,20 @@ struct OpenStaffStudentCLI {
             let primaryItem = items[0]
             let sessionId = options.sessionId ?? primaryItem.sessionId
             let taskId = options.taskId ?? primaryItem.taskId
+            let preferenceAwarePlannerEnabled = options.enablePreferenceAwarePlanner
+                && options.studentPlannerBenchmarkSafe
+            if options.enablePreferenceAwarePlanner && !options.studentPlannerBenchmarkSafe {
+                print("Preference-aware student planner remains disabled until --student-planner-benchmark-safe is set.")
+            }
+            let preferenceProfile = preferenceAwarePlannerEnabled
+                ? try StudentPreferenceProfileLoader().loadLatestProfile(from: options.preferencesRootURL)
+                : nil
 
             let modeLogger = StdoutOrchestratorStateLogger()
             let stateMachine = ModeStateMachine(initialMode: options.initialMode, logger: modeLogger)
-            let planner = RuleBasedStudentTaskPlanner()
+            let planner: any StudentTaskPlanning = preferenceAwarePlannerEnabled
+                ? PreferenceAwareStudentPlanner(preferenceProfile: preferenceProfile)
+                : RuleBasedStudentTaskPlanner()
             let skillExecutor = StudentSkillExecutor()
             let logWriter = StudentLoopLogWriter(logsRootDirectory: options.logsRootDirectoryURL)
             let reportWriter = StudentReviewReportWriter(reportsRootDirectory: options.reportsRootDirectoryURL)
@@ -93,6 +103,9 @@ struct OpenStaffStudentCLI {
           --task-id <id>                     Task ID override. Default: from selected plan item.
           --from <teaching|assist|student>   Initial mode. Default: assist
           --preferred-knowledge-item-id <id> Prefer a specific KnowledgeItem for planning.
+          --enable-preference-aware-planner  Enable planner preference assembly (default off).
+          --student-planner-benchmark-safe   Attest benchmark safety gate before enabling preference-aware planner.
+          --preferences-root <path>          Preference store root. Default: data/preferences
           --teacher-not-confirmed            Set teacherConfirmed=false for transition guard.
           --emergency-stop-active            Set emergency stop active (blocks execution).
           --pending-assist-suggestion        Simulate pending assist suggestion for transition guard.
@@ -118,6 +131,15 @@ struct OpenStaffStudentCLI {
             print("planId=\(plan.planId)")
             print("plannedSteps=\(plan.steps.count)")
             print("selectedKnowledgeItem=\(plan.selectedKnowledgeItemId)")
+            print("plannerStrategy=\(plan.strategy.rawValue)")
+            print("plannerVersion=\(plan.plannerVersion)")
+            if let preferenceDecision = plan.preferenceDecision {
+                print("planningStyle=\(preferenceDecision.executionStyle.rawValue)")
+                print("failureRecovery=\(preferenceDecision.failureRecoveryPreference.rawValue)")
+                print("preferenceProfile=\(preferenceDecision.profileVersion)")
+                print("preferenceRuleIds=\(preferenceDecision.appliedRuleIds.joined(separator: ","))")
+                print("preferenceSummary=\(preferenceDecision.summary)")
+            }
         }
         if let report = result.report {
             print("reviewSummary=\(report.summary)")
@@ -135,6 +157,9 @@ struct StudentCLIOptions {
     let taskId: String?
     let initialMode: OpenStaffMode
     let preferredKnowledgeItemId: String?
+    let enablePreferenceAwarePlanner: Bool
+    let studentPlannerBenchmarkSafe: Bool
+    let preferencesRootPath: String
     let teacherConfirmed: Bool
     let emergencyStopActive: Bool
     let pendingAssistSuggestion: Bool
@@ -155,6 +180,10 @@ struct StudentCLIOptions {
         resolve(path: logsRootPath)
     }
 
+    var preferencesRootURL: URL {
+        resolve(path: preferencesRootPath)
+    }
+
     var reportsRootDirectoryURL: URL {
         resolve(path: reportsRootPath)
     }
@@ -166,6 +195,9 @@ struct StudentCLIOptions {
         var taskId: String?
         var initialMode: OpenStaffMode = .assist
         var preferredKnowledgeItemId: String?
+        var enablePreferenceAwarePlanner = false
+        var studentPlannerBenchmarkSafe = false
+        var preferencesRootPath = "data/preferences"
         var teacherConfirmed = true
         var emergencyStopActive = false
         var pendingAssistSuggestion = false
@@ -222,6 +254,16 @@ struct StudentCLIOptions {
                     throw StudentCLIOptionError.missingValue("--preferred-knowledge-item-id")
                 }
                 preferredKnowledgeItemId = arguments[index]
+            case "--enable-preference-aware-planner":
+                enablePreferenceAwarePlanner = true
+            case "--student-planner-benchmark-safe":
+                studentPlannerBenchmarkSafe = true
+            case "--preferences-root":
+                index += 1
+                guard index < arguments.count else {
+                    throw StudentCLIOptionError.missingValue("--preferences-root")
+                }
+                preferencesRootPath = arguments[index]
             case "--teacher-not-confirmed":
                 teacherConfirmed = false
             case "--emergency-stop-active":
@@ -282,6 +324,9 @@ struct StudentCLIOptions {
                 taskId: taskId,
                 initialMode: initialMode,
                 preferredKnowledgeItemId: preferredKnowledgeItemId,
+                enablePreferenceAwarePlanner: enablePreferenceAwarePlanner,
+                studentPlannerBenchmarkSafe: studentPlannerBenchmarkSafe,
+                preferencesRootPath: preferencesRootPath,
                 teacherConfirmed: teacherConfirmed,
                 emergencyStopActive: emergencyStopActive,
                 pendingAssistSuggestion: pendingAssistSuggestion,
@@ -331,6 +376,9 @@ struct StudentCLIOptions {
             taskId: taskId,
             initialMode: initialMode,
             preferredKnowledgeItemId: preferredKnowledgeItemId,
+            enablePreferenceAwarePlanner: enablePreferenceAwarePlanner,
+            studentPlannerBenchmarkSafe: studentPlannerBenchmarkSafe,
+            preferencesRootPath: preferencesRootPath,
             teacherConfirmed: teacherConfirmed,
             emergencyStopActive: emergencyStopActive,
             pendingAssistSuggestion: pendingAssistSuggestion,
@@ -422,6 +470,50 @@ struct StudentKnowledgeLoader {
             throw StudentKnowledgeLoaderError.decodeFailed(path: fileURL.path, underlying: error)
         }
     }
+}
+
+struct StudentPreferenceProfileLoader {
+    private let decoder = JSONDecoder()
+    private let fileManager = FileManager.default
+
+    func loadLatestProfile(from preferencesRoot: URL) throws -> PreferenceProfile? {
+        let profilesRoot = preferencesRoot.appendingPathComponent("profiles", isDirectory: true)
+        let latestPointerURL = profilesRoot.appendingPathComponent("latest.json", isDirectory: false)
+
+        if fileManager.fileExists(atPath: latestPointerURL.path) {
+            let pointer = try decode(StudentPreferenceProfilePointer.self, from: latestPointerURL)
+            let snapshotURL = profilesRoot.appendingPathComponent("\(pointer.profileVersion).json", isDirectory: false)
+            guard fileManager.fileExists(atPath: snapshotURL.path) else {
+                return nil
+            }
+            return try decode(PreferenceProfileSnapshot.self, from: snapshotURL).profile
+        }
+
+        guard fileManager.fileExists(atPath: profilesRoot.path) else {
+            return nil
+        }
+
+        let candidates = try fileManager.contentsOfDirectory(at: profilesRoot, includingPropertiesForKeys: nil)
+            .filter {
+                $0.pathExtension == "json" && $0.lastPathComponent != "latest.json"
+            }
+            .sorted { $0.lastPathComponent < $1.lastPathComponent }
+
+        guard let snapshotURL = candidates.last else {
+            return nil
+        }
+
+        return try decode(PreferenceProfileSnapshot.self, from: snapshotURL).profile
+    }
+
+    private func decode<T: Decodable>(_ type: T.Type, from fileURL: URL) throws -> T {
+        let data = try Data(contentsOf: fileURL)
+        return try decoder.decode(type, from: data)
+    }
+}
+
+private struct StudentPreferenceProfilePointer: Decodable {
+    let profileVersion: String
 }
 
 enum StudentCLIOptionError: LocalizedError {

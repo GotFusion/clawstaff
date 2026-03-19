@@ -12,6 +12,7 @@
 - `RetrievalBasedAssistPredictor.swift`：基于检索结果生成个性化下一步建议。
 - `PreferenceAwareAssistPredictor.swift`：在 retrieval 结果之上按老师偏好做重排，并输出 rule ids / 候选压低原因。
 - `StudentModeLoop.swift`：学生模式闭环（目标输入 -> 自动规划 -> 技能执行 -> 审阅报告）。
+- `PreferenceAwareStudentPlanner.swift`：在 `RuleBasedStudentTaskPlanner` 之上装配 `PreferenceProfile.plannerPreferences`，输出执行姿态 / 失败恢复偏好 / rule ids，并默认挂在 feature flag 后。
 
 ## 文档
 - 设计说明：`mode-state-machine-v0.md`

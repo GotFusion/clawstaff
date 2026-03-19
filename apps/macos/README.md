@@ -13,6 +13,7 @@ make slice
 make knowledge
 make replay-verify
 make preference-profile
+make student
 ```
 
 ## Build
@@ -117,6 +118,18 @@ make preference-profile ARGS="--preferences-root data/preferences --json"
 ```
 
 默认会读取 `data/preferences/rules/*.json` 中的 active 规则，并按 `assist / skill / repair / review / planner` 五个模块聚合当前快照。
+
+## Student CLI
+
+```bash
+# Default student planning stays on rule-v0
+make student ARGS="--goal 在 Safari 中复现点击流程 --knowledge core/knowledge/examples/knowledge-item.sample.json --json-result"
+
+# Enable preference-aware student planner only after benchmark-safe attestation
+make student ARGS="--goal 在 Safari 中复现点击流程 --knowledge core/knowledge/examples/knowledge-item.sample.json --enable-preference-aware-planner --student-planner-benchmark-safe --preferences-root data/preferences --json-result"
+```
+
+默认 student planner 仍是 `rule-v0`。只有同时传入 `--enable-preference-aware-planner` 与 `--student-planner-benchmark-safe`，CLI 才会读取 `data/preferences` 最新 profile 并切换到 `preference-aware-rule-v1`。
 
 ## GUI Status (Phase 6.1)
 

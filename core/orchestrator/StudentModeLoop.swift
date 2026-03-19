@@ -203,7 +203,7 @@ public final class StudentModeLoopOrchestrator {
                 input: input,
                 status: StudentLoopStatusCode.planningReady.rawValue,
                 errorCode: StudentLoopErrorCode.planningNotFound.rawValue,
-                message: "Rule planner failed to produce execution plan.",
+                message: "Student planner failed to produce execution plan.",
                 plan: nil,
                 step: nil
             )
@@ -258,7 +258,7 @@ public final class StudentModeLoopOrchestrator {
         latestLogFile = try appendLog(
             input: input,
             status: StudentLoopStatusCode.planningReady.rawValue,
-            message: "Rule planner generated student execution plan.",
+            message: planningReadyMessage(for: plan),
             plan: plan,
             step: nil
         )
@@ -331,6 +331,13 @@ public final class StudentModeLoopOrchestrator {
             reportFilePath: reportURL.path,
             message: finalStatus == .completed ? "Student loop completed." : "Student loop stopped due to execution failure."
         )
+    }
+
+    private func planningReadyMessage(for plan: StudentExecutionPlan) -> String {
+        if let decision = plan.preferenceDecision {
+            return "\(plan.plannerVersion) generated preference-aware student execution plan. \(decision.summary)"
+        }
+        return "\(plan.plannerVersion) generated student execution plan."
     }
 
     private func buildReport(

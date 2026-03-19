@@ -1145,6 +1145,8 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.4.5 Student planner 最后接入，且默认挂 feature flag
 
+状态：已完成（2026-03-19，benchmark runner 仍在 TODO 11.5，但启用门槛已通过显式 attestation gate 预留）
+
 - 只有满足以下条件才接 student：
   - preference benchmark 已跑通
   - `unsafe-auto-execution-regression = 0`
@@ -1153,9 +1155,16 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 **输出物**
 - `core/orchestrator/PreferenceAwareStudentPlanner.swift`
 - `core/contracts/PlanningPreferenceContracts.swift`
+- `scripts/llm/prompts/student/*`
 
 **验收标准**
-- [ ] student planner 默认关闭，需显式开关才能启用。
+- [x] student planner 默认关闭，需显式开关才能启用。
+
+本次落地说明：
+- 新增 `PreferenceAwareStudentPlanner`，会对 `PreferenceProfile.plannerPreferences` 做候选知识条目重排，并把命中的 `rule ids`、执行姿态（`conservative / assertive`）与失败恢复偏好（`repairBeforeReteach / reteachBeforeRepair`）写入 `StudentExecutionPlan.preferenceDecision`。
+- `OpenStaffStudentCLI` 默认仍走 `RuleBasedStudentTaskPlanner`；只有同时传入 `--enable-preference-aware-planner` 与 `--student-planner-benchmark-safe` 才切到偏好装配 planner。
+- GUI 的 `IntegratedModeWorkflows.runStudentLoop` 同样默认关闭；仅在 `OPENSTAFF_ENABLE_PREFERENCE_AWARE_STUDENT_PLANNER=1` 与 `OPENSTAFF_STUDENT_PLANNER_BENCHMARK_SAFE=1` 同时满足时启用。
+- 已补齐 Swift 单测与 CLI 集成回归，验证默认 `ruleV0` 不变、feature flag 开启后才输出 `preferenceAwareRuleV1`。
 
 ---
 
