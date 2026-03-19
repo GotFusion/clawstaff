@@ -48,7 +48,15 @@ struct OpenStaffReplayVerifyCLI {
                     snapshot: snapshot,
                     skillDirectoryPath: skillDirectoryURL.path
                 )
-                let repairPlan = SkillRepairPlanner().buildPlan(report: driftReport)
+                let preferenceProfile = try ReplayVerifyPreferenceProfileLoader().loadLatestProfile(
+                    from: options.preferencesRootURL
+                )
+                let repairPlan = PreferenceAwareSkillRepairPlanner(
+                    preferenceProfile: preferenceProfile
+                ).buildPlan(
+                    report: driftReport,
+                    payload: payload
+                )
                 let output = SkillDriftCLIOutput(
                     generatedAt: currentTimestamp(),
                     snapshot: snapshot,
@@ -89,6 +97,7 @@ struct OpenStaffReplayVerifyCLI {
           --knowledge <path>        KnowledgeItem JSON file or directory.
           --skill-dir <path>        OpenStaff skill bundle directory.
           --snapshot <path>         Optional replay snapshot JSON file. If omitted, capture the current frontmost window via AX.
+          --preferences-root <path> Preference store root. Default: data/preferences
           --json                    Print structured verification report.
           --help                    Show this help message.
 
@@ -147,7 +156,13 @@ struct OpenStaffReplayVerifyCLI {
         if !output.repairPlan.actions.isEmpty {
             print("repairPlan=\(output.repairPlan.summary)")
             for action in output.repairPlan.actions {
-                print("  -> \(action.type.rawValue) steps=\(action.affectedStepIds.joined(separator: ","))")
+                let ruleSummary = (action.appliedRuleIds ?? []).isEmpty
+                    ? ""
+                    : " rules=\((action.appliedRuleIds ?? []).joined(separator: ","))"
+                print("  -> \(action.type.rawValue) steps=\(action.affectedStepIds.joined(separator: ","))\(ruleSummary)")
+                if let preferenceReason = action.preferenceReason {
+                    print("     preference=\(preferenceReason)")
+                }
             }
         }
     }
@@ -161,6 +176,7 @@ enum ReplayVerifyInput {
 struct ReplayVerifyCLIOptions {
     let input: ReplayVerifyInput
     let snapshotPath: String?
+    let preferencesRootPath: String
     let printJSON: Bool
     let showHelp: Bool
 
@@ -168,6 +184,7 @@ struct ReplayVerifyCLIOptions {
         var knowledgeInputPath: String?
         var skillDirectoryPath: String?
         var snapshotPath: String?
+        var preferencesRootPath = "data/preferences"
         var printJSON = false
         var showHelp = false
 
@@ -194,6 +211,12 @@ struct ReplayVerifyCLIOptions {
                     throw ReplayVerifyCLIOptionError.missingValue("--snapshot")
                 }
                 snapshotPath = arguments[index]
+            case "--preferences-root":
+                index += 1
+                guard index < arguments.count else {
+                    throw ReplayVerifyCLIOptionError.missingValue("--preferences-root")
+                }
+                preferencesRootPath = arguments[index]
             case "--json":
                 printJSON = true
             case "--help", "-h":
@@ -209,6 +232,7 @@ struct ReplayVerifyCLIOptions {
             return ReplayVerifyCLIOptions(
                 input: .knowledge(resolveStatic(path: knowledgeInputPath ?? "core/knowledge/examples/knowledge-item.sample.json")),
                 snapshotPath: snapshotPath,
+                preferencesRootPath: preferencesRootPath,
                 printJSON: printJSON,
                 showHelp: true
             )
@@ -222,6 +246,7 @@ struct ReplayVerifyCLIOptions {
             return ReplayVerifyCLIOptions(
                 input: .knowledge(resolveStatic(path: knowledgeInputPath)),
                 snapshotPath: snapshotPath,
+                preferencesRootPath: preferencesRootPath,
                 printJSON: printJSON,
                 showHelp: false
             )
@@ -231,6 +256,7 @@ struct ReplayVerifyCLIOptions {
             return ReplayVerifyCLIOptions(
                 input: .skillDirectory(resolveStatic(path: skillDirectoryPath)),
                 snapshotPath: snapshotPath,
+                preferencesRootPath: preferencesRootPath,
                 printJSON: printJSON,
                 showHelp: false
             )
@@ -248,6 +274,10 @@ struct ReplayVerifyCLIOptions {
         return LiveReplayEnvironmentSnapshotProvider()
     }
 
+    var preferencesRootURL: URL {
+        Self.resolveStatic(path: preferencesRootPath)
+    }
+
     private static func resolveStatic(path: String) -> URL {
         let currentDirectory = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true)
         return URL(fileURLWithPath: path, relativeTo: currentDirectory).standardizedFileURL
@@ -259,6 +289,50 @@ struct SkillDriftCLIOutput: Codable {
     let snapshot: ReplayEnvironmentSnapshot
     let driftReport: SkillDriftReport
     let repairPlan: SkillRepairPlan
+}
+
+struct ReplayVerifyPreferenceProfileLoader {
+    private let decoder = JSONDecoder()
+    private let fileManager = FileManager.default
+
+    func loadLatestProfile(from preferencesRoot: URL) throws -> PreferenceProfile? {
+        let profilesRoot = preferencesRoot.appendingPathComponent("profiles", isDirectory: true)
+        let latestPointerURL = profilesRoot.appendingPathComponent("latest.json", isDirectory: false)
+
+        if fileManager.fileExists(atPath: latestPointerURL.path) {
+            let pointer = try decode(ReplayVerifyPreferenceProfilePointer.self, from: latestPointerURL)
+            let snapshotURL = profilesRoot.appendingPathComponent("\(pointer.profileVersion).json", isDirectory: false)
+            guard fileManager.fileExists(atPath: snapshotURL.path) else {
+                return nil
+            }
+            return try decode(PreferenceProfileSnapshot.self, from: snapshotURL).profile
+        }
+
+        guard fileManager.fileExists(atPath: profilesRoot.path) else {
+            return nil
+        }
+
+        let candidates = try fileManager.contentsOfDirectory(at: profilesRoot, includingPropertiesForKeys: nil)
+            .filter {
+                $0.pathExtension == "json" && $0.lastPathComponent != "latest.json"
+            }
+            .sorted { $0.lastPathComponent < $1.lastPathComponent }
+
+        guard let snapshotURL = candidates.last else {
+            return nil
+        }
+
+        return try decode(PreferenceProfileSnapshot.self, from: snapshotURL).profile
+    }
+
+    private func decode<T: Decodable>(_ type: T.Type, from fileURL: URL) throws -> T {
+        let data = try Data(contentsOf: fileURL)
+        return try decoder.decode(type, from: data)
+    }
+}
+
+private struct ReplayVerifyPreferenceProfilePointer: Decodable {
+    let profileVersion: String
 }
 
 struct ReplayKnowledgeLoader {

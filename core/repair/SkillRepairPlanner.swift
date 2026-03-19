@@ -1,11 +1,11 @@
 import Foundation
 
-public enum SkillRepairPlanStatus: String, Codable, Equatable {
+public enum SkillRepairPlanStatus: String, Codable, Equatable, Sendable {
     case noActionNeeded
     case actionRequired
 }
 
-public enum SkillRepairActionType: String, Codable, Equatable {
+public enum SkillRepairActionType: String, Codable, Equatable, Sendable {
     case relocalize
     case reteachCurrentStep
     case updateSkillLocator
@@ -19,6 +19,8 @@ public struct SkillRepairAction: Codable, Equatable, @unchecked Sendable {
     public let reason: String
     public let affectedStepIds: [String]
     public let shouldIncrementRepairVersion: Bool
+    public let appliedRuleIds: [String]?
+    public let preferenceReason: String?
 
     public init(
         actionId: String,
@@ -27,7 +29,9 @@ public struct SkillRepairAction: Codable, Equatable, @unchecked Sendable {
         description: String,
         reason: String,
         affectedStepIds: [String],
-        shouldIncrementRepairVersion: Bool = true
+        shouldIncrementRepairVersion: Bool = true,
+        appliedRuleIds: [String]? = nil,
+        preferenceReason: String? = nil
     ) {
         self.actionId = actionId
         self.type = type
@@ -36,6 +40,8 @@ public struct SkillRepairAction: Codable, Equatable, @unchecked Sendable {
         self.reason = reason
         self.affectedStepIds = affectedStepIds
         self.shouldIncrementRepairVersion = shouldIncrementRepairVersion
+        self.appliedRuleIds = appliedRuleIds.map { Array(Set($0)).sorted() }
+        self.preferenceReason = preferenceReason
     }
 }
 
@@ -48,6 +54,7 @@ public struct SkillRepairPlan: Codable, Equatable, @unchecked Sendable {
     public let recommendedRepairVersion: Int?
     public let summary: String
     public let actions: [SkillRepairAction]
+    public let preferenceDecision: SkillRepairPreferenceDecision?
 
     public init(
         schemaVersion: String = "openstaff.skill-repair-plan.v0",
@@ -57,7 +64,8 @@ public struct SkillRepairPlan: Codable, Equatable, @unchecked Sendable {
         currentRepairVersion: Int? = nil,
         recommendedRepairVersion: Int? = nil,
         summary: String,
-        actions: [SkillRepairAction]
+        actions: [SkillRepairAction],
+        preferenceDecision: SkillRepairPreferenceDecision? = nil
     ) {
         self.schemaVersion = schemaVersion
         self.skillName = skillName
@@ -67,10 +75,11 @@ public struct SkillRepairPlan: Codable, Equatable, @unchecked Sendable {
         self.recommendedRepairVersion = recommendedRepairVersion
         self.summary = summary
         self.actions = actions
+        self.preferenceDecision = preferenceDecision
     }
 }
 
-public struct SkillRepairPlanner {
+public struct SkillRepairPlanner: Sendable {
     public init() {}
 
     public func buildPlan(report: SkillDriftReport) -> SkillRepairPlan {

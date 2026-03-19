@@ -145,3 +145,18 @@ public struct PreferenceRule: Codable, Equatable, Sendable {
         )
     }
 }
+
+public extension PreferenceProfileDirective {
+    init(rule: PreferenceRule) {
+        self.init(
+            ruleId: rule.ruleId,
+            type: rule.type,
+            scope: rule.scope,
+            statement: rule.statement,
+            hint: rule.hint,
+            proposedAction: rule.proposedAction,
+            teacherConfirmed: rule.teacherConfirmed,
+            updatedAt: rule.updatedAt
+        )
+    }
+}

@@ -841,6 +841,13 @@ struct OpenStaffDashboardView: View {
                                             .foregroundStyle(.secondary)
                                             .textSelection(.enabled)
 
+                                        if let preferenceDecision = repairPlan.preferenceDecision {
+                                            Text("偏好装配：\(preferenceDecision.summary)")
+                                                .font(.caption2)
+                                                .foregroundStyle(.secondary)
+                                                .textSelection(.enabled)
+                                        }
+
                                         ForEach(repairPlan.actions, id: \.actionId) { action in
                                             HStack(alignment: .top, spacing: 8) {
                                                 VStack(alignment: .leading, spacing: 2) {
@@ -851,6 +858,23 @@ struct OpenStaffDashboardView: View {
                                                         .font(.caption2)
                                                         .foregroundStyle(.secondary)
                                                         .textSelection(.enabled)
+                                                    Text(action.reason)
+                                                        .font(.caption2)
+                                                        .foregroundStyle(.secondary)
+                                                        .textSelection(.enabled)
+                                                    if let preferenceReason = action.preferenceReason {
+                                                        Text(preferenceReason)
+                                                            .font(.caption2)
+                                                            .foregroundStyle(.secondary)
+                                                            .textSelection(.enabled)
+                                                    }
+                                                    if let appliedRuleIds = action.appliedRuleIds,
+                                                       !appliedRuleIds.isEmpty {
+                                                        Text("规则来源：\(appliedRuleIds.joined(separator: "、"))")
+                                                            .font(.caption2)
+                                                            .foregroundStyle(.secondary)
+                                                            .textSelection(.enabled)
+                                                    }
                                                 }
                                                 Spacer()
                                                 Button(action.type.buttonTitle) {
@@ -2135,7 +2159,15 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                     snapshot: snapshot,
                     skillDirectoryPath: skill.skillDirectoryPath
                 )
-                let repairPlan = SkillRepairPlanner().buildPlan(report: driftReport)
+                let preferenceSnapshot = try? PreferenceMemoryStore(
+                    preferencesRootDirectory: OpenStaffWorkspacePaths.preferencesDirectory
+                ).loadLatestProfileSnapshot()
+                let repairPlan = PreferenceAwareSkillRepairPlanner(
+                    preferenceProfile: preferenceSnapshot?.profile
+                ).buildPlan(
+                    report: driftReport,
+                    payload: payload
+                )
 
                 await MainActor.run { [weak self] in
                     self?.skillDriftProcessing = false

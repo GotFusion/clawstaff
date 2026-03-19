@@ -1106,6 +1106,8 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.4.3 Repair planner 第三个接入
 
+状态：已完成（2026-03-19，统一 `PolicyAssemblyDecision` 落盘仍留在 TODO 11.4.6）
+
 - 第一版只让偏好影响：
   - 先修 locator
   - 先 replay
@@ -1116,7 +1118,12 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `core/repair/PreferenceAwareSkillRepairPlanner.swift`
 
 **验收标准**
-- [ ] repair 建议可解释“为什么先给这个修法”。
+- [x] repair 建议可解释“为什么先给这个修法”。
+
+本次落地说明：
+- `PreferenceAwareSkillRepairPlanner` 会在默认 drift->repair heuristics 之上，对 `PreferenceProfile.repairPreferences` 做二次排序。
+- repair plan 会把命中的 `rule ids`、候选修法的 `preferenceReason` 与结构化 `preferenceDecision` 一起写入 JSON 输出。
+- GUI 技能详情页与 `OpenStaffReplayVerifyCLI --skill-dir` 都会自动尝试读取最新 `data/preferences` profile；skill provenance 中已有的 `taskFamily / skillFamily` 也会参与作用域匹配。
 
 #### TODO 11.4.4 Review 建议第四个接入
 

@@ -128,9 +128,26 @@ public struct SkillBundleProvenance: Codable, Equatable, Sendable {
 
 public struct SkillBundleSkillBuild: Codable, Equatable, Sendable {
     public let repairVersion: Int?
+    public let preferenceProfileVersion: String?
+    public let appliedPreferenceRuleIds: [String]?
+    public let preferenceSummary: String?
+    public let taskFamily: String?
+    public let skillFamily: String?
 
-    public init(repairVersion: Int? = nil) {
+    public init(
+        repairVersion: Int? = nil,
+        preferenceProfileVersion: String? = nil,
+        appliedPreferenceRuleIds: [String]? = nil,
+        preferenceSummary: String? = nil,
+        taskFamily: String? = nil,
+        skillFamily: String? = nil
+    ) {
         self.repairVersion = repairVersion
+        self.preferenceProfileVersion = preferenceProfileVersion
+        self.appliedPreferenceRuleIds = appliedPreferenceRuleIds
+        self.preferenceSummary = preferenceSummary
+        self.taskFamily = taskFamily
+        self.skillFamily = skillFamily
     }
 }
 

@@ -393,14 +393,14 @@
 - [x] skill 产物可追溯本次生成引用了哪些偏好规则
 
 ### TODO 11.4.3 Repair planner 偏好装配
-- [ ] 优先修 locator、先 replay、还是重新示教，支持偏好控制
-- [ ] 输出 repair 建议时显示规则命中来源
+- [x] 优先修 locator、先 replay、还是重新示教，支持偏好控制
+- [x] 输出 repair 建议时显示规则命中来源
 
 **输出物**
 - `core/repair/PreferenceAwareSkillRepairPlanner.swift`
 
 **验收标准**
-- [ ] 不同用户的 repair 建议策略可表现出差异
+- [x] 不同用户的 repair 建议策略可表现出差异
 
 ### TODO 11.4.4 Review 建议偏好装配
 - [ ] 审阅台提供更贴近老师偏好的建议动作

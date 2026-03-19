@@ -29,19 +29,6 @@ public struct PreferenceProfileDirective: Codable, Equatable, Sendable {
         self.teacherConfirmed = teacherConfirmed
         self.updatedAt = updatedAt
     }
-
-    public init(rule: PreferenceRule) {
-        self.init(
-            ruleId: rule.ruleId,
-            type: rule.type,
-            scope: rule.scope,
-            statement: rule.statement,
-            hint: rule.hint,
-            proposedAction: rule.proposedAction,
-            teacherConfirmed: rule.teacherConfirmed,
-            updatedAt: rule.updatedAt
-        )
-    }
 }
 
 public struct PreferenceProfile: Codable, Equatable, Sendable {
