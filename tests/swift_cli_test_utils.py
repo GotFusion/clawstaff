@@ -27,7 +27,11 @@ def build_swift_env() -> dict[str, str]:
     return env
 
 
-def run_swift_target(target: str, args: list[str]) -> subprocess.CompletedProcess[str]:
+def run_swift_target(
+    target: str,
+    args: list[str],
+    extra_env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     cmd = [
         "swift",
         "run",
@@ -36,10 +40,13 @@ def run_swift_target(target: str, args: list[str]) -> subprocess.CompletedProces
         target,
         *args,
     ]
+    env = build_swift_env()
+    if extra_env:
+        env.update(extra_env)
     return subprocess.run(
         cmd,
         cwd=REPO_ROOT,
-        env=build_swift_env(),
+        env=env,
         capture_output=True,
         text=True,
         check=False,

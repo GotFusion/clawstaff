@@ -184,6 +184,7 @@ class StudentPlannerFeatureFlagCLITests(unittest.TestCase):
                     "2026-03-19T10:35:00+08:00",
                     "--json-result",
                 ],
+                extra_env={"OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG": "1"},
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr or result.stdout)
@@ -200,6 +201,13 @@ class StudentPlannerFeatureFlagCLITests(unittest.TestCase):
                 payload["plan"]["preferenceDecision"]["appliedRuleIds"],
                 ["rule-safari-shortcut-001"],
             )
+            assembly_files = list((preferences_root / "assembly").rglob("*.json"))
+            self.assertEqual(len(assembly_files), 1)
+            assembly = json.loads(assembly_files[0].read_text(encoding="utf-8"))
+            self.assertEqual(assembly["targetModule"], "student")
+            self.assertEqual(assembly["strategyVersion"], "preference-aware-rule-v1")
+            self.assertEqual(assembly["appliedRuleIds"], ["rule-safari-shortcut-001"])
+            self.assertEqual(assembly["inputRef"]["traceId"], "trace-student-pref-001")
 
 
 if __name__ == "__main__":

@@ -523,6 +523,122 @@ public struct PreferenceAwareStudentPlanner: StudentTaskPlanning {
         }
         return result
     }
+
+    private func uniqueRuleIds(from hits: [StudentPlanningRuleHit]) -> [String] {
+        Array(Set(hits.map(\.ruleId))).sorted()
+    }
+}
+
+extension PreferenceAwareStudentPlanner: StudentPlanningPolicyAssemblyProviding {
+    public func buildPolicyAssemblyDecision(
+        input: StudentLoopInput,
+        plan: StudentExecutionPlan
+    ) -> PolicyAssemblyDecision? {
+        guard let profile = preferenceProfile,
+              !profile.plannerPreferences.isEmpty,
+              let planDecision = plan.preferenceDecision else {
+            return nil
+        }
+
+        let candidates = input.knowledgeItems
+            .filter { !$0.steps.isEmpty }
+            .map {
+                evaluateCandidate(
+                    item: $0,
+                    input: StudentPlanningInput(
+                        goal: input.goal,
+                        preferredKnowledgeItemId: input.preferredKnowledgeItemId,
+                        knowledgeItems: input.knowledgeItems
+                    ),
+                    directives: profile.plannerPreferences
+                )
+            }
+            .sorted(by: rankedCandidateSort)
+
+        guard let selected = candidates.first else {
+            return nil
+        }
+
+        let inputRef = PolicyAssemblyInputReference(
+            traceId: input.traceId,
+            sessionId: input.sessionId,
+            taskId: input.taskId ?? plan.selectedTaskId,
+            knowledgeItemId: plan.selectedKnowledgeItemId
+        )
+        let appliedRuleIds = uniqueRuleIds(
+            from: selected.ruleHits.filter { $0.scoreDelta > 0 }
+        )
+        let suppressedRuleIds = uniqueRuleIds(
+            from: candidates.flatMap { candidate in
+                if candidate.item.knowledgeItemId == selected.item.knowledgeItemId {
+                    return candidate.ruleHits.filter { $0.scoreDelta < 0 }
+                }
+                return candidate.ruleHits
+            }
+        )
+        let finalWeights = candidates.map { candidate in
+            let isSelected = candidate.item.knowledgeItemId == selected.item.knowledgeItemId
+            return PolicyAssemblyFinalWeight(
+                weightId: candidate.item.knowledgeItemId,
+                label: candidate.item.taskId,
+                kind: .candidate,
+                baseValue: candidate.baseScore,
+                finalValue: candidate.finalScore,
+                selected: isSelected,
+                appliedRuleIds: uniqueRuleIds(from: candidate.ruleHits.filter { $0.scoreDelta > 0 }),
+                notes: [policyAssemblyCandidateSummary(candidate, selected: selected)]
+            )
+        }
+        let ruleEvaluations = candidates.flatMap { candidate in
+            candidate.ruleHits.map { hit in
+                PolicyAssemblyRuleEvaluation(
+                    ruleId: hit.ruleId,
+                    targetId: candidate.item.knowledgeItemId,
+                    targetLabel: candidate.item.taskId,
+                    disposition: candidate.item.knowledgeItemId == selected.item.knowledgeItemId && hit.scoreDelta > 0
+                        ? .applied
+                        : .suppressed,
+                    matchScore: hit.matchScore,
+                    delta: hit.scoreDelta,
+                    explanation: hit.explanation
+                )
+            }
+        }
+
+        return PolicyAssemblyDecision(
+            decisionId: "policy-student-\(input.traceId)-\(selected.item.knowledgeItemId)",
+            targetModule: .student,
+            inputRef: inputRef,
+            profileVersion: planDecision.profileVersion,
+            strategyVersion: plan.plannerVersion,
+            appliedRuleIds: appliedRuleIds,
+            suppressedRuleIds: suppressedRuleIds,
+            finalDecisionSummary: planDecision.summary,
+            ruleEvaluations: ruleEvaluations,
+            finalWeights: finalWeights,
+            timestamp: input.timestamp
+        )
+    }
+
+    private func policyAssemblyCandidateSummary(
+        _ candidate: RankedStudentCandidate,
+        selected: RankedStudentCandidate
+    ) -> String {
+        let appliedRuleIds = uniqueRuleIds(from: candidate.ruleHits.filter { $0.scoreDelta > 0 })
+        let suppressedRuleIds = uniqueRuleIds(from: candidate.ruleHits.filter { $0.scoreDelta < 0 })
+        let scoreSegment = "base \(candidate.baseScore) -> final \(candidate.finalScore)"
+
+        if candidate.item.knowledgeItemId == selected.item.knowledgeItemId {
+            return "选中候选 \(candidate.item.knowledgeItemId)，命中规则 \(appliedRuleIds.joined(separator: "、"))，\(scoreSegment)。"
+        }
+        if !appliedRuleIds.isEmpty {
+            return "候选 \(candidate.item.knowledgeItemId) 命中规则 \(appliedRuleIds.joined(separator: "、"))，但最终权重不及选中项，\(scoreSegment)。"
+        }
+        if !suppressedRuleIds.isEmpty {
+            return "候选 \(candidate.item.knowledgeItemId) 仅命中压低规则 \(suppressedRuleIds.joined(separator: "、"))，\(scoreSegment)。"
+        }
+        return "候选 \(candidate.item.knowledgeItemId) 未命中偏好规则，\(scoreSegment)。"
+    }
 }
 
 private struct StudentPlanningRuleAssessment {

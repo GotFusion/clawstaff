@@ -129,6 +129,7 @@ class ReplaySkillDriftCLITests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)
             skill_dir = tmp_path / "skill-test"
+            preferences_root = tmp_path / "preferences"
             skill_dir.mkdir()
             snapshot_path = tmp_path / "snapshot.json"
 
@@ -148,8 +149,11 @@ class ReplaySkillDriftCLITests(unittest.TestCase):
                     str(skill_dir),
                     "--snapshot",
                     str(snapshot_path),
+                    "--preferences-root",
+                    str(preferences_root),
                     "--json",
                 ],
+                extra_env={"OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG": "1"},
             )
 
             self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
@@ -161,6 +165,12 @@ class ReplaySkillDriftCLITests(unittest.TestCase):
             self.assertEqual(drift_report["dominantDriftKind"], "uiTextChanged")
             self.assertEqual(drift_report["findings"][0]["failureReason"], "textAnchorChanged")
             self.assertTrue(any(action["type"] == "updateSkillLocator" for action in repair_plan["actions"]))
+            assembly_files = list((preferences_root / "assembly").rglob("*.json"))
+            self.assertEqual(len(assembly_files), 1)
+            assembly = json.loads(assembly_files[0].read_text(encoding="utf-8"))
+            self.assertEqual(assembly["targetModule"], "repair")
+            self.assertEqual(assembly["inputRef"]["sessionId"], "session-001")
+            self.assertEqual(assembly["strategyVersion"], "repair-heuristic-v1")
 
 
 if __name__ == "__main__":

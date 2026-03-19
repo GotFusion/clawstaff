@@ -276,6 +276,7 @@ class AssistRetrievalCLITests(unittest.TestCase):
                     "2026-03-19T10:15:00+08:00",
                     "--json-result",
                 ],
+                extra_env={"OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG": "1"},
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr or result.stdout)
@@ -290,6 +291,13 @@ class AssistRetrievalCLITests(unittest.TestCase):
             self.assertEqual(preference.get("appliedRuleIds"), ["rule-app-shortcut-001"])
             self.assertTrue(preference.get("candidateExplanations"))
             self.assertTrue(Path(payload["logFilePath"]).exists())
+            assembly_files = list((preferences_root / "assembly").rglob("*.json"))
+            self.assertEqual(len(assembly_files), 1)
+            assembly = json.loads(assembly_files[0].read_text(encoding="utf-8"))
+            self.assertEqual(assembly["targetModule"], "assist")
+            self.assertEqual(assembly["strategyVersion"], "preferenceAwareRetrievalV1")
+            self.assertEqual(assembly["appliedRuleIds"], ["rule-app-shortcut-001"])
+            self.assertEqual(assembly["inputRef"]["traceId"], "trace-e2e-assist-preference-001")
 
 
 if __name__ == "__main__":

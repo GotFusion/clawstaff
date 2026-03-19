@@ -433,15 +433,20 @@
 - 默认 student 模式仍输出 `ruleV0 / rule-v0`，不会因为 Phase 11 自动放开。
 
 ### TODO 11.4.6 记录 `PolicyAssemblyDecision`
-- [ ] 每次 assist / student / skill generation / repair 输出一条 assembly log
-- [ ] 记录命中的 rule ids、被排除的规则、最终权重
+- [x] 每次 assist / student / skill generation / repair 输出一条 assembly log
+- [x] 记录命中的 rule ids、被排除的规则、最终权重
+
+补充说明：
+- 统一日志默认挂在 feature flag 后，仅当 `OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG=1` 时启用。
+- Swift 端 assist / student / repair 与 Python `openclaw_skill_mapper.py` 会统一写入 `data/preferences/assembly/{date}/{module}/{sessionId}/{decisionId}.json`。
+- student planner 本身仍需单独满足 `--enable-preference-aware-planner + --student-planner-benchmark-safe` 或对应 App 环境变量；`PolicyAssemblyDecision` 只负责解释与留痕，不会放开默认自动执行。
 
 **输出物**
 - `core/contracts/PolicyAssemblyDecisionContracts.swift`
 - `core/storage/PolicyAssemblyDecisionStore.swift`
 
 **验收标准**
-- [ ] 任意一次系统行为都可回答“这次为什么这样做”
+- [x] 任意一次系统行为都可回答“这次为什么这样做”
 
 ---
 

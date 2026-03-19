@@ -51,12 +51,24 @@ struct OpenStaffReplayVerifyCLI {
                 let preferenceProfile = try ReplayVerifyPreferenceProfileLoader().loadLatestProfile(
                     from: options.preferencesRootURL
                 )
-                let repairPlan = PreferenceAwareSkillRepairPlanner(
+                let repairPlanner = PreferenceAwareSkillRepairPlanner(
                     preferenceProfile: preferenceProfile
-                ).buildPlan(
+                )
+                let repairPlan = repairPlanner.buildPlan(
                     report: driftReport,
                     payload: payload
                 )
+                if let policyAssemblyWriter = PolicyAssemblyDecisionFeatureFlag.storeIfEnabled(
+                    preferencesRootDirectory: options.preferencesRootURL
+                ) {
+                    try policyAssemblyWriter.store(
+                        repairPlanner.buildPolicyAssemblyDecision(
+                            report: driftReport,
+                            payload: payload,
+                            plan: repairPlan
+                        )
+                    )
+                }
                 let output = SkillDriftCLIOutput(
                     generatedAt: currentTimestamp(),
                     snapshot: snapshot,

@@ -22,6 +22,10 @@
   - 写入 `data/preferences/rules/{ruleId}.json`、`data/preferences/profiles/{profileVersion}.json`
   - 追加 `data/preferences/audit/{date}.jsonl`
   - 维护 `signals/index/by-id` 与 `rules/index/{global,by-app,by-task-family,by-skill-family}`，支持按作用域快速查询与规则回滚追溯
+- `PolicyAssemblyDecisionStore.swift`：偏好装配解释日志：
+  - 默认挂在 `OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG=1` feature flag 后
+  - 写入 `data/preferences/assembly/{date}/{module}/{sessionId}/{decisionId}.json`
+  - 统一承载 assist / student / skill generation / repair 的 `appliedRuleIds / suppressedRuleIds / finalWeights / finalDecisionSummary`
 
 ## 后续实现
 - 知识文件存储结构与版本管理。

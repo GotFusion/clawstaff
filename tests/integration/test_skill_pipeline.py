@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -12,10 +13,14 @@ VALIDATOR = REPO_ROOT / "scripts/skills/validate_openclaw_skill.py"
 
 
 class SkillPipelineIntegrationTests(unittest.TestCase):
-    def run_cmd(self, args):
+    def run_cmd(self, args, env: dict[str, str] | None = None):
+        merged_env = os.environ.copy()
+        if env:
+            merged_env.update(env)
         return subprocess.run(
             args,
             cwd=REPO_ROOT,
+            env=merged_env,
             capture_output=True,
             text=True,
             check=False,
@@ -81,6 +86,7 @@ class SkillPipelineIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)
             skills_root = tmp_path / "skills"
+            preferences_root = tmp_path / "preferences"
             profile_path = tmp_path / "profile.json"
             profile_path.write_text(
                 json.dumps(
@@ -137,9 +143,12 @@ class SkillPipelineIntegrationTests(unittest.TestCase):
                     "--overwrite",
                     "--preference-profile",
                     str(profile_path),
+                    "--preferences-root",
+                    str(preferences_root),
                     "--task-family",
                     "browser.navigation",
-                ]
+                ],
+                env={"OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG": "1"},
             )
             self.assertEqual(mapper.returncode, 0, msg=mapper.stderr or mapper.stdout)
 
@@ -158,6 +167,15 @@ class SkillPipelineIntegrationTests(unittest.TestCase):
                 ["ax", "textAnchor", "imageAnchor", "relativeCoordinate", "absoluteCoordinate"],
             )
             self.assertTrue(mapping["mappedOutput"]["executionPlan"]["requiresTeacherConfirmation"])
+            assembly_files = list((preferences_root / "assembly").rglob("*.json"))
+            self.assertEqual(len(assembly_files), 1)
+            assembly = json.loads(assembly_files[0].read_text(encoding="utf-8"))
+            self.assertEqual(assembly["targetModule"], "skillGeneration")
+            self.assertEqual(assembly["profileVersion"], "profile-skill-pipeline-001")
+            self.assertEqual(
+                assembly["appliedRuleIds"],
+                ["rule-safari-locator-001", "rule-browser-risk-001"],
+            )
 
             validator = self.run_cmd([sys.executable, str(VALIDATOR), "--skill-dir", str(skill_dir)])
             self.assertEqual(validator.returncode, 0, msg=validator.stderr or validator.stdout)

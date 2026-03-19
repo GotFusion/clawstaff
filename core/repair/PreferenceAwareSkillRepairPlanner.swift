@@ -751,3 +751,113 @@ private enum RepairDirectiveInterpretation {
         }
     }
 }
+
+public extension PreferenceAwareSkillRepairPlanner {
+    func buildPolicyAssemblyDecision(
+        report: SkillDriftReport,
+        payload: SkillBundlePayload?,
+        plan: SkillRepairPlan
+    ) -> PolicyAssemblyDecision {
+        let inputRef = PolicyAssemblyInputReference(
+            sessionId: report.sessionId,
+            taskId: report.taskId,
+            knowledgeItemId: report.knowledgeItemId,
+            skillName: report.skillName,
+            skillDirectoryPath: report.skillDirectoryPath
+        )
+
+        guard let decision = plan.preferenceDecision else {
+            let profileVersion = payload?.provenance?.skillBuild?.preferenceProfileVersion
+            let suppressedRuleIds = Array(
+                Set(plan.actions.dropFirst().flatMap { $0.appliedRuleIds ?? [] })
+            ).sorted()
+            let finalWeights = plan.actions.enumerated().map { index, action in
+                PolicyAssemblyFinalWeight(
+                    weightId: action.actionId,
+                    label: action.title,
+                    kind: .action,
+                    finalValue: max(0.2, 1.0 - (Double(index) * 0.05)),
+                    selected: index == 0,
+                    appliedRuleIds: action.appliedRuleIds ?? [],
+                    notes: [action.preferenceReason ?? action.reason]
+                )
+            }
+
+            return PolicyAssemblyDecision(
+                decisionId: "policy-repair-\(report.sessionId)-\(report.skillName)",
+                targetModule: .repair,
+                inputRef: inputRef,
+                profileVersion: profileVersion,
+                strategyVersion: "repair-heuristic-v1",
+                appliedRuleIds: plan.actions.first?.appliedRuleIds ?? [],
+                suppressedRuleIds: suppressedRuleIds,
+                finalDecisionSummary: plan.summary,
+                ruleEvaluations: [],
+                finalWeights: finalWeights,
+                timestamp: report.detectedAt
+            )
+        }
+
+        let selectedCandidate = decision.candidateExplanations.first { candidate in
+            candidate.actionId == decision.selectedActionId
+        }
+        let appliedRuleIds = Array(
+            Set(selectedCandidate?.ruleHits.filter { $0.priorityDelta > 0 }.map { $0.ruleId } ?? [])
+        ).sorted()
+        let suppressedRuleIds = Array(
+            Set(
+                decision.candidateExplanations.flatMap { candidate in
+                    if candidate.actionId == decision.selectedActionId {
+                        return candidate.ruleHits
+                            .filter { $0.priorityDelta < 0 }
+                            .map { $0.ruleId }
+                    }
+                    return candidate.ruleHits.map { $0.ruleId }
+                }
+            )
+        ).sorted()
+        let finalWeights = decision.candidateExplanations.map { candidate in
+            PolicyAssemblyFinalWeight(
+                weightId: candidate.actionId,
+                label: candidate.actionTitle,
+                kind: .action,
+                baseValue: candidate.basePriority,
+                finalValue: candidate.finalPriority,
+                selected: candidate.actionId == decision.selectedActionId,
+                appliedRuleIds: candidate.ruleHits
+                    .filter { $0.priorityDelta > 0 }
+                    .map { $0.ruleId },
+                notes: [candidate.summary]
+            )
+        }
+        let ruleEvaluations = decision.candidateExplanations.flatMap { candidate in
+            candidate.ruleHits.map { hit in
+                PolicyAssemblyRuleEvaluation(
+                    ruleId: hit.ruleId,
+                    targetId: candidate.actionId,
+                    targetLabel: candidate.actionTitle,
+                    disposition: candidate.actionId == decision.selectedActionId && hit.priorityDelta > 0
+                        ? .applied
+                        : .suppressed,
+                    matchScore: hit.matchScore,
+                    delta: hit.priorityDelta,
+                    explanation: hit.explanation
+                )
+            }
+        }
+
+        return PolicyAssemblyDecision(
+            decisionId: "policy-repair-\(report.sessionId)-\(decision.selectedActionId)",
+            targetModule: .repair,
+            inputRef: inputRef,
+            profileVersion: decision.profileVersion,
+            strategyVersion: "preference-aware-repair-v1",
+            appliedRuleIds: appliedRuleIds,
+            suppressedRuleIds: suppressedRuleIds,
+            finalDecisionSummary: decision.summary,
+            ruleEvaluations: ruleEvaluations,
+            finalWeights: finalWeights,
+            timestamp: report.detectedAt
+        )
+    }
+}

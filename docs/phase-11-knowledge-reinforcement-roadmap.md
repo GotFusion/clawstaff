@@ -538,7 +538,7 @@ Phase 11 第一版先把学习工件固定到以下目录：
 - `data/preferences/signals/{date}/{sessionId}/{turnId}.json`
 - `data/preferences/rules/{ruleId}.json`
 - `data/preferences/profiles/{profileVersion}.json`
-- `data/preferences/assembly/{date}/{sessionId}.jsonl`
+- `data/preferences/assembly/{date}/{module}/{sessionId}/{decisionId}.json`
 - `data/preferences/audit/{date}.jsonl`
 
 要求：
@@ -1060,7 +1060,7 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.4.1 Assist 偏好重排先落地
 
-状态：已完成（2026-03-19，统一 assembly log 仍留在 TODO 11.4.6）
+状态：已完成（2026-03-19，统一 assembly log 已在 TODO 11.4.6 落盘）
 
 - 只改 rerank，不改基础 retrieval。
 - 输出必须附带：
@@ -1076,7 +1076,7 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.4.2 Skill mapper 第二个接入
 
-状态：已完成（2026-03-19，统一 `PolicyAssemblyDecision` 落盘仍留在 TODO 11.4.6）
+状态：已完成（2026-03-19，统一 `PolicyAssemblyDecision` 落盘已在 TODO 11.4.6 完成）
 
 - 第一版只改：
   - `nativeAction` / `guiAction` 分流
@@ -1106,7 +1106,7 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.4.3 Repair planner 第三个接入
 
-状态：已完成（2026-03-19，统一 `PolicyAssemblyDecision` 落盘仍留在 TODO 11.4.6）
+状态：已完成（2026-03-19，统一 `PolicyAssemblyDecision` 落盘已在 TODO 11.4.6 完成）
 
 - 第一版只让偏好影响：
   - 先修 locator
@@ -1127,7 +1127,7 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.4.4 Review 建议第四个接入
 
-状态：已完成（2026-03-19，统一 `PolicyAssemblyDecision` 落盘仍留在 TODO 11.4.6）
+状态：已完成（2026-03-19，统一 `PolicyAssemblyDecision` 落盘已在 TODO 11.4.6 完成）
 
 - 审阅台只做建议排序，不自动替老师做决定。
 
@@ -1165,6 +1165,24 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `OpenStaffStudentCLI` 默认仍走 `RuleBasedStudentTaskPlanner`；只有同时传入 `--enable-preference-aware-planner` 与 `--student-planner-benchmark-safe` 才切到偏好装配 planner。
 - GUI 的 `IntegratedModeWorkflows.runStudentLoop` 同样默认关闭；仅在 `OPENSTAFF_ENABLE_PREFERENCE_AWARE_STUDENT_PLANNER=1` 与 `OPENSTAFF_STUDENT_PLANNER_BENCHMARK_SAFE=1` 同时满足时启用。
 - 已补齐 Swift 单测与 CLI 集成回归，验证默认 `ruleV0` 不变、feature flag 开启后才输出 `preferenceAwareRuleV1`。
+
+#### TODO 11.4.6 记录 `PolicyAssemblyDecision`
+
+状态：已完成（2026-03-19，默认仍挂在 `OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG=1` feature flag 后）
+
+**输出物**
+- `core/contracts/PolicyAssemblyDecisionContracts.swift`
+- `core/storage/PolicyAssemblyDecisionStore.swift`
+
+**验收标准**
+- [x] assist / student / skill generation / repair 在启用 feature flag 时都会写出一条 assembly decision。
+- [x] 决策文件统一记录 `appliedRuleIds / suppressedRuleIds / finalWeights / finalDecisionSummary`。
+- [x] 日志写入 `data/preferences/assembly/{date}/{module}/{sessionId}/{decisionId}.json`，可按日期 / 模块 / session 查询。
+
+本次落地说明：
+- Swift 端新增 `PolicyAssemblyDecisionStore` 与统一 contract，assist / student orchestrator、repair planner CLI 与 GUI 都会在 feature flag 打开时自动写盘。
+- Python `scripts/skills/openclaw_skill_mapper.py` 同样支持在相同 feature flag 下落盘 skill generation 的装配决策，不要求额外 CLI flag。
+- student planner 的执行开关仍独立受 `--enable-preference-aware-planner` / `--student-planner-benchmark-safe` 与对应 App 环境变量控制；`PolicyAssemblyDecision` 只增加解释性与可追溯性。
 
 ---
 

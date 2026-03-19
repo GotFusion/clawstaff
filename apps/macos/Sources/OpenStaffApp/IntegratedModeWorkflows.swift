@@ -196,7 +196,10 @@ final class IntegratedModeWorkflowRunner {
             ),
             confirmationPrompter: AssistPopupConfirmationPrompter(forcedDecision: true),
             actionExecutor: AssistActionExecutor(),
-            logWriter: AssistLoopLogWriter(logsRootDirectory: OpenStaffWorkspacePaths.logsDirectory)
+            logWriter: AssistLoopLogWriter(logsRootDirectory: OpenStaffWorkspacePaths.logsDirectory),
+            policyAssemblyWriter: PolicyAssemblyDecisionFeatureFlag.storeIfEnabled(
+                preferencesRootDirectory: OpenStaffWorkspacePaths.preferencesDirectory
+            )
         )
 
         let traceId = "trace-gui-assist-\(UUID().uuidString.lowercased())"
@@ -258,7 +261,10 @@ final class IntegratedModeWorkflowRunner {
             planner: planner,
             skillExecutor: StudentSkillExecutor(),
             logWriter: StudentLoopLogWriter(logsRootDirectory: OpenStaffWorkspacePaths.logsDirectory),
-            reportWriter: StudentReviewReportWriter(reportsRootDirectory: OpenStaffWorkspacePaths.reportsDirectory)
+            reportWriter: StudentReviewReportWriter(reportsRootDirectory: OpenStaffWorkspacePaths.reportsDirectory),
+            policyAssemblyWriter: PolicyAssemblyDecisionFeatureFlag.storeIfEnabled(
+                preferencesRootDirectory: OpenStaffWorkspacePaths.preferencesDirectory
+            )
         )
 
         let goal = resolveGoal(preferredGoal: preferredGoal, fallbackItem: primaryItem)

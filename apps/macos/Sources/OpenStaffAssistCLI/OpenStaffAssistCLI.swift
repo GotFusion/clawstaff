@@ -32,13 +32,17 @@ struct OpenStaffAssistCLI {
             let prompter = AssistPopupConfirmationPrompter(forcedDecision: options.autoConfirm)
             let executor = AssistActionExecutor()
             let logWriter = AssistLoopLogWriter(logsRootDirectory: options.logsRootDirectoryURL)
+            let policyAssemblyWriter = PolicyAssemblyDecisionFeatureFlag.storeIfEnabled(
+                preferencesRootDirectory: options.preferencesRootURL
+            )
 
             let orchestrator = AssistModeLoopOrchestrator(
                 modeStateMachine: stateMachine,
                 predictor: predictor,
                 confirmationPrompter: prompter,
                 actionExecutor: executor,
-                logWriter: logWriter
+                logWriter: logWriter,
+                policyAssemblyWriter: policyAssemblyWriter
             )
 
             let input = AssistLoopInput(

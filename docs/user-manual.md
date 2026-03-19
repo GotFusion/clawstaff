@@ -40,6 +40,7 @@ cp .env.example .env.local
 - `OPENCLAW_CLI_PATH`：OpenClaw 可执行文件路径；阶段 8.2 的 `OpenClawRunner` / `OpenStaffOpenClawCLI` 会优先使用它，未设置时回退到本地 gateway。
 - `OPENSTAFF_ENABLE_PREFERENCE_AWARE_STUDENT_PLANNER`：当值为 `1/true/yes/on` 时，请求启用 student planner 偏好装配。
 - `OPENSTAFF_STUDENT_PLANNER_BENCHMARK_SAFE`：当值为 `1/true/yes/on` 时，表示已完成人工 benchmark-safe attestation；需与上一项同时设置，App 内 student workflow 才会真正切到偏好装配 planner。
+- `OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG`：当值为 `1/true/yes/on` 时，把 assist / student / skill generation / repair 的偏好装配决策写入 `data/preferences/assembly/**`，默认关闭。
 
 ### 2.4 配置文件
 - 默认配置：`config/default.yaml`

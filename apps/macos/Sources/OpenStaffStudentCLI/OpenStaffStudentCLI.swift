@@ -37,13 +37,17 @@ struct OpenStaffStudentCLI {
             let skillExecutor = StudentSkillExecutor()
             let logWriter = StudentLoopLogWriter(logsRootDirectory: options.logsRootDirectoryURL)
             let reportWriter = StudentReviewReportWriter(reportsRootDirectory: options.reportsRootDirectoryURL)
+            let policyAssemblyWriter = PolicyAssemblyDecisionFeatureFlag.storeIfEnabled(
+                preferencesRootDirectory: options.preferencesRootURL
+            )
 
             let orchestrator = StudentModeLoopOrchestrator(
                 modeStateMachine: stateMachine,
                 planner: planner,
                 skillExecutor: skillExecutor,
                 logWriter: logWriter,
-                reportWriter: reportWriter
+                reportWriter: reportWriter,
+                policyAssemblyWriter: policyAssemblyWriter
             )
 
             let input = StudentLoopInput(

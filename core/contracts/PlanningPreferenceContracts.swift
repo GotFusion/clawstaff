@@ -62,7 +62,7 @@ public struct StudentPlanningPreferenceDecision: Codable, Equatable, Sendable {
         self.summary = summary
     }
 
-    private static func ruleHitSort(
+    static func ruleHitSort(
         lhs: StudentPlanningRuleHit,
         rhs: StudentPlanningRuleHit
     ) -> Bool {

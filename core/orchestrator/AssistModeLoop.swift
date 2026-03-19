@@ -189,6 +189,7 @@ public final class AssistModeLoopOrchestrator {
     private let confirmationPrompter: AssistConfirmationPrompting
     private let actionExecutor: AssistActionExecuting
     private let logWriter: AssistLoopLogWriting
+    private let policyAssemblyWriter: PolicyAssemblyDecisionWriting?
     private let nowProvider: () -> Date
     private let formatter: ISO8601DateFormatter
     private let outputEncoder: JSONEncoder
@@ -199,6 +200,7 @@ public final class AssistModeLoopOrchestrator {
         confirmationPrompter: AssistConfirmationPrompting,
         actionExecutor: AssistActionExecuting,
         logWriter: AssistLoopLogWriting,
+        policyAssemblyWriter: PolicyAssemblyDecisionWriting? = nil,
         nowProvider: @escaping () -> Date = Date.init
     ) {
         self.modeStateMachine = modeStateMachine
@@ -206,6 +208,7 @@ public final class AssistModeLoopOrchestrator {
         self.confirmationPrompter = confirmationPrompter
         self.actionExecutor = actionExecutor
         self.logWriter = logWriter
+        self.policyAssemblyWriter = policyAssemblyWriter
         self.nowProvider = nowProvider
 
         let formatter = ISO8601DateFormatter()
@@ -307,6 +310,8 @@ public final class AssistModeLoopOrchestrator {
                 message: "No suggestion available."
             )
         }
+
+        try writePolicyAssemblyDecision(input: input, suggestion: suggestion)
 
         latestLogFile = try appendLog(
             input: input,
@@ -421,5 +426,125 @@ public final class AssistModeLoopOrchestrator {
             print(line)
         }
         return url
+    }
+
+    private func writePolicyAssemblyDecision(
+        input: AssistLoopInput,
+        suggestion: AssistSuggestion
+    ) throws {
+        guard let policyAssemblyWriter else {
+            return
+        }
+
+        try policyAssemblyWriter.store(
+            buildPolicyAssemblyDecision(
+                input: input,
+                suggestion: suggestion
+            )
+        )
+    }
+
+    private func buildPolicyAssemblyDecision(
+        input: AssistLoopInput,
+        suggestion: AssistSuggestion
+    ) -> PolicyAssemblyDecision {
+        let inputRef = PolicyAssemblyInputReference(
+            traceId: input.traceId,
+            sessionId: input.sessionId,
+            taskId: input.taskId ?? suggestion.taskId,
+            knowledgeItemId: suggestion.knowledgeItemId,
+            stepId: suggestion.stepId
+        )
+
+        guard let decision = suggestion.preferenceDecision else {
+            return PolicyAssemblyDecision(
+                decisionId: "policy-assist-\(input.traceId)-\(suggestion.stepId)",
+                targetModule: .assist,
+                inputRef: inputRef,
+                strategyVersion: suggestion.predictorVersion,
+                appliedRuleIds: [],
+                suppressedRuleIds: [],
+                finalDecisionSummary: "Assist 通过 \(suggestion.predictorVersion) 选择了 \(suggestion.stepId)，未记录到偏好装配命中。",
+                ruleEvaluations: [],
+                finalWeights: [
+                    PolicyAssemblyFinalWeight(
+                        weightId: "\(suggestion.knowledgeItemId)::\(suggestion.stepId)",
+                        label: suggestion.action.instruction,
+                        kind: .candidate,
+                        finalValue: suggestion.confidence,
+                        selected: true,
+                        notes: [suggestion.action.reason]
+                    )
+                ],
+                timestamp: input.timestamp
+            )
+        }
+
+        let selectedCandidate = decision.candidateExplanations.first { candidate in
+            candidate.knowledgeItemId == decision.selectedKnowledgeItemId
+                && candidate.stepId == decision.selectedStepId
+        }
+        let appliedRuleIds = uniqueRuleIds(
+            from: selectedCandidate?.ruleHits.filter { $0.delta > 0 } ?? []
+        )
+        let suppressedRuleIds = uniqueRuleIds(
+            from: decision.candidateExplanations.flatMap { candidate in
+                let isSelected = candidate.knowledgeItemId == decision.selectedKnowledgeItemId
+                    && candidate.stepId == decision.selectedStepId
+                if isSelected {
+                    return candidate.ruleHits.filter { $0.delta < 0 }
+                }
+                return candidate.ruleHits
+            }
+        )
+        let finalWeights = decision.candidateExplanations.map { candidate in
+            let candidateIsSelected = candidate.knowledgeItemId == decision.selectedKnowledgeItemId
+                && candidate.stepId == decision.selectedStepId
+            let candidateRuleHits = candidate.ruleHits.filter { $0.delta > 0 }
+            return PolicyAssemblyFinalWeight(
+                weightId: "\(candidate.knowledgeItemId)::\(candidate.stepId)",
+                label: candidate.stepInstruction,
+                kind: .candidate,
+                baseValue: candidate.baseScore,
+                finalValue: candidate.finalScore,
+                selected: candidateIsSelected,
+                appliedRuleIds: uniqueRuleIds(from: candidateRuleHits),
+                notes: candidate.loweredReasons + [candidate.summary]
+            )
+        }
+        let ruleEvaluations = decision.candidateExplanations.flatMap { candidate in
+            candidate.ruleHits.map { hit in
+                let candidateIsSelected = candidate.knowledgeItemId == decision.selectedKnowledgeItemId
+                    && candidate.stepId == decision.selectedStepId
+                return PolicyAssemblyRuleEvaluation(
+                    ruleId: hit.ruleId,
+                    targetId: "\(candidate.knowledgeItemId)::\(candidate.stepId)",
+                    targetLabel: candidate.stepInstruction,
+                    disposition: candidateIsSelected && hit.delta > 0 ? .applied : .suppressed,
+                    matchScore: hit.matchScore,
+                    weight: hit.weight,
+                    delta: hit.delta,
+                    explanation: hit.explanation
+                )
+            }
+        }
+
+        return PolicyAssemblyDecision(
+            decisionId: "policy-assist-\(input.traceId)-\(decision.selectedStepId)",
+            targetModule: .assist,
+            inputRef: inputRef,
+            profileVersion: decision.profileVersion,
+            strategyVersion: suggestion.predictorVersion,
+            appliedRuleIds: appliedRuleIds,
+            suppressedRuleIds: suppressedRuleIds,
+            finalDecisionSummary: decision.summary,
+            ruleEvaluations: ruleEvaluations,
+            finalWeights: finalWeights,
+            timestamp: input.timestamp
+        )
+    }
+
+    private func uniqueRuleIds(from hits: [AssistPreferenceRuleHit]) -> [String] {
+        Array(Set(hits.map { $0.ruleId })).sorted()
     }
 }

@@ -57,6 +57,13 @@ public protocol StudentTaskPlanning {
     func plan(input: StudentPlanningInput) -> StudentExecutionPlan?
 }
 
+public protocol StudentPlanningPolicyAssemblyProviding {
+    func buildPolicyAssemblyDecision(
+        input: StudentLoopInput,
+        plan: StudentExecutionPlan
+    ) -> PolicyAssemblyDecision?
+}
+
 public struct RuleBasedStudentTaskPlanner: StudentTaskPlanning {
     public init() {}
 
@@ -137,6 +144,7 @@ public final class StudentModeLoopOrchestrator {
     private let skillExecutor: StudentSkillExecuting
     private let logWriter: StudentLoopLogWriting
     private let reportWriter: StudentReviewReportWriting
+    private let policyAssemblyWriter: PolicyAssemblyDecisionWriting?
     private let nowProvider: () -> Date
     private let formatter: ISO8601DateFormatter
     private let outputEncoder: JSONEncoder
@@ -147,6 +155,7 @@ public final class StudentModeLoopOrchestrator {
         skillExecutor: StudentSkillExecuting,
         logWriter: StudentLoopLogWriting,
         reportWriter: StudentReviewReportWriting,
+        policyAssemblyWriter: PolicyAssemblyDecisionWriting? = nil,
         nowProvider: @escaping () -> Date = Date.init
     ) {
         self.modeStateMachine = modeStateMachine
@@ -154,6 +163,7 @@ public final class StudentModeLoopOrchestrator {
         self.skillExecutor = skillExecutor
         self.logWriter = logWriter
         self.reportWriter = reportWriter
+        self.policyAssemblyWriter = policyAssemblyWriter
         self.nowProvider = nowProvider
 
         let formatter = ISO8601DateFormatter()
@@ -254,6 +264,8 @@ public final class StudentModeLoopOrchestrator {
                 )
             }
         }
+
+        try writePolicyAssemblyDecision(input: input, plan: plan)
 
         latestLogFile = try appendLog(
             input: input,
@@ -370,6 +382,69 @@ public final class StudentModeLoopOrchestrator {
             blockedSteps: blockedSteps,
             finalStatus: finalStatus,
             summary: summary
+        )
+    }
+
+    private func writePolicyAssemblyDecision(
+        input: StudentLoopInput,
+        plan: StudentExecutionPlan
+    ) throws {
+        guard let policyAssemblyWriter else {
+            return
+        }
+
+        try policyAssemblyWriter.store(
+            buildPolicyAssemblyDecision(
+                input: input,
+                plan: plan
+            )
+        )
+    }
+
+    private func buildPolicyAssemblyDecision(
+        input: StudentLoopInput,
+        plan: StudentExecutionPlan
+    ) -> PolicyAssemblyDecision {
+        if let provider = planner as? StudentPlanningPolicyAssemblyProviding,
+           let detailedDecision = provider.buildPolicyAssemblyDecision(input: input, plan: plan) {
+            return detailedDecision
+        }
+
+        let inputRef = PolicyAssemblyInputReference(
+            traceId: input.traceId,
+            sessionId: input.sessionId,
+            taskId: input.taskId ?? plan.selectedTaskId,
+            knowledgeItemId: plan.selectedKnowledgeItemId
+        )
+
+        let totalConfidence = plan.steps.reduce(0.0) { partial, step in
+            partial + step.confidence
+        }
+        let averageConfidence = plan.steps.isEmpty
+            ? 0
+            : totalConfidence / Double(plan.steps.count)
+        return PolicyAssemblyDecision(
+            decisionId: "policy-student-\(input.traceId)-\(plan.selectedKnowledgeItemId)",
+            targetModule: .student,
+            inputRef: inputRef,
+            strategyVersion: plan.plannerVersion,
+            appliedRuleIds: plan.preferenceDecision?.appliedRuleIds ?? [],
+            suppressedRuleIds: [],
+            finalDecisionSummary: plan.preferenceDecision?.summary
+                ?? "Student planner 使用 \(plan.plannerVersion) 选择了 \(plan.selectedKnowledgeItemId)，未记录到偏好装配命中。",
+            ruleEvaluations: [],
+            finalWeights: [
+                PolicyAssemblyFinalWeight(
+                    weightId: plan.selectedKnowledgeItemId,
+                    label: plan.goal,
+                    kind: .candidate,
+                    finalValue: averageConfidence,
+                    selected: true,
+                    appliedRuleIds: plan.preferenceDecision?.appliedRuleIds ?? [],
+                    notes: ["strategy=\(plan.strategy.rawValue)"]
+                )
+            ],
+            timestamp: input.timestamp
         )
     }
 

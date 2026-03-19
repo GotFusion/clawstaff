@@ -2271,12 +2271,24 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                 let preferenceSnapshot = try? PreferenceMemoryStore(
                     preferencesRootDirectory: OpenStaffWorkspacePaths.preferencesDirectory
                 ).loadLatestProfileSnapshot()
-                let repairPlan = PreferenceAwareSkillRepairPlanner(
+                let repairPlanner = PreferenceAwareSkillRepairPlanner(
                     preferenceProfile: preferenceSnapshot?.profile
-                ).buildPlan(
+                )
+                let repairPlan = repairPlanner.buildPlan(
                     report: driftReport,
                     payload: payload
                 )
+                if let policyAssemblyWriter = PolicyAssemblyDecisionFeatureFlag.storeIfEnabled(
+                    preferencesRootDirectory: OpenStaffWorkspacePaths.preferencesDirectory
+                ) {
+                    try policyAssemblyWriter.store(
+                        repairPlanner.buildPolicyAssemblyDecision(
+                            report: driftReport,
+                            payload: payload,
+                            plan: repairPlan
+                        )
+                    )
+                }
 
                 await MainActor.run { [weak self] in
                     self?.skillDriftProcessing = false

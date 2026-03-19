@@ -13,6 +13,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -38,6 +39,7 @@ GUI_LOCATOR_STRATEGY_ORDER = [
     "relativeCoordinate",
     "absoluteCoordinate",
 ]
+POLICY_ASSEMBLY_FLAG_ENV = "OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG"
 
 
 def iso_now() -> str:
@@ -65,6 +67,23 @@ def write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
         f.write(content.rstrip() + "\n")
+
+
+def feature_flag_enabled(env_key: str, environment: dict[str, str] | None = None) -> bool:
+    source = environment or os.environ
+    raw = source.get(env_key, "").strip().lower()
+    return raw in {"1", "true", "yes", "on", "enabled"}
+
+
+def date_key(timestamp: str) -> str:
+    candidate = (timestamp or "")[:10]
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", candidate):
+        return candidate
+    return datetime.now().astimezone().strftime("%Y-%m-%d")
+
+
+def encoded_path_component(value: str) -> str:
+    return quote(value, safe="._-%")
 
 
 def slugify(value: str, fallback: str) -> str:
@@ -651,6 +670,7 @@ def assemble_skill_preferences(
         "taskFamily": normalize_optional_string(task_family),
         "skillFamily": normalize_optional_string(skill_family),
         "appliedRuleIds": [],
+        "suppressedRuleIds": [],
         "procedureNotes": [],
         "locatorNotes": [],
         "styleNotes": [],
@@ -669,6 +689,13 @@ def assemble_skill_preferences(
         empty["profileVersion"] = profile_version
         return empty, diagnostics
 
+    available_rule_ids = unique_strings(
+        [
+            normalize_string(raw_directive.get("ruleId"))
+            for raw_directive in directives
+            if isinstance(raw_directive, dict)
+        ]
+    )
     matched_directives: list[dict[str, Any]] = []
     for raw_directive in directives:
         if not isinstance(raw_directive, dict):
@@ -704,6 +731,7 @@ def assemble_skill_preferences(
     if not matched_directives:
         diagnostics.append("Preference profile loaded, but no skillPreferences matched current knowledge context.")
         empty["profileVersion"] = profile_version
+        empty["suppressedRuleIds"] = available_rule_ids
         empty["summary"] = (
             f"Preference profile {profile_version} loaded, but no skill preference rules matched."
             if profile_version
@@ -712,6 +740,9 @@ def assemble_skill_preferences(
         return empty, diagnostics
 
     applied_rule_ids = unique_strings([directive["ruleId"] for directive in matched_directives])
+    suppressed_rule_ids = unique_strings(
+        [rule_id for rule_id in available_rule_ids if rule_id not in set(applied_rule_ids)]
+    )
     procedure_notes = unique_strings(
         [directive["hint"] or directive["statement"] for directive in matched_directives if directive["type"] == "procedure"]
     )
@@ -743,6 +774,7 @@ def assemble_skill_preferences(
             "taskFamily": normalize_optional_string(task_family),
             "skillFamily": normalize_optional_string(skill_family),
             "appliedRuleIds": applied_rule_ids,
+            "suppressedRuleIds": suppressed_rule_ids,
             "procedureNotes": procedure_notes,
             "locatorNotes": locator_notes,
             "styleNotes": style_notes,
@@ -1232,6 +1264,161 @@ def build_provenance(
     }
 
 
+def build_skill_policy_assembly_decision(
+    trace_id: str,
+    skill_name: str,
+    knowledge_item: dict[str, Any],
+    mapped: dict[str, Any],
+    preference_assembly: dict[str, Any],
+    step_assemblies: list[dict[str, Any]],
+    created_at: str,
+    knowledge_item_path: Path,
+) -> dict[str, Any]:
+    context = knowledge_item.get("context", {})
+    if not isinstance(context, dict):
+        context = {}
+
+    applied_rule_ids = normalize_string_list(preference_assembly.get("appliedRuleIds"), fallback=[])
+    if applied_rule_ids == ["unknown"]:
+        applied_rule_ids = []
+    suppressed_rule_ids = normalize_string_list(preference_assembly.get("suppressedRuleIds"), fallback=[])
+    if suppressed_rule_ids == ["unknown"]:
+        suppressed_rule_ids = []
+
+    matched_directives = preference_assembly.get("matchedDirectives", [])
+    if not isinstance(matched_directives, list):
+        matched_directives = []
+
+    rule_evaluations: list[dict[str, Any]] = []
+    for directive in matched_directives:
+        if not isinstance(directive, dict):
+            continue
+        rule_evaluations.append(
+            {
+                "ruleId": normalize_string(directive.get("ruleId")),
+                "targetId": normalize_string(directive.get("ruleId")),
+                "targetLabel": normalize_string(directive.get("statement"), normalize_string(directive.get("ruleId"))),
+                "disposition": "applied",
+                "matchScore": round(normalize_float(directive.get("matchScore"), 0.0), 2),
+                "weight": round(normalize_float(directive.get("matchScore"), 0.0), 2),
+                "delta": None,
+                "explanation": normalize_string(
+                    directive.get("matchReason"),
+                    "Preference rule matched current knowledge context.",
+                ),
+            }
+        )
+    for rule_id in suppressed_rule_ids:
+        rule_evaluations.append(
+            {
+                "ruleId": rule_id,
+                "targetId": rule_id,
+                "targetLabel": rule_id,
+                "disposition": "suppressed",
+                "matchScore": 0.0,
+                "weight": 0.0,
+                "delta": None,
+                "explanation": "Preference rule did not match current knowledge context.",
+            }
+        )
+
+    final_weights: list[dict[str, Any]] = []
+    for step in step_assemblies:
+        if not isinstance(step, dict):
+            continue
+        step_rule_ids = normalize_string_list(step.get("appliedRuleIds"), fallback=[])
+        if step_rule_ids == ["unknown"]:
+            step_rule_ids = []
+        notes = normalize_string_list(step.get("notes"), fallback=[])
+        if notes == ["unknown"]:
+            notes = []
+        requires_confirmation = normalize_bool(step.get("requiresTeacherConfirmation"))
+        final_value = round(len(step_rule_ids) + (0.25 if requires_confirmation else 0.0), 2)
+        final_weights.append(
+            {
+                "weightId": normalize_string(step.get("stepId")),
+                "label": f"{normalize_string(step.get('stepId'))}:{normalize_string(step.get('actionKind'), 'step')}",
+                "kind": "step",
+                "baseValue": None,
+                "finalValue": final_value,
+                "selected": True,
+                "appliedRuleIds": step_rule_ids,
+                "notes": notes,
+            }
+        )
+
+    if not final_weights:
+        final_weights.append(
+            {
+                "weightId": skill_name,
+                "label": skill_name,
+                "kind": "step",
+                "baseValue": None,
+                "finalValue": round(float(len(applied_rule_ids)), 2),
+                "selected": True,
+                "appliedRuleIds": applied_rule_ids,
+                "notes": normalize_string_list(mapped.get("safetyNotes"), fallback=[]),
+            }
+        )
+
+    summary = normalize_string(
+        preference_assembly.get("summary"),
+        f"Skill generation used mapper {GENERATOR_VERSION} for {skill_name}.",
+    )
+    return {
+        "schemaVersion": "openstaff.learning.policy-assembly-decision.v0",
+        "decisionId": f"policy-skill-generation-{trace_id}-{skill_name}",
+        "targetModule": "skillGeneration",
+        "inputRef": {
+            "traceId": trace_id,
+            "sessionId": normalize_string(knowledge_item.get("sessionId")),
+            "taskId": normalize_string(knowledge_item.get("taskId")),
+            "knowledgeItemId": normalize_string(knowledge_item.get("knowledgeItemId")),
+            "stepId": None,
+            "skillName": skill_name,
+            "skillDirectoryPath": None,
+            "sourceReference": str(knowledge_item_path),
+        },
+        "profileVersion": normalize_optional_string(preference_assembly.get("profileVersion")),
+        "strategyVersion": GENERATOR_VERSION,
+        "appliedRuleIds": applied_rule_ids,
+        "suppressedRuleIds": suppressed_rule_ids,
+        "finalDecisionSummary": summary,
+        "ruleEvaluations": rule_evaluations,
+        "finalWeights": final_weights,
+        "timestamp": created_at,
+        "context": {
+            "appBundleId": normalize_string(context.get("appBundleId")),
+            "windowTitle": normalize_optional_string(context.get("windowTitle")),
+        },
+    }
+
+
+def write_policy_assembly_decision(
+    preferences_root: Path,
+    decision: dict[str, Any],
+) -> Path:
+    timestamp = normalize_string(decision.get("timestamp"), iso_now())
+    date_directory = date_key(timestamp)
+    target_module = normalize_string(decision.get("targetModule"), "skillGeneration")
+    input_ref = decision.get("inputRef", {})
+    if not isinstance(input_ref, dict):
+        input_ref = {}
+    session_id = normalize_string(input_ref.get("sessionId"), "__unknown-session__")
+    decision_id = normalize_string(decision.get("decisionId"))
+
+    output_path = (
+        preferences_root
+        / "assembly"
+        / date_directory
+        / target_module
+        / encoded_path_component(session_id)
+        / f"{encoded_path_component(decision_id)}.json"
+    )
+    write_json(output_path, decision)
+    return output_path
+
+
 def render_skill_markdown(
     skill_name: str,
     mapped: dict[str, Any],
@@ -1436,6 +1623,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    policy_assembly_enabled = feature_flag_enabled(POLICY_ASSEMBLY_FLAG_ENV)
 
     knowledge_item = read_json(args.knowledge_item)
     knowledge_errors = validate_knowledge_item(knowledge_item)
@@ -1519,6 +1707,25 @@ def main() -> int:
         "generatorVersion": GENERATOR_VERSION,
     }
 
+    policy_assembly_decision_path: str | None = None
+    if policy_assembly_enabled:
+        policy_assembly_decision = build_skill_policy_assembly_decision(
+            trace_id=f"trace-skill-mapper-{skill_name}",
+            skill_name=skill_name,
+            knowledge_item=knowledge_item,
+            mapped=normalized,
+            preference_assembly=preference_assembly,
+            step_assemblies=step_assemblies,
+            created_at=created_at,
+            knowledge_item_path=args.knowledge_item,
+        )
+        policy_preferences_root = args.preferences_root or Path("data/preferences")
+        decision_path = write_policy_assembly_decision(
+            preferences_root=policy_preferences_root,
+            decision=policy_assembly_decision,
+        )
+        policy_assembly_decision_path = str(decision_path)
+
     write_text(skill_dir / "SKILL.md", skill_md)
     write_json(skill_dir / "openstaff-skill.json", mapped_payload)
 
@@ -1530,6 +1737,7 @@ def main() -> int:
         "diagnostics": mapped_payload["diagnostics"],
         "preferenceProfileVersion": provenance["skillBuild"].get("preferenceProfileVersion"),
         "preferenceRuleIds": provenance["skillBuild"].get("appliedPreferenceRuleIds", []),
+        "policyAssemblyDecisionPath": policy_assembly_decision_path,
     }
     if args.report:
         write_json(args.report, report_payload)
