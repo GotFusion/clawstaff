@@ -147,6 +147,30 @@ struct ExecutionReviewRepairAction {
     let affectedStepIds: [String]
 }
 
+struct ExecutionReviewSuggestionRuleHit {
+    let ruleId: String
+    let signalType: PreferenceSignalType
+    let scopeLevel: PreferenceSignalScope
+    let matchScore: Double
+    let priorityDelta: Double
+    let explanation: String
+}
+
+struct ExecutionReviewSuggestion: Identifiable {
+    let id: String
+    let action: TeacherQuickFeedbackAction
+    let summary: String
+    let suggestedNote: String?
+    let appliedRuleIds: [String]
+    let priority: Double
+}
+
+struct ExecutionReviewSuggestionDecision {
+    let profileVersion: String
+    let appliedRuleIds: [String]
+    let summary: String
+}
+
 struct ExecutionReviewDetail {
     let logId: String
     let goal: String?
@@ -159,6 +183,8 @@ struct ExecutionReviewDetail {
     let comparisonRows: [ExecutionReviewComparisonRow]
     let locatorRepairAction: ExecutionReviewRepairAction?
     let reteachAction: ExecutionReviewRepairAction?
+    let reviewSuggestions: [ExecutionReviewSuggestion]
+    let reviewPreferenceDecision: ExecutionReviewSuggestionDecision?
 
     var hasActionableRepair: Bool {
         locatorRepairAction != nil || reteachAction != nil
@@ -170,6 +196,7 @@ struct ExecutionReviewStore {
     private let feedbackRootDirectory: URL
     private let reportsRootDirectory: URL
     private let knowledgeRootDirectory: URL
+    private let preferencesRootDirectory: URL?
     private let skillRoots: [ExecutionReviewSkillRoot]
     private let fileManager: FileManager
     private let decoder: JSONDecoder
@@ -180,6 +207,7 @@ struct ExecutionReviewStore {
         feedbackRootDirectory: URL,
         reportsRootDirectory: URL,
         knowledgeRootDirectory: URL,
+        preferencesRootDirectory: URL? = nil,
         skillRoots: [ExecutionReviewSkillRoot],
         fileManager: FileManager = .default
     ) {
@@ -187,6 +215,7 @@ struct ExecutionReviewStore {
         self.feedbackRootDirectory = feedbackRootDirectory
         self.reportsRootDirectory = reportsRootDirectory
         self.knowledgeRootDirectory = knowledgeRootDirectory
+        self.preferencesRootDirectory = preferencesRootDirectory
         self.skillRoots = skillRoots
         self.fileManager = fileManager
         self.decoder = JSONDecoder()
@@ -228,6 +257,14 @@ struct ExecutionReviewStore {
         let failedRows = preferredRepairRows(for: log, rows: comparisonRows)
         let locatorRepairAction = buildLocatorRepairAction(skill: skill, rows: failedRows)
         let reteachAction = buildReteachAction(skill: skill, rows: failedRows)
+        let reviewSuggestionResult = buildReviewSuggestionResult(
+            selectedLog: log,
+            comparisonRows: comparisonRows,
+            knowledgeItem: knowledgeItem,
+            skill: skill,
+            locatorRepairAction: locatorRepairAction,
+            reteachAction: reteachAction
+        )
 
         return ExecutionReviewDetail(
             logId: log.id,
@@ -240,7 +277,9 @@ struct ExecutionReviewStore {
             currentRepairVersion: skill?.payload.provenance?.skillBuild?.repairVersion,
             comparisonRows: comparisonRows,
             locatorRepairAction: locatorRepairAction,
-            reteachAction: reteachAction
+            reteachAction: reteachAction,
+            reviewSuggestions: reviewSuggestionResult.suggestions,
+            reviewPreferenceDecision: reviewSuggestionResult.decision
         )
     }
 
@@ -831,6 +870,801 @@ struct ExecutionReviewStore {
         )
     }
 
+    private func buildReviewSuggestionResult(
+        selectedLog: ExecutionLogSummary,
+        comparisonRows: [ExecutionReviewComparisonRow],
+        knowledgeItem: KnowledgeItem?,
+        skill: ResolvedSkill?,
+        locatorRepairAction: ExecutionReviewRepairAction?,
+        reteachAction: ExecutionReviewRepairAction?
+    ) -> ExecutionReviewSuggestionResult {
+        let overallStatus = overallResultStatus(
+            selectedLog: selectedLog,
+            comparisonRows: comparisonRows
+        )
+        let context = ReviewSuggestionContext(
+            selectedLog: selectedLog,
+            comparisonRows: comparisonRows,
+            knowledgeItem: knowledgeItem,
+            skill: skill,
+            locatorRepairAction: locatorRepairAction,
+            reteachAction: reteachAction,
+            overallStatus: overallStatus
+        )
+        let baseCandidates = buildBaseReviewSuggestionCandidates(
+            context: context,
+            locatorRepairAction: locatorRepairAction,
+            reteachAction: reteachAction
+        )
+
+        guard !baseCandidates.isEmpty else {
+            return ExecutionReviewSuggestionResult(suggestions: [], decision: nil)
+        }
+
+        guard let profile = loadLatestReviewPreferenceProfile(),
+              !profile.reviewPreferences.isEmpty else {
+            let suggestions = baseCandidates
+                .sorted(by: baselineSuggestionSort)
+                .compactMap { candidate in
+                    buildReviewSuggestion(
+                        from: candidate,
+                        finalPriority: candidate.basePriority,
+                        ruleHits: [],
+                        copyStyleDirective: nil,
+                        context: context
+                    )
+                }
+            return ExecutionReviewSuggestionResult(suggestions: suggestions, decision: nil)
+        }
+
+        let copyStyleDirective = matchedReviewCopyStyleDirective(
+            directives: profile.reviewPreferences,
+            context: context
+        )
+        let rankedCandidates = baseCandidates.map { candidate in
+            evaluateReviewSuggestionCandidate(
+                candidate,
+                directives: profile.reviewPreferences,
+                context: context
+            )
+        }
+        let sortedCandidates = rankedCandidates.sorted(by: rankedReviewSuggestionSort)
+        let suggestions = sortedCandidates.compactMap { candidate in
+            buildReviewSuggestion(
+                from: candidate.baseline,
+                finalPriority: candidate.finalPriority,
+                ruleHits: candidate.ruleHits,
+                copyStyleDirective: copyStyleDirective,
+                context: context
+            )
+        }
+
+        let appliedRuleIds = Array(
+            Set(
+                sortedCandidates.flatMap { candidate in
+                    candidate.ruleHits.map(\.ruleId)
+                }
+                + (copyStyleDirective.map { [$0.ruleId] } ?? [])
+            )
+        ).sorted()
+
+        let decision: ExecutionReviewSuggestionDecision?
+        if let selected = sortedCandidates.first,
+           !selected.ruleHits.isEmpty || copyStyleDirective != nil {
+            decision = ExecutionReviewSuggestionDecision(
+                profileVersion: profile.profileVersion,
+                appliedRuleIds: appliedRuleIds,
+                summary: buildReviewSuggestionDecisionSummary(
+                    profileVersion: profile.profileVersion,
+                    selected: selected,
+                    copyStyleDirective: copyStyleDirective
+                )
+            )
+        } else {
+            decision = nil
+        }
+
+        return ExecutionReviewSuggestionResult(
+            suggestions: suggestions,
+            decision: decision
+        )
+    }
+
+    private func buildBaseReviewSuggestionCandidates(
+        context: ReviewSuggestionContext,
+        locatorRepairAction: ExecutionReviewRepairAction?,
+        reteachAction: ExecutionReviewRepairAction?
+    ) -> [ExecutionReviewSuggestionBaseline] {
+        var candidates: [ExecutionReviewSuggestionBaseline] = []
+
+        let approvedPriority = context.overallStatus == .succeeded ? 0.9 : 0.06
+        candidates.append(
+            ExecutionReviewSuggestionBaseline(
+                action: .approved,
+                basePriority: approvedPriority,
+                baseReason: "当前执行结果整体可接受，适合直接给出正向审阅。"
+            )
+        )
+
+        let rejectedPriority: Double
+        if context.hasBlocked {
+            rejectedPriority = 0.58
+        } else if context.hasFailure {
+            rejectedPriority = 0.72
+        } else {
+            rejectedPriority = 0.18
+        }
+        candidates.append(
+            ExecutionReviewSuggestionBaseline(
+                action: .rejected,
+                basePriority: rejectedPriority,
+                baseReason: "当前日志存在未接受结果，至少需要明确驳回并补一句原因。"
+            )
+        )
+
+        if locatorRepairAction != nil {
+            let priority = context.likelyLocatorScore >= 0.55 ? 0.84 : 0.48
+            candidates.append(
+                ExecutionReviewSuggestionBaseline(
+                    action: .fixLocator,
+                    basePriority: priority,
+                    baseReason: "失败更像 locator / anchor 漂移，适合先走“修 locator”。"
+                )
+            )
+        }
+
+        if reteachAction != nil {
+            let priority = context.likelyLocatorScore >= 0.55 ? 0.36 : 0.58
+            candidates.append(
+                ExecutionReviewSuggestionBaseline(
+                    action: .reteach,
+                    basePriority: priority,
+                    baseReason: "当前步骤本身可能已偏离老师原始做法，适合重新示教。"
+                )
+            )
+        }
+
+        let dangerPriority = context.hasBlocked ? 0.86 : max(0.12, context.riskSignalScore * 0.82)
+        candidates.append(
+            ExecutionReviewSuggestionBaseline(
+                action: .tooDangerous,
+                basePriority: dangerPriority,
+                baseReason: "当前日志出现风险阻断或高风险信号，更适合标记为“太危险”。"
+            )
+        )
+
+        let orderPriority = context.likelyOrderScore >= 0.45 ? 0.52 : max(0.08, context.likelyOrderScore * 0.5)
+        candidates.append(
+            ExecutionReviewSuggestionBaseline(
+                action: .wrongOrder,
+                basePriority: orderPriority,
+                baseReason: "当前执行顺序与老师原始步骤可能存在偏移。"
+            )
+        )
+
+        let stylePriority = context.likelyStyleScore >= 0.45 ? 0.46 : max(0.08, context.likelyStyleScore * 0.48)
+        candidates.append(
+            ExecutionReviewSuggestionBaseline(
+                action: .wrongStyle,
+                basePriority: stylePriority,
+                baseReason: "当前操作方式与老师常用风格存在差异。"
+            )
+        )
+
+        return candidates.filter { candidate in
+            candidate.basePriority >= 0.16
+        }
+    }
+
+    private func evaluateReviewSuggestionCandidate(
+        _ candidate: ExecutionReviewSuggestionBaseline,
+        directives: [PreferenceProfileDirective],
+        context: ReviewSuggestionContext
+    ) -> RankedExecutionReviewSuggestion {
+        let ruleHits = directives.compactMap { directive in
+            evaluateReviewDirective(
+                directive,
+                for: candidate.action,
+                context: context
+            )
+        }
+        let priorityDelta = ruleHits.reduce(0.0) { partial, hit in
+            partial + hit.priorityDelta
+        }
+
+        return RankedExecutionReviewSuggestion(
+            baseline: candidate,
+            finalPriority: rounded(candidate.basePriority + priorityDelta),
+            ruleHits: ruleHits.sorted(by: reviewSuggestionRuleHitSort)
+        )
+    }
+
+    private func evaluateReviewDirective(
+        _ directive: PreferenceProfileDirective,
+        for action: TeacherQuickFeedbackAction,
+        context: ReviewSuggestionContext
+    ) -> ExecutionReviewSuggestionRuleHit? {
+        let scopeScore = scopeMatchScore(for: directive.scope, context: context)
+        guard scopeScore > 0 else {
+            return nil
+        }
+
+        let interpretation = interpretedReviewPreference(for: directive, context: context)
+        guard interpretation != .conciseCopy else {
+            return nil
+        }
+
+        let affinity = interpretation.affinity(for: action, context: context)
+        guard abs(affinity) >= 0.08 else {
+            return nil
+        }
+
+        let teacherMultiplier = directive.teacherConfirmed ? 1.0 : 0.82
+        let priorityDelta = rounded(scopeScore * affinity * 0.34 * teacherMultiplier)
+        guard abs(priorityDelta) >= 0.01 else {
+            return nil
+        }
+
+        return ExecutionReviewSuggestionRuleHit(
+            ruleId: directive.ruleId,
+            signalType: directive.type,
+            scopeLevel: directive.scope.level,
+            matchScore: rounded(scopeScore),
+            priorityDelta: priorityDelta,
+            explanation: buildReviewRuleHitExplanation(
+                directive: directive,
+                interpretation: interpretation,
+                action: action,
+                priorityDelta: priorityDelta
+            )
+        )
+    }
+
+    private func buildReviewSuggestion(
+        from candidate: ExecutionReviewSuggestionBaseline,
+        finalPriority: Double,
+        ruleHits: [ExecutionReviewSuggestionRuleHit],
+        copyStyleDirective: PreferenceProfileDirective?,
+        context: ReviewSuggestionContext
+    ) -> ExecutionReviewSuggestion? {
+        let appliedRuleIds = Array(
+            Set(
+                ruleHits.map(\.ruleId)
+                + (copyStyleDirective.map { [$0.ruleId] } ?? [])
+            )
+        ).sorted()
+
+        var summary = candidate.baseReason
+        if let topHit = ruleHits.first {
+            summary = "\(candidate.baseReason) 命中规则 \(appliedRuleIds.joined(separator: "、"))，\(topHit.explanation)"
+        }
+        if let copyStyleDirective {
+            summary += " 备注建议同时遵循 \(copyStyleDirective.ruleId) 的结论前置风格。"
+        }
+
+        let suggestedNote = buildSuggestedReviewNote(
+            action: candidate.action,
+            context: context,
+            prefersConciseCopy: copyStyleDirective != nil
+        )
+
+        return ExecutionReviewSuggestion(
+            id: candidate.action.rawValue,
+            action: candidate.action,
+            summary: summary,
+            suggestedNote: suggestedNote,
+            appliedRuleIds: appliedRuleIds,
+            priority: finalPriority
+        )
+    }
+
+    private func buildReviewSuggestionDecisionSummary(
+        profileVersion: String,
+        selected: RankedExecutionReviewSuggestion,
+        copyStyleDirective: PreferenceProfileDirective?
+    ) -> String {
+        let selectedRuleIds = Array(Set(selected.ruleHits.map(\.ruleId))).sorted()
+
+        if let topHit = selected.ruleHits.first {
+            var summary = "偏好 profile \(profileVersion) 命中 \(selectedRuleIds.joined(separator: "、"))，因此更建议先点「\(selected.baseline.action.displayName)」：\(topHit.explanation)"
+            if let copyStyleDirective {
+                summary += " 备注可继续沿用 \(copyStyleDirective.ruleId) 的结论前置写法。"
+            }
+            return summary
+        }
+
+        if let copyStyleDirective {
+            return "偏好 profile \(profileVersion) 当前未改动动作排序，但备注建议沿用 \(copyStyleDirective.ruleId) 的结论前置写法。"
+        }
+
+        return "偏好 profile \(profileVersion) 已加载，但当前审阅建议未命中可解释规则。"
+    }
+
+    private func buildSuggestedReviewNote(
+        action: TeacherQuickFeedbackAction,
+        context: ReviewSuggestionContext,
+        prefersConciseCopy: Bool
+    ) -> String? {
+        switch action {
+        case .approved:
+            return "结果可接受。"
+        case .rejected:
+            return prefersConciseCopy
+                ? "结果暂不可接受，需继续修正。"
+                : "结果暂不可接受，建议继续修正后再交老师确认。"
+        case .fixLocator:
+            return prefersConciseCopy
+                ? "建议先修 locator，当前更像定位锚点失效。"
+                : "建议先修 locator，当前失败更像定位锚点或语义目标失效。"
+        case .reteach:
+            return prefersConciseCopy
+                ? "建议重新示教，当前步骤本身需要刷新。"
+                : "建议重新示教，当前步骤本身已经偏离老师原始做法。"
+        case .tooDangerous:
+            return context.hasBlocked
+                ? "本次执行已触发风险阻断，建议继续保留人工确认。"
+                : "本次执行风险偏高，建议继续保留人工确认。"
+        case .wrongOrder:
+            return prefersConciseCopy
+                ? "当前更像顺序问题，建议按老师原始顺序重试。"
+                : "当前更像顺序问题，建议按老师原始步骤顺序重新执行。"
+        case .wrongStyle:
+            return prefersConciseCopy
+                ? "当前操作风格不对，建议改回老师常用做法。"
+                : "当前操作风格不对，建议改回老师常用的交互习惯与表达方式。"
+        case .needsRevision:
+            return "当前结果仍需继续修正。"
+        }
+    }
+
+    private func loadLatestReviewPreferenceProfile() -> PreferenceProfile? {
+        guard let preferencesRootDirectory else {
+            return nil
+        }
+
+        return try? PreferenceMemoryStore(
+            preferencesRootDirectory: preferencesRootDirectory,
+            fileManager: fileManager
+        ).loadLatestProfileSnapshot()?.profile
+    }
+
+    private func matchedReviewCopyStyleDirective(
+        directives: [PreferenceProfileDirective],
+        context: ReviewSuggestionContext
+    ) -> PreferenceProfileDirective? {
+        directives.first { directive in
+            interpretedReviewPreference(for: directive, context: context) == .conciseCopy
+                && scopeMatchScore(for: directive.scope, context: context) > 0
+        }
+    }
+
+    private func interpretedReviewPreference(
+        for directive: PreferenceProfileDirective,
+        context: ReviewSuggestionContext
+    ) -> ReviewDirectiveInterpretation {
+        let actionText = normalized(directive.proposedAction)
+        let text = normalized([
+            directive.proposedAction,
+            directive.hint,
+            directive.statement
+        ].compactMap { $0 }.joined(separator: " "))
+
+        if directive.type == .style,
+           containsAnyToken(
+                actionText,
+                tokens: [
+                    "shortenreviewcopy",
+                    "shorten review copy",
+                    "concise review copy",
+                    "conclusion first",
+                    "conclusion-first"
+                ]
+           ) {
+            return .conciseCopy
+        }
+
+        if containsAnyToken(
+            actionText,
+            tokens: [
+                "updateskilllocator",
+                "update skill locator",
+                "refresh skill locator",
+                "refresh_skill_locator",
+                "relocalize",
+                "repair_before_reteach"
+            ]
+        ) {
+            return .fixLocatorFirst
+        }
+
+        if containsAnyToken(
+            actionText,
+            tokens: [
+                "reteachcurrentstep",
+                "reteach",
+                "re teach",
+                "re-teach"
+            ]
+        ) {
+            return .reteachFirst
+        }
+
+        if containsAnyToken(
+            actionText,
+            tokens: [
+                "require_teacher_confirmation",
+                "teacher confirmation",
+                "confirmation",
+                "guard"
+            ]
+        ) {
+            return .riskFirst
+        }
+
+        if containsAnyToken(
+            text,
+            tokens: [
+                "先修",
+                "先修 locator",
+                "refresh semantic",
+                "repair locator",
+                "修 locator",
+                "semantic anchor",
+                "text anchor",
+                "locator"
+            ]
+        ) {
+            return .fixLocatorFirst
+        }
+
+        if containsAnyToken(
+            text,
+            tokens: [
+                "reteach",
+                "re teach",
+                "re-teach",
+                "重新示教",
+                "重新教学"
+            ]
+        ) {
+            return .reteachFirst
+        }
+
+        if containsAnyToken(
+            text,
+            tokens: [
+                "teacher confirmation",
+                "confirmation gated",
+                "高风险",
+                "太危险",
+                "危险",
+                "risk"
+            ]
+        ) {
+            return .riskFirst
+        }
+
+        if containsAnyToken(
+            text,
+            tokens: [
+                "order",
+                "sequence",
+                "before",
+                "after",
+                "顺序",
+                "先后"
+            ]
+        ) {
+            return .wrongOrderFirst
+        }
+
+        if containsAnyToken(
+            text,
+            tokens: [
+                "style",
+                "tone",
+                "keyboard",
+                "shortcut",
+                "menu traversal",
+                "风格",
+                "习惯"
+            ]
+        ) {
+            return .wrongStyleFirst
+        }
+
+        switch directive.type {
+        case .outcome:
+            return context.overallStatus == .succeeded ? .resultApproved : .resultRejected
+        case .procedure:
+            return .wrongOrderFirst
+        case .locator:
+            return .fixLocatorFirst
+        case .style:
+            return .wrongStyleFirst
+        case .risk:
+            return .riskFirst
+        case .repair:
+            return .fixLocatorFirst
+        }
+    }
+
+    private func buildReviewRuleHitExplanation(
+        directive: PreferenceProfileDirective,
+        interpretation: ReviewDirectiveInterpretation,
+        action: TeacherQuickFeedbackAction,
+        priorityDelta: Double
+    ) -> String {
+        let direction = priorityDelta >= 0 ? "抬高" : "压低"
+        return "规则 \(directive.ruleId) \(interpretation.userFacingSummary(for: action))，因此\(direction)了该建议的优先级。"
+    }
+
+    private func scopeMatchScore(
+        for scope: PreferenceSignalScopeReference,
+        context: ReviewSuggestionContext
+    ) -> Double {
+        switch scope.level {
+        case .global:
+            return 0.72
+        case .app:
+            return appScopeScore(scope: scope, context: context)
+        case .taskFamily:
+            return familyScopeScore(ruleFamily: scope.taskFamily, currentFamily: context.taskFamily)
+        case .skillFamily:
+            return familyScopeScore(ruleFamily: scope.skillFamily, currentFamily: context.skillFamily)
+        case .windowPattern:
+            return windowScopeScore(scope: scope, context: context)
+        }
+    }
+
+    private func appScopeScore(
+        scope: PreferenceSignalScopeReference,
+        context: ReviewSuggestionContext
+    ) -> Double {
+        let scopedBundle = normalized(scope.appBundleId)
+        let scopedName = normalized(scope.appName)
+        let currentBundle = normalized(context.appBundleId)
+        let currentName = normalized(context.appName)
+
+        if !scopedBundle.isEmpty, scopedBundle == currentBundle {
+            return 1.0
+        }
+        if !scopedName.isEmpty, scopedName == currentName {
+            return 0.82
+        }
+        return 0
+    }
+
+    private func familyScopeScore(
+        ruleFamily: String?,
+        currentFamily: String?
+    ) -> Double {
+        let lhs = normalized(ruleFamily)
+        let rhs = normalized(currentFamily)
+        guard !lhs.isEmpty, !rhs.isEmpty else {
+            return 0
+        }
+
+        if lhs == rhs {
+            return 1.0
+        }
+        if lhs.contains(rhs) || rhs.contains(lhs) {
+            return 0.84
+        }
+        return 0
+    }
+
+    private func windowScopeScore(
+        scope: PreferenceSignalScopeReference,
+        context: ReviewSuggestionContext
+    ) -> Double {
+        let appScore = appScopeScore(scope: scope, context: context)
+        if scope.appBundleId != nil || scope.appName != nil, appScore <= 0 {
+            return 0
+        }
+
+        guard let pattern = scope.windowPattern,
+              let currentWindow = context.windowTitle,
+              !currentWindow.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return 0
+        }
+
+        if let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) {
+            let range = NSRange(currentWindow.startIndex..<currentWindow.endIndex, in: currentWindow)
+            if regex.firstMatch(in: currentWindow, options: [], range: range) != nil {
+                return 1.0
+            }
+        }
+
+        let lhs = normalized(pattern)
+        let rhs = normalized(currentWindow)
+        guard !lhs.isEmpty, !rhs.isEmpty else {
+            return 0
+        }
+        if lhs == rhs {
+            return 0.92
+        }
+        if lhs.contains(rhs) || rhs.contains(lhs) {
+            return 0.8
+        }
+        return max(0, bigramSimilarity(lhs, rhs) - 0.18)
+    }
+
+    private func overallResultStatus(
+        selectedLog: ExecutionLogSummary,
+        comparisonRows: [ExecutionReviewComparisonRow]
+    ) -> ExecutionReviewResultStatus {
+        if comparisonRows.contains(where: { $0.resultStatus == .blocked }) {
+            return .blocked
+        }
+        if comparisonRows.contains(where: { $0.resultStatus == .failed }) {
+            return .failed
+        }
+        if !comparisonRows.isEmpty,
+           comparisonRows.allSatisfy({ $0.resultStatus == .succeeded }) {
+            return .succeeded
+        }
+        return resultStatus(from: selectedLog)
+    }
+
+    private func baselineSuggestionSort(
+        lhs: ExecutionReviewSuggestionBaseline,
+        rhs: ExecutionReviewSuggestionBaseline
+    ) -> Bool {
+        if lhs.basePriority == rhs.basePriority {
+            return suggestionActionOrder(lhs.action) < suggestionActionOrder(rhs.action)
+        }
+        return lhs.basePriority > rhs.basePriority
+    }
+
+    private func rankedReviewSuggestionSort(
+        lhs: RankedExecutionReviewSuggestion,
+        rhs: RankedExecutionReviewSuggestion
+    ) -> Bool {
+        if lhs.finalPriority == rhs.finalPriority {
+            return baselineSuggestionSort(lhs: lhs.baseline, rhs: rhs.baseline)
+        }
+        return lhs.finalPriority > rhs.finalPriority
+    }
+
+    private func reviewSuggestionRuleHitSort(
+        lhs: ExecutionReviewSuggestionRuleHit,
+        rhs: ExecutionReviewSuggestionRuleHit
+    ) -> Bool {
+        let lhsMagnitude = abs(lhs.priorityDelta)
+        let rhsMagnitude = abs(rhs.priorityDelta)
+        if lhsMagnitude == rhsMagnitude {
+            return lhs.ruleId < rhs.ruleId
+        }
+        return lhsMagnitude > rhsMagnitude
+    }
+
+    private func suggestionActionOrder(_ action: TeacherQuickFeedbackAction) -> Int {
+        switch action {
+        case .fixLocator:
+            return 0
+        case .reteach:
+            return 1
+        case .tooDangerous:
+            return 2
+        case .wrongOrder:
+            return 3
+        case .wrongStyle:
+            return 4
+        case .rejected:
+            return 5
+        case .approved:
+            return 6
+        case .needsRevision:
+            return 7
+        }
+    }
+
+    private func rounded(_ value: Double) -> Double {
+        (value * 1000).rounded() / 1000
+    }
+
+    private func normalized(_ value: String?) -> String {
+        guard let value else {
+            return ""
+        }
+
+        let lowered = value.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !lowered.isEmpty else {
+            return ""
+        }
+
+        let filteredScalars = lowered.unicodeScalars.map { scalar -> Character in
+            if CharacterSet.alphanumerics.contains(scalar)
+                || CharacterSet.whitespacesAndNewlines.contains(scalar) {
+                return Character(scalar)
+            }
+            return " "
+        }
+
+        return String(filteredScalars)
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+
+    private func containsAnyToken(
+        _ text: String,
+        tokens: [String]
+    ) -> Bool {
+        tokens.contains { token in
+            text.contains(normalized(token))
+        }
+    }
+
+    private func keywordMatchScore(
+        _ text: String,
+        tokens: [String]
+    ) -> Double {
+        guard !text.isEmpty else {
+            return 0
+        }
+
+        let hitCount = tokens.reduce(into: 0) { partial, token in
+            if text.contains(normalized(token)) {
+                partial += 1
+            }
+        }
+        guard hitCount > 0 else {
+            return 0
+        }
+        return min(1.0, Double(hitCount) / Double(max(tokens.count, 1)))
+    }
+
+    private func tokenOverlapScore(
+        _ lhs: String,
+        _ rhs: String
+    ) -> Double {
+        let lhsTokens = Set(lhs.split(separator: " ").map(String.init))
+        let rhsTokens = Set(rhs.split(separator: " ").map(String.init))
+        guard !lhsTokens.isEmpty, !rhsTokens.isEmpty else {
+            return 0
+        }
+
+        let sharedCount = lhsTokens.intersection(rhsTokens).count
+        let denominator = max(lhsTokens.count, rhsTokens.count)
+        guard denominator > 0 else {
+            return 0
+        }
+        return Double(sharedCount) / Double(denominator)
+    }
+
+    private func bigramSimilarity(
+        _ lhs: String,
+        _ rhs: String
+    ) -> Double {
+        let lhsBigrams = bigrams(for: lhs)
+        let rhsBigrams = bigrams(for: rhs)
+        guard !lhsBigrams.isEmpty, !rhsBigrams.isEmpty else {
+            return 0
+        }
+
+        let sharedCount = lhsBigrams.intersection(rhsBigrams).count
+        let denominator = max(lhsBigrams.count, rhsBigrams.count)
+        guard denominator > 0 else {
+            return 0
+        }
+        return Double(sharedCount) / Double(denominator)
+    }
+
+    private func bigrams(for text: String) -> Set<String> {
+        let characters = Array(text.replacingOccurrences(of: " ", with: ""))
+        guard characters.count > 1 else {
+            return []
+        }
+
+        var values = Set<String>()
+        for index in 0..<(characters.count - 1) {
+            values.insert(String([characters[index], characters[index + 1]]))
+        }
+        return values
+    }
+
     private func loadSkill(atDirectoryPath path: String) -> ResolvedSkill? {
         let directory = URL(fileURLWithPath: path, isDirectory: true)
         guard fileManager.fileExists(atPath: directory.path) else {
@@ -1075,6 +1909,301 @@ private struct ResolvedSkill {
     let skillId: String
     let directory: URL
     let payload: SkillBundlePayload
+}
+
+private struct ExecutionReviewSuggestionResult {
+    let suggestions: [ExecutionReviewSuggestion]
+    let decision: ExecutionReviewSuggestionDecision?
+}
+
+private struct ExecutionReviewSuggestionBaseline {
+    let action: TeacherQuickFeedbackAction
+    let basePriority: Double
+    let baseReason: String
+}
+
+private struct RankedExecutionReviewSuggestion {
+    let baseline: ExecutionReviewSuggestionBaseline
+    let finalPriority: Double
+    let ruleHits: [ExecutionReviewSuggestionRuleHit]
+}
+
+private struct ReviewSuggestionContext {
+    let appBundleId: String?
+    let appName: String?
+    let windowTitle: String?
+    let taskFamily: String?
+    let skillFamily: String?
+    let overallStatus: ExecutionReviewResultStatus
+    let hasFailure: Bool
+    let hasBlocked: Bool
+    let likelyLocatorScore: Double
+    let likelyOrderScore: Double
+    let likelyStyleScore: Double
+    let riskSignalScore: Double
+
+    init(
+        selectedLog: ExecutionLogSummary,
+        comparisonRows: [ExecutionReviewComparisonRow],
+        knowledgeItem: KnowledgeItem?,
+        skill: ResolvedSkill?,
+        locatorRepairAction: ExecutionReviewRepairAction?,
+        reteachAction: ExecutionReviewRepairAction?,
+        overallStatus: ExecutionReviewResultStatus
+    ) {
+        let normalizedMessage = ReviewSuggestionContext.normalizeText(
+            [selectedLog.message, selectedLog.errorCode].compactMap { $0 }.joined(separator: " ")
+        )
+        let mismatchScores = comparisonRows.map { row in
+            let teacher = ReviewSuggestionContext.normalizeText(row.teacherStep.detail)
+            let skill = ReviewSuggestionContext.normalizeText(row.skillStep.detail)
+            let overlap = ReviewSuggestionContext.tokenOverlap(teacher, skill)
+            return max(0, 1.0 - overlap)
+        }
+        let maxMismatch = mismatchScores.max() ?? 0
+        let failureRows = comparisonRows.filter { row in
+            row.resultStatus == .failed || row.resultStatus == .blocked
+        }
+
+        self.appBundleId = skill?.payload.mappedOutput.context.appBundleId ?? knowledgeItem?.context.appBundleId
+        self.appName = skill?.payload.mappedOutput.context.appName ?? knowledgeItem?.context.appName
+        self.windowTitle = skill?.payload.mappedOutput.context.windowTitle ?? knowledgeItem?.context.windowTitle
+        self.taskFamily = skill?.payload.provenance?.skillBuild?.taskFamily
+        self.skillFamily = skill?.payload.provenance?.skillBuild?.skillFamily
+        self.overallStatus = overallStatus
+        self.hasFailure = overallStatus == .failed || overallStatus == .blocked
+        self.hasBlocked = overallStatus == .blocked
+
+        let locatorKeywordScore = ReviewSuggestionContext.keywordScore(
+            normalizedMessage,
+            tokens: [
+                "locator",
+                "anchor",
+                "semantic",
+                "not found",
+                "target",
+                "未找到",
+                "定位",
+                "锚点"
+            ]
+        )
+        let locatorRowScore = failureRows.contains(where: { $0.preferredRepairActionType != nil }) ? 0.28 : 0
+        let repairScore = locatorRepairAction != nil ? 0.24 : 0
+        self.likelyLocatorScore = min(1.0, locatorKeywordScore + locatorRowScore + repairScore)
+
+        let orderKeywordScore = ReviewSuggestionContext.keywordScore(
+            normalizedMessage,
+            tokens: ["order", "sequence", "before", "after", "顺序", "先后"]
+        )
+        let multiStepScore = comparisonRows.count > 1 && overallStatus != .succeeded ? 0.18 : 0
+        self.likelyOrderScore = min(1.0, orderKeywordScore + multiStepScore + max(0, maxMismatch - 0.72))
+
+        let styleKeywordScore = ReviewSuggestionContext.keywordScore(
+            normalizedMessage,
+            tokens: ["style", "keyboard", "shortcut", "menu", "风格", "习惯", "话术"]
+        )
+        let reteachBias = reteachAction != nil ? 0.1 : 0
+        self.likelyStyleScore = min(1.0, styleKeywordScore + max(0, maxMismatch - 0.58) + reteachBias)
+
+        let riskKeywordScore = ReviewSuggestionContext.keywordScore(
+            normalizedMessage,
+            tokens: ["blocked", "danger", "risk", "confirmation", "阻断", "危险", "高风险"]
+        )
+        self.riskSignalScore = min(1.0, riskKeywordScore + (overallStatus == .blocked ? 0.34 : 0))
+    }
+
+    private static func normalizeText(_ value: String?) -> String {
+        guard let value else {
+            return ""
+        }
+
+        let lowered = value.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !lowered.isEmpty else {
+            return ""
+        }
+
+        let filteredScalars = lowered.unicodeScalars.map { scalar -> Character in
+            if CharacterSet.alphanumerics.contains(scalar)
+                || CharacterSet.whitespacesAndNewlines.contains(scalar) {
+                return Character(scalar)
+            }
+            return " "
+        }
+
+        return String(filteredScalars)
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+
+    private static func tokenOverlap(
+        _ lhs: String,
+        _ rhs: String
+    ) -> Double {
+        let lhsTokens = Set(lhs.split(separator: " ").map(String.init))
+        let rhsTokens = Set(rhs.split(separator: " ").map(String.init))
+        guard !lhsTokens.isEmpty, !rhsTokens.isEmpty else {
+            return 0
+        }
+
+        let sharedCount = lhsTokens.intersection(rhsTokens).count
+        let denominator = max(lhsTokens.count, rhsTokens.count)
+        guard denominator > 0 else {
+            return 0
+        }
+        return Double(sharedCount) / Double(denominator)
+    }
+
+    private static func keywordScore(
+        _ text: String,
+        tokens: [String]
+    ) -> Double {
+        guard !text.isEmpty else {
+            return 0
+        }
+
+        let normalizedTokens = tokens.map(normalizeText)
+        let hitCount = normalizedTokens.reduce(into: 0) { partial, token in
+            if !token.isEmpty, text.contains(token) {
+                partial += 1
+            }
+        }
+        guard hitCount > 0 else {
+            return 0
+        }
+
+        return min(1.0, Double(hitCount) / Double(max(normalizedTokens.count, 1)))
+    }
+}
+
+private enum ReviewDirectiveInterpretation: Equatable {
+    case fixLocatorFirst
+    case reteachFirst
+    case riskFirst
+    case wrongOrderFirst
+    case wrongStyleFirst
+    case resultApproved
+    case resultRejected
+    case conciseCopy
+
+    func affinity(
+        for action: TeacherQuickFeedbackAction,
+        context: ReviewSuggestionContext
+    ) -> Double {
+        switch self {
+        case .fixLocatorFirst:
+            switch action {
+            case .fixLocator:
+                return 1.0
+            case .reteach:
+                return -0.42
+            case .rejected:
+                return 0.12
+            default:
+                return 0
+            }
+        case .reteachFirst:
+            switch action {
+            case .reteach:
+                return 1.0
+            case .fixLocator:
+                return -0.34
+            case .rejected:
+                return 0.08
+            default:
+                return 0
+            }
+        case .riskFirst:
+            switch action {
+            case .tooDangerous:
+                return context.hasBlocked ? 1.0 : 0.86
+            case .rejected:
+                return 0.24
+            case .approved:
+                return -0.62
+            default:
+                return 0
+            }
+        case .wrongOrderFirst:
+            switch action {
+            case .wrongOrder:
+                return 1.0
+            case .rejected:
+                return 0.14
+            case .approved:
+                return -0.26
+            default:
+                return 0
+            }
+        case .wrongStyleFirst:
+            switch action {
+            case .wrongStyle:
+                return 1.0
+            case .rejected:
+                return 0.12
+            case .approved:
+                return -0.18
+            default:
+                return 0
+            }
+        case .resultApproved:
+            switch action {
+            case .approved:
+                return 0.92
+            case .rejected:
+                return -0.24
+            default:
+                return 0
+            }
+        case .resultRejected:
+            switch action {
+            case .rejected:
+                return 0.9
+            case .approved:
+                return -0.36
+            default:
+                return 0
+            }
+        case .conciseCopy:
+            return 0
+        }
+    }
+
+    func userFacingSummary(for action: TeacherQuickFeedbackAction) -> String {
+        switch self {
+        case .fixLocatorFirst:
+            if action == .fixLocator {
+                return "体现出你通常更倾向于先修 locator"
+            }
+            return "更倾向于先修 locator，而不是当前动作"
+        case .reteachFirst:
+            if action == .reteach {
+                return "体现出你通常更倾向于直接重新示教"
+            }
+            return "更倾向于先重新示教，而不是当前动作"
+        case .riskFirst:
+            if action == .tooDangerous {
+                return "体现出你会先把高风险结果标成“太危险”"
+            }
+            return "要求对高风险结果更谨慎"
+        case .wrongOrderFirst:
+            if action == .wrongOrder {
+                return "体现出你通常会先指出顺序问题"
+            }
+            return "更关注顺序偏差，而不是当前动作"
+        case .wrongStyleFirst:
+            if action == .wrongStyle {
+                return "体现出你通常会先指出风格偏差"
+            }
+            return "更关注风格偏差，而不是当前动作"
+        case .resultApproved:
+            return "更强调结果达成时直接通过"
+        case .resultRejected:
+            return "更强调结果未达成时直接驳回"
+        case .conciseCopy:
+            return "要求审阅文案保持结论前置"
+        }
+    }
 }
 
 private struct ExecutionLogRecord: Decodable {

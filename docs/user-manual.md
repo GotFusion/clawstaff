@@ -116,6 +116,7 @@ make student ARGS="--goal 在 Safari 中复现点击流程 --knowledge core/know
 - `修 locator` / `重示教` 会同时写入 `data/feedback/{yyyy-mm-dd}/*.jsonl` 与 `data/skills/repairs/{yyyy-mm-dd}/skill-repair.jsonl`。
 - 所有快评动作都会在反馈记录中落一条标准化 `teacherReview` evidence，并带上统一快捷键定义（`Cmd+1` 到 `Cmd+7`）。
 - 若日志未成功关联到 skill，`修 locator` / `重示教` 会自动禁用。
+- 若本地已存在 `data/preferences` 最新 profile，审阅台会额外显示“偏好化审阅建议”，给出推荐动作、推荐短备注与规则来源，但不会自动替老师提交反馈。
 
 ## 4. LLM 与 Skill 工作流
 

@@ -1127,6 +1127,8 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.4.4 Review 建议第四个接入
 
+状态：已完成（2026-03-19，统一 `PolicyAssemblyDecision` 落盘仍留在 TODO 11.4.6）
+
 - 审阅台只做建议排序，不自动替老师做决定。
 
 **输出物**
@@ -1134,7 +1136,12 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `apps/macos/Sources/OpenStaffApp/*`
 
 **验收标准**
-- [ ] review 建议不再是统一模板，而是能显示个体偏好命中。
+- [x] review 建议不再是统一模板，而是能显示个体偏好命中。
+
+本次落地说明：
+- `ExecutionReviewStore` 现会在“三栏对照 + repair 建议”基础上，结合最新 `PreferenceProfile.reviewPreferences` 生成 `reviewSuggestions` 与 `reviewPreferenceDecision`。
+- 审阅台会展示“推荐动作 / 推荐短备注 / 规则来源”，并显式说明诸如“你通常更倾向于先修 locator”这类偏好命中原因。
+- `Quick Feedback Bar` 仍保持固定 7 个动作与原快捷键，不会自动代老师提交，只负责给出更贴近个人偏好的排序与说明。
 
 #### TODO 11.4.5 Student planner 最后接入，且默认挂 feature flag
 

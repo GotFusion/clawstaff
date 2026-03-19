@@ -1024,6 +1024,33 @@ struct OpenStaffDashboardView: View {
                                                 .foregroundStyle(.secondary)
                                         }
 
+                                        if let detail = viewModel.selectedExecutionReviewDetail,
+                                           !detail.reviewSuggestions.isEmpty {
+                                            Divider()
+
+                                            VStack(alignment: .leading, spacing: 6) {
+                                                Text("偏好化审阅建议")
+                                                    .font(.headline)
+                                                Text("只做建议排序，不会替老师自动做决定。")
+                                                    .font(.caption)
+                                                    .foregroundStyle(.secondary)
+
+                                                if let decision = detail.reviewPreferenceDecision {
+                                                    Text(decision.summary)
+                                                        .font(.caption2)
+                                                        .foregroundStyle(.secondary)
+                                                        .textSelection(.enabled)
+                                                }
+
+                                                ExecutionReviewSuggestionList(
+                                                    suggestions: detail.reviewSuggestions,
+                                                    applySuggestedNote: { note in
+                                                        viewModel.quickFeedbackNoteInput = note
+                                                    }
+                                                )
+                                            }
+                                        }
+
                                         VStack(alignment: .leading, spacing: 6) {
                                             Text("Quick Feedback Bar")
                                                 .font(.headline)
@@ -1099,6 +1126,23 @@ private func executionResultColor(for status: ExecutionReviewResultStatus) -> Co
     }
 }
 
+private func reviewSuggestionTintColor(for action: TeacherQuickFeedbackAction) -> Color {
+    switch action {
+    case .approved:
+        return Color(red: 0.16, green: 0.56, blue: 0.28)
+    case .rejected:
+        return Color(red: 0.47, green: 0.47, blue: 0.50)
+    case .needsRevision, .fixLocator, .reteach:
+        return Color(red: 0.07, green: 0.40, blue: 0.82)
+    case .tooDangerous:
+        return Color(red: 0.75, green: 0.15, blue: 0.12)
+    case .wrongOrder:
+        return Color(red: 0.88, green: 0.47, blue: 0.10)
+    case .wrongStyle:
+        return Color(red: 0.62, green: 0.35, blue: 0.13)
+    }
+}
+
 private struct ExecutionReviewComparisonBoard: View {
     let rows: [ExecutionReviewComparisonRow]
 
@@ -1171,6 +1215,70 @@ private struct ExecutionReviewColumnCard: View {
             RoundedRectangle(cornerRadius: 10)
                 .stroke(accentColor.opacity(0.25), lineWidth: 1)
         )
+    }
+}
+
+private struct ExecutionReviewSuggestionList: View {
+    let suggestions: [ExecutionReviewSuggestion]
+    let applySuggestedNote: (String) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(suggestions.prefix(3)) { suggestion in
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(suggestion.action.displayName)
+                            .font(.caption.weight(.semibold))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(reviewSuggestionTintColor(for: suggestion.action).opacity(0.14))
+                            )
+                        Text(String(format: "priority %.2f", suggestion.priority))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if let suggestedNote = suggestion.suggestedNote, !suggestedNote.isEmpty {
+                            Button("填入短备注") {
+                                applySuggestedNote(suggestedNote)
+                            }
+                            .buttonStyle(.borderless)
+                            .font(.caption2)
+                        }
+                    }
+
+                    Text(suggestion.summary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if let suggestedNote = suggestion.suggestedNote, !suggestedNote.isEmpty {
+                        Text("建议短备注：\(suggestedNote)")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                    }
+
+                    if !suggestion.appliedRuleIds.isEmpty {
+                        Text("规则来源：\(suggestion.appliedRuleIds.joined(separator: "、"))")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                    }
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.secondary.opacity(0.06))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(reviewSuggestionTintColor(for: suggestion.action).opacity(0.18), lineWidth: 1)
+                )
+            }
+        }
     }
 }
 
@@ -1366,6 +1474,7 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         feedbackRootDirectory: OpenStaffWorkspacePaths.feedbackDirectory,
         reportsRootDirectory: OpenStaffWorkspacePaths.reportsDirectory,
         knowledgeRootDirectory: OpenStaffWorkspacePaths.knowledgeDirectory,
+        preferencesRootDirectory: OpenStaffWorkspacePaths.preferencesDirectory,
         skillRoots: [
             ExecutionReviewSkillRoot(
                 scopeId: LearnedSkillStorageScope.pending.rawValue,

@@ -403,15 +403,15 @@
 - [x] 不同用户的 repair 建议策略可表现出差异
 
 ### TODO 11.4.4 Review 建议偏好装配
-- [ ] 审阅台提供更贴近老师偏好的建议动作
-- [ ] 支持“你通常更倾向于先修 locator”之类的解释
+- [x] 审阅台提供更贴近老师偏好的建议动作
+- [x] 支持“你通常更倾向于先修 locator”之类的解释
 
 **输出物**
 - `core/storage/ExecutionReviewStore.swift`
 - `apps/macos/Sources/OpenStaffApp/*`
 
 **验收标准**
-- [ ] review 建议可解释，不只是静态模板
+- [x] review 建议可解释，不只是静态模板
 
 ### TODO 11.4.5 Student planner 偏好装配（Feature Flag）
 - [ ] 根据 `PreferenceProfile` 调整 planning prompt / planning constraints
