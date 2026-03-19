@@ -1288,7 +1288,13 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `config/preference-governance.yaml`
 
 **验收标准**
-- [ ] 高风险偏好不会因单次反馈自动生效。
+- [x] 高风险偏好不会因单次反馈自动生效。
+
+本次落地说明：
+- 新增 `config/preference-governance.yaml` 与 `core/learning/PreferencePromotionPolicy.swift`，把 `enabledScopeLevels / conflictPriority / riskPolicies / signalTypePolicies` 收口到统一治理配置；`PreferenceRulePromoter` 与 `PreferenceConflictResolver` 现在都会默认读取该配置，避免阈值、局部 scope 和冲突优先级散落硬编码。
+- 四级风险策略已固化为：`low -> inheritSafetyInterlocks`、`medium -> promoted but autoExecutionPolicy=disabled`、`high -> requiresTeacherConfirmation`、`critical -> allowAutomaticPromotion=false`；因此高风险偏好不会因单次反馈直接自动生效。
+- signal type 治理已固化为：`style / risk` 允许 `global / app / taskFamily`，不设置过期；`outcome / procedure / locator / repair` 只能按局部 scope 生效，其中 `outcome=45d`、`procedure=90d`、`locator=30d`、`repair=30d` 会自动带上治理过期窗口。
+- promoted `PreferenceRule` 现会写入 `governance` 元数据（`autoExecutionPolicy / expiresAfterDays / expiresAt / allowedScopeLevels`），为后续 `11.6.2 audit`、`11.6.3 rollback` 和 `11.6.4 drift monitor` 预留稳定事实源。
 
 #### TODO 11.6.2 落地偏好审计与回滚
 

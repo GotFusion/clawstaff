@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "openstaff.learning.preference-governance.v0",
+  "enabledScopeLevels": [
+    "global",
+    "app",
+    "taskFamily"
+  ],
+  "conflictPriority": [
+    "activeRulePreferred",
+    "moreSpecificScope",
+    "recentTeacherConfirmation",
+    "lowerRisk",
+    "moreRecentlyUpdated",
+    "stableRuleIdTieBreak"
+  ],
+  "riskPolicies": {
+    "low": {
+      "promotionThreshold": {
+        "minimumSignalCount": 3,
+        "minimumSessionCount": 2,
+        "minimumAverageConfidence": 0.75,
+        "requiresTeacherConfirmation": false,
+        "requiresNoRecentRejection": false,
+        "allowAutomaticPromotion": true
+      },
+      "autoExecutionPolicy": "inheritSafetyInterlocks"
+    },
+    "medium": {
+      "promotionThreshold": {
+        "minimumSignalCount": 4,
+        "minimumSessionCount": 3,
+        "minimumAverageConfidence": null,
+        "requiresTeacherConfirmation": false,
+        "requiresNoRecentRejection": true,
+        "allowAutomaticPromotion": true
+      },
+      "autoExecutionPolicy": "disabled"
+    },
+    "high": {
+      "promotionThreshold": {
+        "minimumSignalCount": 1,
+        "minimumSessionCount": 1,
+        "minimumAverageConfidence": null,
+        "requiresTeacherConfirmation": true,
+        "requiresNoRecentRejection": true,
+        "allowAutomaticPromotion": true
+      },
+      "autoExecutionPolicy": "requiresTeacherConfirmation"
+    },
+    "critical": {
+      "promotionThreshold": {
+        "minimumSignalCount": 1,
+        "minimumSessionCount": 1,
+        "minimumAverageConfidence": null,
+        "requiresTeacherConfirmation": true,
+        "requiresNoRecentRejection": true,
+        "allowAutomaticPromotion": false
+      },
+      "autoExecutionPolicy": "disabled"
+    }
+  },
+  "signalTypePolicies": {
+    "outcome": {
+      "allowedScopeLevels": [
+        "app",
+        "taskFamily"
+      ],
+      "expiresAfterDays": 45,
+      "notes": [
+        "Outcome preferences stay local to app or task family because success criteria drift with workflow changes."
+      ]
+    },
+    "procedure": {
+      "allowedScopeLevels": [
+        "app",
+        "taskFamily",
+        "skillFamily"
+      ],
+      "expiresAfterDays": 90,
+      "notes": [
+        "Procedure preferences should stay attached to app or task context instead of becoming global habits."
+      ]
+    },
+    "locator": {
+      "allowedScopeLevels": [
+        "app",
+        "taskFamily",
+        "skillFamily",
+        "windowPattern"
+      ],
+      "expiresAfterDays": 30,
+      "notes": [
+        "Locator preferences are UI-fragile and must remain local with an expiration window."
+      ]
+    },
+    "style": {
+      "allowedScopeLevels": [
+        "global",
+        "app",
+        "taskFamily"
+      ],
+      "expiresAfterDays": null,
+      "notes": [
+        "Style preferences can be global when repeatedly reinforced across apps."
+      ]
+    },
+    "risk": {
+      "allowedScopeLevels": [
+        "global",
+        "app",
+        "taskFamily"
+      ],
+      "expiresAfterDays": null,
+      "notes": [
+        "Risk preferences may stay broad, but execution is still constrained by risk-tier auto-execution policy."
+      ]
+    },
+    "repair": {
+      "allowedScopeLevels": [
+        "app",
+        "taskFamily",
+        "skillFamily",
+        "windowPattern"
+      ],
+      "expiresAfterDays": 30,
+      "notes": [
+        "Repair preferences are tied to concrete UI drift and should expire unless re-confirmed."
+      ]
+    }
+  }
+}

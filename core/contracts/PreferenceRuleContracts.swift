@@ -66,6 +66,7 @@ public struct PreferenceRule: Codable, Equatable, Sendable {
     public let proposedAction: String?
     public let evidence: [PreferenceRuleEvidence]
     public let riskLevel: InteractionTurnRiskLevel
+    public let governance: PreferenceRuleGovernance?
     public let activationStatus: PreferenceRuleActivationStatus
     public let teacherConfirmed: Bool
     public let supersededByRuleId: String?
@@ -85,6 +86,7 @@ public struct PreferenceRule: Codable, Equatable, Sendable {
         proposedAction: String? = nil,
         evidence: [PreferenceRuleEvidence],
         riskLevel: InteractionTurnRiskLevel,
+        governance: PreferenceRuleGovernance? = nil,
         activationStatus: PreferenceRuleActivationStatus,
         teacherConfirmed: Bool,
         supersededByRuleId: String? = nil,
@@ -106,6 +108,7 @@ public struct PreferenceRule: Codable, Equatable, Sendable {
             ($0.timestamp, $0.signalId) < ($1.timestamp, $1.signalId)
         }
         self.riskLevel = riskLevel
+        self.governance = governance
         self.activationStatus = activationStatus
         self.teacherConfirmed = teacherConfirmed
         self.supersededByRuleId = supersededByRuleId
@@ -136,6 +139,7 @@ public struct PreferenceRule: Codable, Equatable, Sendable {
             proposedAction: proposedAction,
             evidence: evidence,
             riskLevel: riskLevel,
+            governance: governance,
             activationStatus: activationStatus,
             teacherConfirmed: teacherConfirmed,
             supersededByRuleId: supersededByRuleId,

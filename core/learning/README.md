@@ -19,6 +19,7 @@
 - `PreferenceProfile`：当前可生效的偏好快照，按 assist / skill / repair / review / planner 分段聚合。
 - `PreferenceProfileBuilder`：把 active `PreferenceRule` 聚合成 `PreferenceProfileSnapshot`，并复用统一冲突排序形成稳定模块顺序。
 - `PreferenceRulePromoter`：把默认作用域白名单、风险分级阈值与 teacherConfirmed 门槛固化成可运行的规则晋升器。
+- `PreferencePromotionPolicy`：统一承载风险分级、局部 scope、规则过期窗口、自动执行限制与 conflict priority，并作为 promoter / resolver 的共享事实源。
 - `PreferenceConflictResolver`：为同组规则提供统一排序和“为何 A 覆盖 B”的结构化解释。
 - `RuleBasedPreferenceSignalExtractor`：规则优先的 v0 提炼器，从 teacher review、replay、drift、benchmark、safety block 中生成基础 signal。
 - `PreferenceMemoryStore`：负责把 signals / rules / profiles / audit 落到 `data/preferences`，并维护最小查询索引。
@@ -48,6 +49,7 @@
 - `DirectiveHint` 只扇出已被接受且带 directive payload 的 signal；`outcome` 不生成 directive hint。
 - `RuleBasedPreferenceSignalExtractor` v0 默认只消费结构化 evidence；当 `taskFamily` 未显式提供时，先退化为 `mode.turnKind` 粗粒度族名。
 - `PreferenceRulePromoter` v0 默认只自动晋升 `global / app / taskFamily` 三层作用域；`skillFamily / windowPattern` 先保留为 candidate。
+- `PreferencePromotionPolicy` v0 默认把 `style / risk` 视作可长期保留的规则，而 `outcome / procedure / locator / repair` 会附带局部 scope 与过期窗口；其中 `medium` 风险虽允许晋升，但默认不放开自动执行。
 - `PreferenceProfileBuilder` v0 默认使用：`outcome -> review`、`procedure -> assist/skill/review/planner`、`locator -> skill/repair/review`、`style -> assist/skill/review`、`risk -> assist/skill/review/planner`、`repair -> repair/review/planner`。
 - `extract_preference_signals.py` v1 默认先写提炼报告，不直接覆盖 `PreferenceSignal[]` 事实源；只有通过 `3-vote + schema + actionable hint + confidence floor` 的结果才进入 accepted bucket。
 - 历史回填优先复用现有 `benchmark`、`student report`、`teacher feedback` 工件，缺失字段必须显式保留 diagnostics 或空数组，而不是 silently drop。

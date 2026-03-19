@@ -1,99 +1,5 @@
 import Foundation
 
-public struct PreferencePromotionThreshold: Codable, Equatable, Sendable {
-    public let minimumSignalCount: Int
-    public let minimumSessionCount: Int
-    public let minimumAverageConfidence: Double?
-    public let requiresTeacherConfirmation: Bool
-    public let requiresNoRecentRejection: Bool
-    public let allowAutomaticPromotion: Bool
-
-    public init(
-        minimumSignalCount: Int,
-        minimumSessionCount: Int,
-        minimumAverageConfidence: Double? = nil,
-        requiresTeacherConfirmation: Bool = false,
-        requiresNoRecentRejection: Bool = false,
-        allowAutomaticPromotion: Bool = true
-    ) {
-        self.minimumSignalCount = minimumSignalCount
-        self.minimumSessionCount = minimumSessionCount
-        self.minimumAverageConfidence = minimumAverageConfidence
-        self.requiresTeacherConfirmation = requiresTeacherConfirmation
-        self.requiresNoRecentRejection = requiresNoRecentRejection
-        self.allowAutomaticPromotion = allowAutomaticPromotion
-    }
-}
-
-public struct PreferencePromotionConfiguration: Codable, Equatable, Sendable {
-    public let schemaVersion: String
-    public let enabledScopeLevels: [PreferenceSignalScope]
-    public let lowRisk: PreferencePromotionThreshold
-    public let mediumRisk: PreferencePromotionThreshold
-    public let highRisk: PreferencePromotionThreshold
-    public let criticalRisk: PreferencePromotionThreshold
-
-    public init(
-        schemaVersion: String = "openstaff.learning.preference-promotion.v0",
-        enabledScopeLevels: [PreferenceSignalScope],
-        lowRisk: PreferencePromotionThreshold,
-        mediumRisk: PreferencePromotionThreshold,
-        highRisk: PreferencePromotionThreshold,
-        criticalRisk: PreferencePromotionThreshold
-    ) {
-        self.schemaVersion = schemaVersion
-        self.enabledScopeLevels = Array(Set(enabledScopeLevels)).sorted { $0.rawValue < $1.rawValue }
-        self.lowRisk = lowRisk
-        self.mediumRisk = mediumRisk
-        self.highRisk = highRisk
-        self.criticalRisk = criticalRisk
-    }
-
-    public static let v0Default = Self(
-        enabledScopeLevels: [.global, .app, .taskFamily],
-        lowRisk: PreferencePromotionThreshold(
-            minimumSignalCount: 3,
-            minimumSessionCount: 2,
-            minimumAverageConfidence: 0.75
-        ),
-        mediumRisk: PreferencePromotionThreshold(
-            minimumSignalCount: 4,
-            minimumSessionCount: 3,
-            requiresNoRecentRejection: true
-        ),
-        highRisk: PreferencePromotionThreshold(
-            minimumSignalCount: 1,
-            minimumSessionCount: 1,
-            requiresTeacherConfirmation: true,
-            requiresNoRecentRejection: true
-        ),
-        criticalRisk: PreferencePromotionThreshold(
-            minimumSignalCount: 1,
-            minimumSessionCount: 1,
-            requiresTeacherConfirmation: true,
-            requiresNoRecentRejection: true,
-            allowAutomaticPromotion: false
-        )
-    )
-
-    public func threshold(for riskLevel: InteractionTurnRiskLevel) -> PreferencePromotionThreshold {
-        switch riskLevel {
-        case .low:
-            return lowRisk
-        case .medium:
-            return mediumRisk
-        case .high:
-            return highRisk
-        case .critical:
-            return criticalRisk
-        }
-    }
-
-    public func isScopeEnabled(_ scope: PreferenceSignalScopeReference) -> Bool {
-        enabledScopeLevels.contains(scope.level)
-    }
-}
-
 public enum PreferenceRulePromotionReasonCode: String, Codable, CaseIterable, Sendable {
     case insufficientSignals
     case insufficientSessions
@@ -102,6 +8,7 @@ public enum PreferenceRulePromotionReasonCode: String, Codable, CaseIterable, Se
     case recentRejectedSignal
     case automaticPromotionDisabled
     case scopeNotEnabledByDefault
+    case scopeNotAllowedByGovernance
 }
 
 public struct PreferenceRulePromotionEvaluation: Codable, Equatable, Sendable {
@@ -115,6 +22,7 @@ public struct PreferenceRulePromotionEvaluation: Codable, Equatable, Sendable {
     public let latestAcceptedAt: String?
     public let latestRejectedAt: String?
     public let scopeLevel: PreferenceSignalScope?
+    public let governanceDecision: PreferenceRuleGovernanceDecision
     public let reasonCodes: [PreferenceRulePromotionReasonCode]
 
     public init(
@@ -128,6 +36,7 @@ public struct PreferenceRulePromotionEvaluation: Codable, Equatable, Sendable {
         latestAcceptedAt: String?,
         latestRejectedAt: String?,
         scopeLevel: PreferenceSignalScope?,
+        governanceDecision: PreferenceRuleGovernanceDecision,
         reasonCodes: [PreferenceRulePromotionReasonCode]
     ) {
         self.riskLevel = riskLevel
@@ -140,6 +49,7 @@ public struct PreferenceRulePromotionEvaluation: Codable, Equatable, Sendable {
         self.latestAcceptedAt = latestAcceptedAt
         self.latestRejectedAt = latestRejectedAt
         self.scopeLevel = scopeLevel
+        self.governanceDecision = governanceDecision
         self.reasonCodes = reasonCodes
     }
 
@@ -203,9 +113,16 @@ public enum PreferenceRulePromoterError: Error, Equatable {
 }
 
 public struct PreferenceRulePromoter {
+    public let policy: PreferencePromotionPolicy
     public let configuration: PreferencePromotionConfiguration
 
-    public init(configuration: PreferencePromotionConfiguration = .v0Default) {
+    public init(policy: PreferencePromotionPolicy = .loadDefaultOrFallback()) {
+        self.policy = policy
+        self.configuration = policy.promotionConfiguration
+    }
+
+    public init(configuration: PreferencePromotionConfiguration) {
+        self.policy = PreferencePromotionPolicy.v0Default.replacingPromotionConfiguration(configuration)
         self.configuration = configuration
     }
 
@@ -230,7 +147,15 @@ public struct PreferenceRulePromoter {
 
         let latestAcceptedAt = qualifyingSignals.last?.timestamp
         let latestRejectedAt = rejectedSignals.last?.timestamp
-        let representativeScopeLevel = qualifyingSignals.last?.scope.level ?? orderedSignals.last?.scope.level
+        let representativeSignal = qualifyingSignals.last ?? orderedSignals.last
+        let representativeScope = representativeSignal?.scope
+        let representativeScopeLevel = representativeScope?.level
+        let representativeType = representativeSignal?.type ?? orderedSignals.last?.type ?? .procedure
+        let governanceDecision = policy.governanceDecision(
+            signalType: representativeType,
+            riskLevel: riskLevel,
+            scope: representativeScope
+        )
 
         var reasonCodes: [PreferenceRulePromotionReasonCode] = []
 
@@ -239,9 +164,13 @@ public struct PreferenceRulePromoter {
         }
 
         if representativeScopeLevel != nil,
-           let representativeScope = qualifyingSignals.last?.scope ?? orderedSignals.last?.scope,
+           let representativeScope,
            !configuration.isScopeEnabled(representativeScope) {
             reasonCodes.append(.scopeNotEnabledByDefault)
+        }
+
+        if !governanceDecision.scopeAllowed {
+            reasonCodes.append(.scopeNotAllowedByGovernance)
         }
 
         if qualifyingSignals.count < threshold.minimumSignalCount {
@@ -280,6 +209,7 @@ public struct PreferenceRulePromoter {
             latestAcceptedAt: latestAcceptedAt,
             latestRejectedAt: latestRejectedAt,
             scopeLevel: representativeScopeLevel,
+            governanceDecision: governanceDecision,
             reasonCodes: reasonCodes
         )
     }
@@ -332,6 +262,7 @@ public struct PreferenceRulePromoter {
         let updatedAt = draft.updatedAt ?? qualifyingSignals.last?.timestamp ?? representative.timestamp
         let hint = qualifyingSignals.reversed().compactMap { normalizedOptionalString($0.hint) }.first
         let proposedAction = qualifyingSignals.reversed().compactMap { normalizedOptionalString($0.proposedAction) }.first
+        let governance = evaluation.governanceDecision.governance.materialized(at: updatedAt)
 
         let rule = PreferenceRule(
             ruleId: draft.ruleId,
@@ -344,6 +275,7 @@ public struct PreferenceRulePromoter {
             proposedAction: proposedAction,
             evidence: qualifyingSignals.map(PreferenceRuleEvidence.init(signal:)),
             riskLevel: draft.riskLevel,
+            governance: governance,
             activationStatus: .active,
             teacherConfirmed: draft.teacherConfirmed,
             createdAt: createdAt,

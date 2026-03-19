@@ -519,18 +519,18 @@
 ## 阶段 11.6：治理与安全层
 
 ### TODO 11.6.1 定义偏好治理策略
-- [ ] 哪些规则允许自动晋升
-- [ ] 哪些规则必须人工确认
-- [ ] 哪些规则有过期时间
-- [ ] 哪些规则只能按 app / task 局部生效
-- [ ] 固化 `low / medium / high / critical` 四级风险治理策略
+- [x] 哪些规则允许自动晋升
+- [x] 哪些规则必须人工确认
+- [x] 哪些规则有过期时间
+- [x] 哪些规则只能按 app / task 局部生效
+- [x] 固化 `low / medium / high / critical` 四级风险治理策略
 
 **输出物**
 - `config/preference-governance.yaml`
 - `core/learning/PreferencePromotionPolicy.swift`
 
 **验收标准**
-- [ ] 治理规则可配置，不硬编码在多个模块
+- [x] 治理规则可配置，不硬编码在多个模块
 
 ### TODO 11.6.2 实现偏好审计日志
 - [ ] 记录规则创建、晋升、覆盖、撤销、回滚

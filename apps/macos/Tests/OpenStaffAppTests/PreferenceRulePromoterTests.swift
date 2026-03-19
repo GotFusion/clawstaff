@@ -71,6 +71,9 @@ final class PreferenceRulePromoterTests: XCTestCase {
         XCTAssertEqual(rule.scope, .taskFamily("browser.navigation"))
         XCTAssertEqual(rule.hint, "Prefer a new tab before opening a new window.")
         XCTAssertEqual(rule.proposedAction, "prefer_new_tab")
+        XCTAssertEqual(rule.governance?.autoExecutionPolicy, .inheritSafetyInterlocks)
+        XCTAssertEqual(rule.governance?.expiresAfterDays, 90)
+        XCTAssertEqual(rule.governance?.expiresAt, "2026-06-16T09:10:00Z")
         XCTAssertEqual(result.evaluation.reasonCodes, [])
         XCTAssertEqual(result.evaluation.distinctSessionCount, 2)
         XCTAssertGreaterThanOrEqual(result.evaluation.averageConfidence, 0.75)
@@ -155,6 +158,7 @@ final class PreferenceRulePromoterTests: XCTestCase {
         )
         XCTAssertEqual(promotedResult.outcome, .promoted)
         XCTAssertEqual(promotedResult.rule?.teacherConfirmed, true)
+        XCTAssertEqual(promotedResult.rule?.governance?.autoExecutionPolicy, .requiresTeacherConfirmation)
     }
 
     func testSkillFamilyScopeStaysCandidateInDefaultV0Policy() throws {
@@ -194,11 +198,138 @@ final class PreferenceRulePromoterTests: XCTestCase {
         XCTAssertTrue(result.evaluation.reasonCodes.contains(.scopeNotEnabledByDefault))
     }
 
+    func testProcedureRuleCannotPromoteFromGlobalScope() throws {
+        let promoter = PreferenceRulePromoter()
+        let signals = [
+            makeSignal(
+                signalId: "signal-global-001",
+                sessionId: "session-global-001",
+                timestamp: "2026-03-18T13:00:00Z",
+                scope: .global()
+            ),
+            makeSignal(
+                signalId: "signal-global-002",
+                sessionId: "session-global-001",
+                timestamp: "2026-03-18T13:05:00Z",
+                scope: .global()
+            ),
+            makeSignal(
+                signalId: "signal-global-003",
+                sessionId: "session-global-002",
+                timestamp: "2026-03-18T13:10:00Z",
+                scope: .global()
+            )
+        ]
+
+        let result = try promoter.promote(
+            PreferenceRulePromotionDraft(
+                ruleId: "rule-global-001",
+                statement: "All workflows should prefer tabs before windows.",
+                signals: signals,
+                riskLevel: .low,
+                teacherConfirmed: false
+            )
+        )
+
+        XCTAssertEqual(result.outcome, .candidate)
+        XCTAssertNil(result.rule)
+        XCTAssertTrue(result.evaluation.reasonCodes.contains(.scopeNotAllowedByGovernance))
+        XCTAssertEqual(
+            result.evaluation.governanceDecision.governance.allowedScopeLevels,
+            [.app, .skillFamily, .taskFamily]
+        )
+    }
+
+    func testLocatorRuleCarriesGovernanceExpirationMetadata() throws {
+        let promoter = PreferenceRulePromoter()
+        let signals = [
+            makeSignal(
+                signalId: "signal-locator-001",
+                sessionId: "session-locator-001",
+                timestamp: "2026-03-18T14:00:00Z",
+                scope: .app(bundleId: "com.apple.Safari", appName: "Safari"),
+                type: .locator
+            ),
+            makeSignal(
+                signalId: "signal-locator-002",
+                sessionId: "session-locator-001",
+                timestamp: "2026-03-18T14:05:00Z",
+                scope: .app(bundleId: "com.apple.Safari", appName: "Safari"),
+                type: .locator
+            ),
+            makeSignal(
+                signalId: "signal-locator-003",
+                sessionId: "session-locator-002",
+                timestamp: "2026-03-18T14:10:00Z",
+                scope: .app(bundleId: "com.apple.Safari", appName: "Safari"),
+                type: .locator
+            )
+        ]
+
+        let result = try promoter.promote(
+            PreferenceRulePromotionDraft(
+                ruleId: "rule-locator-001",
+                statement: "Safari locator rules should stay close to the browser context.",
+                signals: signals,
+                riskLevel: .low,
+                teacherConfirmed: false
+            )
+        )
+
+        XCTAssertEqual(result.outcome, .promoted)
+        XCTAssertEqual(result.rule?.governance?.expiresAfterDays, 30)
+        XCTAssertEqual(result.rule?.governance?.expiresAt, "2026-04-17T14:10:00Z")
+    }
+
+    func testMediumRiskPromotionKeepsRuleActiveButDisablesAutoExecution() throws {
+        let promoter = PreferenceRulePromoter()
+        let signals = [
+            makeSignal(
+                signalId: "signal-medium-governance-001",
+                sessionId: "session-medium-governance-001",
+                timestamp: "2026-03-18T15:00:00Z",
+                type: .risk
+            ),
+            makeSignal(
+                signalId: "signal-medium-governance-002",
+                sessionId: "session-medium-governance-002",
+                timestamp: "2026-03-18T15:05:00Z",
+                type: .risk
+            ),
+            makeSignal(
+                signalId: "signal-medium-governance-003",
+                sessionId: "session-medium-governance-003",
+                timestamp: "2026-03-18T15:10:00Z",
+                type: .risk
+            ),
+            makeSignal(
+                signalId: "signal-medium-governance-004",
+                sessionId: "session-medium-governance-004",
+                timestamp: "2026-03-18T15:15:00Z",
+                type: .risk
+            )
+        ]
+
+        let result = try promoter.promote(
+            PreferenceRulePromotionDraft(
+                ruleId: "rule-medium-governance-001",
+                statement: "Risky steps should still require explicit review before auto execution.",
+                signals: signals,
+                riskLevel: .medium,
+                teacherConfirmed: false
+            )
+        )
+
+        XCTAssertEqual(result.outcome, .promoted)
+        XCTAssertEqual(result.rule?.governance?.autoExecutionPolicy, .disabled)
+    }
+
     private func makeSignal(
         signalId: String,
         sessionId: String,
         timestamp: String,
         scope: PreferenceSignalScopeReference = .taskFamily("browser.navigation"),
+        type: PreferenceSignalType = .procedure,
         confidence: Double = 0.85,
         hint: String = "Prefer a new tab before opening a new window.",
         proposedAction: String = "prefer_new_tab",
@@ -211,7 +342,7 @@ final class PreferenceRulePromoterTests: XCTestCase {
             sessionId: sessionId,
             taskId: "task-\(signalId)",
             stepId: "step-\(signalId)",
-            type: .procedure,
+            type: type,
             evaluativeDecision: .pass,
             polarity: .reinforce,
             scope: scope,

@@ -78,4 +78,4 @@ Accepted
 
 - `PreferenceRulePromoter` 负责把阈值和 teacher confirmation 门槛固化为可运行逻辑。
 - `PreferenceConflictResolver` 负责输出排序结果与 override explanation。
-- `config/preference-promotion.example.yaml` 作为默认策略示例，供后续治理配置落地复用。
+- `config/preference-governance.yaml` 作为正式治理配置；`config/preference-promotion.example.yaml` 保留为历史示例。

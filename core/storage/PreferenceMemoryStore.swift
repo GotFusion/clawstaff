@@ -553,7 +553,7 @@ public struct PreferenceMemoryStore {
     }
 
     private func sortRules(lhs: PreferenceRule, rhs: PreferenceRule) -> Bool {
-        PreferenceConflictResolver.v0Default.sortsBefore(lhs, rhs)
+        PreferenceConflictResolver().sortsBefore(lhs, rhs)
     }
 
     private func locateSignalFile(signalId: String) throws -> URL? {

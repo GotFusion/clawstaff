@@ -63,9 +63,17 @@ public struct PreferenceConflictResolution: Equatable, Sendable {
 }
 
 public struct PreferenceConflictResolver: Sendable {
-    public static let v0Default = Self()
+    public static let v0Default = Self(policy: .loadDefaultOrFallback())
 
-    public init() {}
+    public let priorityOrder: [PreferenceConflictPriority]
+
+    public init(policy: PreferencePromotionPolicy = .loadDefaultOrFallback()) {
+        self.init(priorityOrder: policy.conflictPriority)
+    }
+
+    public init(priorityOrder: [PreferenceConflictPriority]) {
+        self.priorityOrder = PreferenceConflictPriority.normalized(priorityOrder)
+    }
 
     public func resolve(_ rules: [PreferenceRule]) -> PreferenceConflictResolution {
         let orderedRules = rules.sorted(by: sortsBefore)
@@ -88,30 +96,10 @@ public struct PreferenceConflictResolver: Sendable {
             return false
         }
 
-        if lhs.isActive != rhs.isActive {
-            return lhs.isActive && !rhs.isActive
-        }
-
-        let lhsSpecificity = Self.scopeSpecificity(for: lhs.scope)
-        let rhsSpecificity = Self.scopeSpecificity(for: rhs.scope)
-        if lhsSpecificity != rhsSpecificity {
-            return lhsSpecificity > rhsSpecificity
-        }
-
-        let lhsConfirmationKey = confirmationSortKey(for: lhs)
-        let rhsConfirmationKey = confirmationSortKey(for: rhs)
-        if lhsConfirmationKey != rhsConfirmationKey {
-            return lhsConfirmationKey > rhsConfirmationKey
-        }
-
-        let lhsRiskRank = Self.riskRank(for: lhs.riskLevel)
-        let rhsRiskRank = Self.riskRank(for: rhs.riskLevel)
-        if lhsRiskRank != rhsRiskRank {
-            return lhsRiskRank < rhsRiskRank
-        }
-
-        if lhs.updatedAt != rhs.updatedAt {
-            return lhs.updatedAt > rhs.updatedAt
+        for priority in priorityOrder {
+            if let result = comparisonResult(for: priority, lhs: lhs, rhs: rhs) {
+                return result
+            }
         }
 
         return lhs.ruleId < rhs.ruleId
@@ -178,24 +166,10 @@ public struct PreferenceConflictResolver: Sendable {
     ) -> [PreferenceConflictReasonCode] {
         var reasonCodes: [PreferenceConflictReasonCode] = []
 
-        if winner.isActive != loser.isActive, winner.isActive {
-            reasonCodes.append(.activeRulePreferred)
-        }
-
-        if Self.scopeSpecificity(for: winner.scope) > Self.scopeSpecificity(for: loser.scope) {
-            reasonCodes.append(.moreSpecificScope)
-        }
-
-        if confirmationSortKey(for: winner) > confirmationSortKey(for: loser) {
-            reasonCodes.append(.recentTeacherConfirmation)
-        }
-
-        if Self.riskRank(for: winner.riskLevel) < Self.riskRank(for: loser.riskLevel) {
-            reasonCodes.append(.lowerRisk)
-        }
-
-        if winner.updatedAt > loser.updatedAt {
-            reasonCodes.append(.moreRecentlyUpdated)
+        for priority in priorityOrder {
+            if winnerWins(priority: priority, winner: winner, loser: loser) {
+                reasonCodes.append(reasonCode(for: priority))
+            }
         }
 
         if reasonCodes.isEmpty {
@@ -207,6 +181,71 @@ public struct PreferenceConflictResolver: Sendable {
 
     private func confirmationSortKey(for rule: PreferenceRule) -> String {
         rule.teacherConfirmed ? rule.updatedAt : ""
+    }
+
+    private func comparisonResult(
+        for priority: PreferenceConflictPriority,
+        lhs: PreferenceRule,
+        rhs: PreferenceRule
+    ) -> Bool? {
+        switch priority {
+        case .activeRulePreferred:
+            if lhs.isActive != rhs.isActive {
+                return lhs.isActive && !rhs.isActive
+            }
+        case .moreSpecificScope:
+            let lhsSpecificity = Self.scopeSpecificity(for: lhs.scope)
+            let rhsSpecificity = Self.scopeSpecificity(for: rhs.scope)
+            if lhsSpecificity != rhsSpecificity {
+                return lhsSpecificity > rhsSpecificity
+            }
+        case .recentTeacherConfirmation:
+            let lhsConfirmationKey = confirmationSortKey(for: lhs)
+            let rhsConfirmationKey = confirmationSortKey(for: rhs)
+            if lhsConfirmationKey != rhsConfirmationKey {
+                return lhsConfirmationKey > rhsConfirmationKey
+            }
+        case .lowerRisk:
+            let lhsRiskRank = Self.riskRank(for: lhs.riskLevel)
+            let rhsRiskRank = Self.riskRank(for: rhs.riskLevel)
+            if lhsRiskRank != rhsRiskRank {
+                return lhsRiskRank < rhsRiskRank
+            }
+        case .moreRecentlyUpdated:
+            if lhs.updatedAt != rhs.updatedAt {
+                return lhs.updatedAt > rhs.updatedAt
+            }
+        case .stableRuleIdTieBreak:
+            if lhs.ruleId != rhs.ruleId {
+                return lhs.ruleId < rhs.ruleId
+            }
+        }
+        return nil
+    }
+
+    private func winnerWins(
+        priority: PreferenceConflictPriority,
+        winner: PreferenceRule,
+        loser: PreferenceRule
+    ) -> Bool {
+        comparisonResult(for: priority, lhs: winner, rhs: loser) == true
+    }
+
+    private func reasonCode(for priority: PreferenceConflictPriority) -> PreferenceConflictReasonCode {
+        switch priority {
+        case .activeRulePreferred:
+            return .activeRulePreferred
+        case .moreSpecificScope:
+            return .moreSpecificScope
+        case .recentTeacherConfirmation:
+            return .recentTeacherConfirmation
+        case .lowerRisk:
+            return .lowerRisk
+        case .moreRecentlyUpdated:
+            return .moreRecentlyUpdated
+        case .stableRuleIdTieBreak:
+            return .stableRuleIdTieBreak
+        }
     }
 
     private static func riskRank(for riskLevel: InteractionTurnRiskLevel) -> Int {
