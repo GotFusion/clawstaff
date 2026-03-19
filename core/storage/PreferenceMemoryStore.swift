@@ -553,21 +553,7 @@ public struct PreferenceMemoryStore {
     }
 
     private func sortRules(lhs: PreferenceRule, rhs: PreferenceRule) -> Bool {
-        if lhs.isActive != rhs.isActive {
-            return lhs.isActive && !rhs.isActive
-        }
-        let lhsSpecificity = Self.scopeSpecificity(for: lhs.scope)
-        let rhsSpecificity = Self.scopeSpecificity(for: rhs.scope)
-        if lhsSpecificity != rhsSpecificity {
-            return lhsSpecificity > rhsSpecificity
-        }
-        if lhs.teacherConfirmed != rhs.teacherConfirmed {
-            return lhs.teacherConfirmed && !rhs.teacherConfirmed
-        }
-        if lhs.updatedAt != rhs.updatedAt {
-            return lhs.updatedAt > rhs.updatedAt
-        }
-        return lhs.ruleId < rhs.ruleId
+        PreferenceConflictResolver.v0Default.sortsBefore(lhs, rhs)
     }
 
     private func locateSignalFile(signalId: String) throws -> URL? {
@@ -818,36 +804,6 @@ public struct PreferenceMemoryStore {
             ?? raw.replacingOccurrences(of: "/", with: "%2F")
     }
 
-    private static func scopeSpecificity(for scope: PreferenceSignalScopeReference) -> Int {
-        var score: Int
-        switch scope.level {
-        case .global:
-            score = 0
-        case .app:
-            score = 20
-        case .taskFamily:
-            score = 30
-        case .skillFamily:
-            score = 40
-        case .windowPattern:
-            score = 50
-        }
-
-        if scope.appBundleId != nil {
-            score += 3
-        }
-        if scope.taskFamily != nil {
-            score += 4
-        }
-        if scope.skillFamily != nil {
-            score += 5
-        }
-        if scope.windowPattern != nil {
-            score += 6
-        }
-
-        return score
-    }
 }
 
 public enum PreferenceMemoryStoreError: LocalizedError {

@@ -1012,6 +1012,11 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
   - `low risk`：至少 `3` 条 signal、跨 `2` 个 session、平均置信度 `>= 0.75`
   - `medium risk`：至少 `4` 条 signal、跨 `3` 个 session、最近无显式驳回
   - `high risk`：无论命中多少次，都必须 `teacherConfirmed`
+- 第一版默认自动晋升 scope：
+  - `global`
+  - `app`
+  - `taskFamily`
+  - `skill family` 与更细粒度 scope 暂不自动晋升
 - 冲突规则默认优先级：
   - 更具体 scope
   - 最近明确确认
@@ -1021,10 +1026,11 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `core/learning/PreferenceRulePromoter.swift`
 - `core/learning/PreferenceConflictResolver.swift`
 - `config/preference-promotion.example.yaml`
+- `docs/adr/ADR-0015-preference-rule-promotion-and-governance.md`
 
 **验收标准**
-- [ ] 单次偶发反馈不会直接成为长期规则。
-- [ ] 同一任务族下规则冲突可结构化解释。
+- [x] 单次偶发反馈不会直接成为长期规则。
+- [x] 同一任务族下规则冲突可结构化解释。
 
 #### TODO 11.3.3 形成 `PreferenceProfile`
 

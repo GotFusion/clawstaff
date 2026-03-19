@@ -305,33 +305,34 @@
 - [x] 数据结构支持审计与回滚
 
 ### TODO 11.3.3 实现规则晋升器
-- [ ] 将单次信号保持为 candidate
-- [ ] 将重复出现信号晋升为 stable rule
-- [ ] 支持阈值：
+- [x] 将单次信号保持为 candidate
+- [x] 将重复出现信号晋升为 stable rule
+- [x] 支持阈值：
   - `low risk`: `>=3` 次命中、跨 `>=2` 个 session、平均置信度 `>=0.75`
   - `medium risk`: `>=4` 次命中、跨 `>=3` 个 session、最近无显式驳回
   - `high risk`: 必须 `teacherConfirmed`
-- [ ] 高风险规则必须 `teacherConfirmed`
+- [x] 高风险规则必须 `teacherConfirmed`
+- [x] 默认只自动晋升 `global / app / taskFamily`，`skillFamily` 与更细粒度 scope 保持 candidate
 
 **输出物**
 - `core/learning/PreferenceRulePromoter.swift`
 - `config/preference-promotion.example.yaml`
 
 **验收标准**
-- [ ] 单次偶发反馈不会直接成为长期规则
-- [ ] 高风险规则无人工确认不能晋升
+- [x] 单次偶发反馈不会直接成为长期规则
+- [x] 高风险规则无人工确认不能晋升
 
 ### TODO 11.3.4 实现冲突解决器
-- [ ] 相同 scope 冲突规则排序
-- [ ] 更具体 scope 优先于更宽 scope
-- [ ] 最近显式确认优先
-- [ ] 输出冲突解释信息
+- [x] 相同 scope 冲突规则排序
+- [x] 更具体 scope 优先于更宽 scope
+- [x] 最近显式确认优先
+- [x] 输出冲突解释信息
 
 **输出物**
 - `core/learning/PreferenceConflictResolver.swift`
 
 **验收标准**
-- [ ] 冲突结果可解释为“为何 A 覆盖 B”
+- [x] 冲突结果可解释为“为何 A 覆盖 B”
 
 ### TODO 11.3.5 构建 `PreferenceProfile`
 - [ ] 按模块聚合：

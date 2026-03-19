@@ -1,0 +1,41 @@
+version: openstaff.learning.preference-promotion.v0
+
+enabled_scope_levels:
+  - global
+  - app
+  - taskFamily
+
+promotion_thresholds:
+  low:
+    minimum_signal_count: 3
+    minimum_session_count: 2
+    minimum_average_confidence: 0.75
+    requires_teacher_confirmation: false
+    requires_no_recent_rejection: false
+    allow_automatic_promotion: true
+  medium:
+    minimum_signal_count: 4
+    minimum_session_count: 3
+    requires_teacher_confirmation: false
+    requires_no_recent_rejection: true
+    allow_automatic_promotion: true
+  high:
+    minimum_signal_count: 1
+    minimum_session_count: 1
+    requires_teacher_confirmation: true
+    requires_no_recent_rejection: true
+    allow_automatic_promotion: true
+  critical:
+    minimum_signal_count: 1
+    minimum_session_count: 1
+    requires_teacher_confirmation: true
+    requires_no_recent_rejection: true
+    allow_automatic_promotion: false
+
+conflict_priority:
+  - active_rule_first
+  - more_specific_scope
+  - teacher_confirmation_recency
+  - lower_risk
+  - updated_at_recency
+  - stable_rule_id_tie_break

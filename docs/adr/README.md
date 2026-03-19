@@ -11,3 +11,4 @@
 - [ADR-0009 Skill Drift Detection And Repair](./ADR-0009-skill-drift-repair.md)
 - [ADR-0011 Mainline Vs Side Turns](./ADR-0011-mainline-vs-side-turns.md)
 - [ADR-0014 Preference Memory Store](./ADR-0014-preference-memory-store.md)
+- [ADR-0015 Preference Rule Promotion And Governance](./ADR-0015-preference-rule-promotion-and-governance.md)

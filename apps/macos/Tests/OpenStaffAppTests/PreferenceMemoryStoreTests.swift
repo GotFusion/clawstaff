@@ -288,6 +288,64 @@ final class PreferenceMemoryStoreTests: XCTestCase {
         )
     }
 
+    func testLoadRulesUsesConflictResolverOrderingWithinSameScope() throws {
+        let fileManager = FileManager.default
+        let workspaceRoot = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            .appendingPathComponent("openstaff-preference-memory-ordering-\(UUID().uuidString)", isDirectory: true)
+        try fileManager.createDirectory(at: workspaceRoot, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: workspaceRoot) }
+
+        let preferencesRoot = workspaceRoot.appendingPathComponent("data/preferences", isDirectory: true)
+        let store = PreferenceMemoryStore(preferencesRootDirectory: preferencesRoot, fileManager: fileManager)
+
+        let lowSignal = makeSignal(
+            signalId: "signal-order-low-001",
+            turnId: "turn-order-low-001",
+            sessionId: "session-order-low-001",
+            taskId: "task-order-low-001",
+            stepId: "step-order-low-001",
+            scope: .app(bundleId: "com.apple.Safari", appName: "Safari"),
+            timestamp: "2026-03-18T13:00:00Z",
+            hint: "Prefer Safari for search-heavy tasks.",
+            proposedAction: "prefer_safari"
+        )
+        let mediumSignal = makeSignal(
+            signalId: "signal-order-medium-001",
+            turnId: "turn-order-medium-001",
+            sessionId: "session-order-medium-001",
+            taskId: "task-order-medium-001",
+            stepId: "step-order-medium-001",
+            scope: .app(bundleId: "com.apple.Safari", appName: "Safari"),
+            timestamp: "2026-03-18T13:00:00Z",
+            hint: "Prefer Safari for search-heavy tasks.",
+            proposedAction: "prefer_safari"
+        )
+
+        try store.storeSignals([lowSignal, mediumSignal])
+        try store.storeRule(
+            makeRule(
+                ruleId: "rule-order-medium-001",
+                signal: mediumSignal,
+                statement: "Search-heavy tasks should default to Safari.",
+                riskLevel: .medium
+            )
+        )
+        try store.storeRule(
+            makeRule(
+                ruleId: "rule-order-low-001",
+                signal: lowSignal,
+                statement: "Search-heavy tasks should default to Safari.",
+                riskLevel: .low
+            )
+        )
+
+        let safariRules = try store.loadRules(
+            matching: PreferenceRuleQuery(appBundleId: "com.apple.Safari")
+        )
+
+        XCTAssertEqual(safariRules.map(\.ruleId), ["rule-order-low-001", "rule-order-medium-001"])
+    }
+
     private func makeSignal(
         signalId: String,
         turnId: String,
@@ -323,7 +381,8 @@ final class PreferenceMemoryStoreTests: XCTestCase {
         ruleId: String,
         signal: PreferenceSignal,
         statement: String,
-        teacherConfirmed: Bool = false
+        teacherConfirmed: Bool = false,
+        riskLevel: InteractionTurnRiskLevel = .medium
     ) -> PreferenceRule {
         PreferenceRule(
             ruleId: ruleId,
@@ -335,7 +394,7 @@ final class PreferenceMemoryStoreTests: XCTestCase {
             hint: signal.hint,
             proposedAction: signal.proposedAction,
             evidence: [PreferenceRuleEvidence(signal: signal)],
-            riskLevel: .medium,
+            riskLevel: riskLevel,
             activationStatus: .active,
             teacherConfirmed: teacherConfirmed,
             createdAt: signal.timestamp,

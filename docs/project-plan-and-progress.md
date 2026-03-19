@@ -152,6 +152,7 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成菜单栏+前台部件 v4 的 Phase C（详细模式收敛）：时间轴去重背景嵌入、一级/二级透明节点调色、间距参数规范化，并加入紧急停止细红线状态提示。
 - 完成菜单栏+前台部件 v4 的 Phase D（菜单栏原生化）：菜单改为系统原生样式，危险操作仅文字强调，模式切换在部件隐藏时可自动显示并联动生效。
 - 完成菜单栏+前台部件 v4 的 Phase E（回归验收）：新增 `OpenStaffAppTests` 回归套件并完成空态/长文本/多任务/交互动作链路验证，且现有 unit/integration/e2e 与 `OpenStaffApp` 构建均通过。
+- 完成阶段 11.3.2 默认晋升与冲突策略：新增 `PreferenceRulePromoter`、`PreferenceConflictResolver`、`config/preference-promotion.example.yaml` 与 `ADR-0015`，默认只对 `global / app / taskFamily` 自动晋升，固化 `low/medium/high/critical` 风险门槛，并把 `PreferenceMemoryStore` 的规则排序接到统一冲突优先级与结构化解释模型上。
 
 ### 下一步建议
 1. API 可用后补充 `provider=openai` 联机验证（模型行为、限流参数、错误码映射）并补充 skill 端到端执行联调。
