@@ -17,6 +17,7 @@ make slice
 make knowledge
 make orchestrator
 make assist
+make preference-profile
 make student
 make llm-prompts
 make llm-validate
@@ -49,6 +50,7 @@ make release-preflight
 - `make knowledge`：启动 Phase 2.3 知识构建 CLI（task chunks -> knowledge items + rule summary）。
 - `make orchestrator`：启动 Phase 4.1 模式状态机 CLI（模式切换守卫 + 能力白名单 + 结构化日志）。
 - `make assist`：启动 Phase 4.2 辅助模式闭环 CLI（规则预测 -> 弹窗确认 -> 执行 -> 回写日志）。
+- `make preference-profile`：查看或重建 Phase 11.3 当前偏好快照（规则聚合 -> profile snapshot -> latest pointer）。
 - `make student`：启动 Phase 4.3 学生模式闭环 CLI（输入目标 -> 自动规划 -> 技能执行 -> 结构化审阅报告）。
 - `make llm-prompts`：渲染 Phase 3.1 提示词模板（KnowledgeItem -> system/user prompts）。
 - `make llm-validate`：校验 LLM 结构化输出样例（强制 JSON + 一致性检查）。

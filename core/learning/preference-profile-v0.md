@@ -43,3 +43,10 @@
 - `PreferenceProfileSnapshot.profileVersion` 必须与内嵌 `PreferenceProfile.profileVersion` 一致。
 - `activeRuleIds` 只应包含当前仍为 `active` 的规则。
 - 五类 preferences 先都使用统一的 `PreferenceProfileDirective` 结构，具体模块化字段由后续 builder 再展开。
+- `PreferenceProfileBuilder` v0 默认模块映射为：
+  - `assist`：`procedure / style / risk`
+  - `skill`：`procedure / locator / style / risk`
+  - `repair`：`locator / repair`
+  - `review`：`outcome / procedure / locator / style / risk / repair`
+  - `planner`：`procedure / risk / repair`
+- 同一模块内的 directive 顺序复用 `PreferenceConflictResolver`，默认体现为“更具体 scope 优先、最近明确确认优先、低风险优先”。

@@ -1,0 +1,278 @@
+{
+  "createdAt": "2026-03-19T10:00:00Z",
+  "note": "Example preference profile snapshot for browser-heavy desktop work.",
+  "previousProfileVersion": "profile-2026-03-18-001",
+  "profile": {
+    "activeRuleIds": [
+      "rule-app-procedure-001",
+      "rule-global-outcome-001",
+      "rule-global-style-001",
+      "rule-skill-repair-001",
+      "rule-task-risk-001",
+      "rule-window-locator-001"
+    ],
+    "assistPreferences": [
+      {
+        "hint": "Require confirmation before risky browser mutations.",
+        "proposedAction": "require_teacher_confirmation",
+        "ruleId": "rule-task-risk-001",
+        "scope": {
+          "level": "taskFamily",
+          "taskFamily": "browser.navigation"
+        },
+        "statement": "Browser navigation should stay confirmation-gated.",
+        "teacherConfirmed": true,
+        "type": "risk",
+        "updatedAt": "2026-03-19T09:10:00Z"
+      },
+      {
+        "hint": "Prefer keyboard shortcuts before menu traversal.",
+        "proposedAction": "prefer_keyboard_shortcut",
+        "ruleId": "rule-app-procedure-001",
+        "scope": {
+          "appBundleId": "com.apple.Safari",
+          "appName": "Safari",
+          "level": "app"
+        },
+        "statement": "Safari workflows should prefer keyboard-first navigation.",
+        "teacherConfirmed": false,
+        "type": "procedure",
+        "updatedAt": "2026-03-19T09:05:00Z"
+      },
+      {
+        "hint": "Keep review copy concise and conclusion-first.",
+        "proposedAction": "shorten_review_copy",
+        "ruleId": "rule-global-style-001",
+        "scope": {
+          "level": "global"
+        },
+        "statement": "Review copy should stay concise and conclusion-first.",
+        "teacherConfirmed": true,
+        "type": "style",
+        "updatedAt": "2026-03-19T09:00:00Z"
+      }
+    ],
+    "generatedAt": "2026-03-19T10:00:00Z",
+    "plannerPreferences": [
+      {
+        "hint": "Retry locator repair before asking for re-teach.",
+        "proposedAction": "repair_before_reteach",
+        "ruleId": "rule-skill-repair-001",
+        "scope": {
+          "level": "skillFamily",
+          "skillFamily": "browser.open_tab"
+        },
+        "statement": "The open-tab skill should repair locator drift before re-teach.",
+        "teacherConfirmed": false,
+        "type": "repair",
+        "updatedAt": "2026-03-19T09:15:00Z"
+      },
+      {
+        "hint": "Require confirmation before risky browser mutations.",
+        "proposedAction": "require_teacher_confirmation",
+        "ruleId": "rule-task-risk-001",
+        "scope": {
+          "level": "taskFamily",
+          "taskFamily": "browser.navigation"
+        },
+        "statement": "Browser navigation should stay confirmation-gated.",
+        "teacherConfirmed": true,
+        "type": "risk",
+        "updatedAt": "2026-03-19T09:10:00Z"
+      },
+      {
+        "hint": "Prefer keyboard shortcuts before menu traversal.",
+        "proposedAction": "prefer_keyboard_shortcut",
+        "ruleId": "rule-app-procedure-001",
+        "scope": {
+          "appBundleId": "com.apple.Safari",
+          "appName": "Safari",
+          "level": "app"
+        },
+        "statement": "Safari workflows should prefer keyboard-first navigation.",
+        "teacherConfirmed": false,
+        "type": "procedure",
+        "updatedAt": "2026-03-19T09:05:00Z"
+      }
+    ],
+    "profileVersion": "profile-2026-03-19-001",
+    "repairPreferences": [
+      {
+        "hint": "Refresh semantic anchors before falling back to coordinates.",
+        "proposedAction": "refresh_skill_locator",
+        "ruleId": "rule-window-locator-001",
+        "scope": {
+          "appBundleId": "com.apple.Safari",
+          "appName": "Safari",
+          "level": "windowPattern",
+          "windowPattern": "Find"
+        },
+        "statement": "Safari Find windows should refresh semantic anchors before coordinate fallback.",
+        "teacherConfirmed": true,
+        "type": "locator",
+        "updatedAt": "2026-03-19T09:20:00Z"
+      },
+      {
+        "hint": "Retry locator repair before asking for re-teach.",
+        "proposedAction": "repair_before_reteach",
+        "ruleId": "rule-skill-repair-001",
+        "scope": {
+          "level": "skillFamily",
+          "skillFamily": "browser.open_tab"
+        },
+        "statement": "The open-tab skill should repair locator drift before re-teach.",
+        "teacherConfirmed": false,
+        "type": "repair",
+        "updatedAt": "2026-03-19T09:15:00Z"
+      }
+    ],
+    "reviewPreferences": [
+      {
+        "hint": "Refresh semantic anchors before falling back to coordinates.",
+        "proposedAction": "refresh_skill_locator",
+        "ruleId": "rule-window-locator-001",
+        "scope": {
+          "appBundleId": "com.apple.Safari",
+          "appName": "Safari",
+          "level": "windowPattern",
+          "windowPattern": "Find"
+        },
+        "statement": "Safari Find windows should refresh semantic anchors before coordinate fallback.",
+        "teacherConfirmed": true,
+        "type": "locator",
+        "updatedAt": "2026-03-19T09:20:00Z"
+      },
+      {
+        "hint": "Retry locator repair before asking for re-teach.",
+        "proposedAction": "repair_before_reteach",
+        "ruleId": "rule-skill-repair-001",
+        "scope": {
+          "level": "skillFamily",
+          "skillFamily": "browser.open_tab"
+        },
+        "statement": "The open-tab skill should repair locator drift before re-teach.",
+        "teacherConfirmed": false,
+        "type": "repair",
+        "updatedAt": "2026-03-19T09:15:00Z"
+      },
+      {
+        "hint": "Require confirmation before risky browser mutations.",
+        "proposedAction": "require_teacher_confirmation",
+        "ruleId": "rule-task-risk-001",
+        "scope": {
+          "level": "taskFamily",
+          "taskFamily": "browser.navigation"
+        },
+        "statement": "Browser navigation should stay confirmation-gated.",
+        "teacherConfirmed": true,
+        "type": "risk",
+        "updatedAt": "2026-03-19T09:10:00Z"
+      },
+      {
+        "hint": "Prefer keyboard shortcuts before menu traversal.",
+        "proposedAction": "prefer_keyboard_shortcut",
+        "ruleId": "rule-app-procedure-001",
+        "scope": {
+          "appBundleId": "com.apple.Safari",
+          "appName": "Safari",
+          "level": "app"
+        },
+        "statement": "Safari workflows should prefer keyboard-first navigation.",
+        "teacherConfirmed": false,
+        "type": "procedure",
+        "updatedAt": "2026-03-19T09:05:00Z"
+      },
+      {
+        "hint": null,
+        "proposedAction": null,
+        "ruleId": "rule-global-outcome-001",
+        "scope": {
+          "level": "global"
+        },
+        "statement": "Preferred outcomes should preserve browser context without surprise window switches.",
+        "teacherConfirmed": false,
+        "type": "outcome",
+        "updatedAt": "2026-03-19T09:25:00Z"
+      },
+      {
+        "hint": "Keep review copy concise and conclusion-first.",
+        "proposedAction": "shorten_review_copy",
+        "ruleId": "rule-global-style-001",
+        "scope": {
+          "level": "global"
+        },
+        "statement": "Review copy should stay concise and conclusion-first.",
+        "teacherConfirmed": true,
+        "type": "style",
+        "updatedAt": "2026-03-19T09:00:00Z"
+      }
+    ],
+    "schemaVersion": "openstaff.learning.preference-profile.v0",
+    "skillPreferences": [
+      {
+        "hint": "Refresh semantic anchors before falling back to coordinates.",
+        "proposedAction": "refresh_skill_locator",
+        "ruleId": "rule-window-locator-001",
+        "scope": {
+          "appBundleId": "com.apple.Safari",
+          "appName": "Safari",
+          "level": "windowPattern",
+          "windowPattern": "Find"
+        },
+        "statement": "Safari Find windows should refresh semantic anchors before coordinate fallback.",
+        "teacherConfirmed": true,
+        "type": "locator",
+        "updatedAt": "2026-03-19T09:20:00Z"
+      },
+      {
+        "hint": "Require confirmation before risky browser mutations.",
+        "proposedAction": "require_teacher_confirmation",
+        "ruleId": "rule-task-risk-001",
+        "scope": {
+          "level": "taskFamily",
+          "taskFamily": "browser.navigation"
+        },
+        "statement": "Browser navigation should stay confirmation-gated.",
+        "teacherConfirmed": true,
+        "type": "risk",
+        "updatedAt": "2026-03-19T09:10:00Z"
+      },
+      {
+        "hint": "Prefer keyboard shortcuts before menu traversal.",
+        "proposedAction": "prefer_keyboard_shortcut",
+        "ruleId": "rule-app-procedure-001",
+        "scope": {
+          "appBundleId": "com.apple.Safari",
+          "appName": "Safari",
+          "level": "app"
+        },
+        "statement": "Safari workflows should prefer keyboard-first navigation.",
+        "teacherConfirmed": false,
+        "type": "procedure",
+        "updatedAt": "2026-03-19T09:05:00Z"
+      },
+      {
+        "hint": "Keep review copy concise and conclusion-first.",
+        "proposedAction": "shorten_review_copy",
+        "ruleId": "rule-global-style-001",
+        "scope": {
+          "level": "global"
+        },
+        "statement": "Review copy should stay concise and conclusion-first.",
+        "teacherConfirmed": true,
+        "type": "style",
+        "updatedAt": "2026-03-19T09:00:00Z"
+      }
+    ]
+  },
+  "profileVersion": "profile-2026-03-19-001",
+  "schemaVersion": "openstaff.learning.preference-profile-snapshot.v0",
+  "sourceRuleIds": [
+    "rule-app-procedure-001",
+    "rule-global-outcome-001",
+    "rule-global-style-001",
+    "rule-skill-repair-001",
+    "rule-task-risk-001",
+    "rule-window-locator-001"
+  ]
+}

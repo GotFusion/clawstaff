@@ -1040,13 +1040,15 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
   - repair
   - review
   - planner
+- checklist 中对应 `TODO 11.3.5`；本次实现已补齐 builder 与查看 CLI，后续请以“roadmap 11.3.3 = checklist 11.3.5”理解编号映射。
 
 **输出物**
 - `core/learning/PreferenceProfileBuilder.swift`
 - `data/preferences/profiles/`
+- `apps/macos/Sources/OpenStaffPreferenceProfileCLI/*`
 
 **验收标准**
-- [ ] GUI 或 CLI 可查看当前生效规则和 profile 快照。
+- [x] GUI 或 CLI 可查看当前生效规则和 profile 快照。
 
 ---
 

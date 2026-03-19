@@ -335,21 +335,23 @@
 - [x] 冲突结果可解释为“为何 A 覆盖 B”
 
 ### TODO 11.3.5 构建 `PreferenceProfile`
-- [ ] 按模块聚合：
+- [x] 按模块聚合：
   - assist
   - skill generation
   - repair
   - review
   - planner
-- [ ] 生成 profile snapshot
-- [ ] 记录 snapshot 使用了哪些 rule ids
+- [x] 生成 profile snapshot
+- [x] 记录 snapshot 使用了哪些 rule ids
+- [x] 提供最小 CLI 查看 / 重建当前 profile 快照
 
 **输出物**
 - `core/learning/PreferenceProfileBuilder.swift`
 - `core/learning/examples/preference-profiles/*.json`
+- `apps/macos/Sources/OpenStaffPreferenceProfileCLI/*`
 
 **验收标准**
-- [ ] GUI 或 CLI 可查看当前生效偏好快照
+- [x] GUI 或 CLI 可查看当前生效偏好快照
 
 ---
 

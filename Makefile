@@ -7,13 +7,14 @@ KNOWLEDGE_TARGET := OpenStaffKnowledgeBuilderCLI
 ORCHESTRATOR_TARGET := OpenStaffOrchestratorCLI
 ASSIST_TARGET := OpenStaffAssistCLI
 REPLAY_VERIFY_TARGET := OpenStaffReplayVerifyCLI
+PREFERENCE_PROFILE_TARGET := OpenStaffPreferenceProfileCLI
 OPENCLAW_TARGET := OpenStaffOpenClawCLI
 STUDENT_TARGET := OpenStaffStudentCLI
 SWIFT_WRAPPER := ./scripts/dev/with_xcode_env.sh
 SWIFT := $(SWIFT_WRAPPER) swift
 ARGS ?=
 
-.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample benchmark-personal test-swift test test-unit test-integration test-e2e release-regression release-preflight
+.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify preference-profile openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample benchmark-personal test-swift test test-unit test-integration test-e2e release-regression release-preflight
 
 build:
 	$(SWIFT) build --package-path $(APP_PACKAGE_PATH)
@@ -42,6 +43,9 @@ assist:
 
 replay-verify:
 	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(REPLAY_VERIFY_TARGET) $(ARGS)
+
+preference-profile:
+	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(PREFERENCE_PROFILE_TARGET) $(ARGS)
 
 openclaw:
 	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(OPENCLAW_TARGET) $(ARGS)

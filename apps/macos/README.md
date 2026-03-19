@@ -12,6 +12,7 @@ make capture
 make slice
 make knowledge
 make replay-verify
+make preference-profile
 ```
 
 ## Build
@@ -45,6 +46,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 - `Sources/OpenStaffTaskSlicerCLI/`: Phase 2.1 task slicer CLI (session events -> TaskChunk files).
 - `Sources/OpenStaffKnowledgeBuilderCLI/`: Phase 2.2 knowledge builder CLI (TaskChunk -> KnowledgeItem).
 - `Sources/OpenStaffReplayVerifyCLI/`: Phase 7.3 replay verify CLI (KnowledgeItem -> dry-run semantic resolution report).
+- `Sources/OpenStaffPreferenceProfileCLI/`: Phase 11.3 preference profile CLI（当前偏好快照查看 / 重建 / 落盘）。
 
 ## Capture CLI
 
@@ -103,6 +105,18 @@ make replay-verify ARGS="--knowledge data/knowledge/2026-03-13/task-session-2026
 ```
 
 Exit code `2` means at least one step degraded to coordinate fallback or failed semantic resolution.
+
+## Preference Profile CLI
+
+```bash
+# Rebuild and persist the latest preference profile snapshot
+make preference-profile ARGS="--preferences-root data/preferences --rebuild --persist --json"
+
+# Only inspect the latest stored snapshot
+make preference-profile ARGS="--preferences-root data/preferences --json"
+```
+
+默认会读取 `data/preferences/rules/*.json` 中的 active 规则，并按 `assist / skill / repair / review / planner` 五个模块聚合当前快照。
 
 ## GUI Status (Phase 6.1)
 

@@ -15,6 +15,7 @@ let package = Package(
         .executable(name: "OpenStaffOrchestratorCLI", targets: ["OpenStaffOrchestratorCLI"]),
         .executable(name: "OpenStaffAssistCLI", targets: ["OpenStaffAssistCLI"]),
         .executable(name: "OpenStaffReplayVerifyCLI", targets: ["OpenStaffReplayVerifyCLI"]),
+        .executable(name: "OpenStaffPreferenceProfileCLI", targets: ["OpenStaffPreferenceProfileCLI"]),
         .executable(name: "OpenStaffOpenClawCLI", targets: ["OpenStaffOpenClawCLI"]),
         .executable(name: "OpenStaffStudentCLI", targets: ["OpenStaffStudentCLI"])
     ],
@@ -56,6 +57,10 @@ let package = Package(
         .executableTarget(
             name: "OpenStaffReplayVerifyCLI",
             path: "Sources/OpenStaffReplayVerifyCLI"
+        ),
+        .executableTarget(
+            name: "OpenStaffPreferenceProfileCLI",
+            path: "Sources/OpenStaffPreferenceProfileCLI"
         ),
         .executableTarget(
             name: "OpenStaffOpenClawCLI",
