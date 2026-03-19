@@ -12,6 +12,7 @@ public struct AssistLoopInput {
     public let currentAppBundleId: String?
     public let currentWindowTitle: String?
     public let currentTaskGoal: String?
+    public let currentTaskFamily: String?
     public let recentStepInstructions: [String]
     public let knowledgeItems: [KnowledgeItem]
 
@@ -27,6 +28,7 @@ public struct AssistLoopInput {
         currentAppBundleId: String?,
         currentWindowTitle: String? = nil,
         currentTaskGoal: String? = nil,
+        currentTaskFamily: String? = nil,
         recentStepInstructions: [String] = [],
         knowledgeItems: [KnowledgeItem]
     ) {
@@ -41,6 +43,7 @@ public struct AssistLoopInput {
         self.currentAppBundleId = currentAppBundleId
         self.currentWindowTitle = currentWindowTitle
         self.currentTaskGoal = currentTaskGoal
+        self.currentTaskFamily = currentTaskFamily
         self.recentStepInstructions = recentStepInstructions
         self.knowledgeItems = knowledgeItems
     }
@@ -280,6 +283,7 @@ public final class AssistModeLoopOrchestrator {
                 currentAppBundleId: input.currentAppBundleId,
                 currentWindowTitle: input.currentWindowTitle,
                 currentTaskGoal: input.currentTaskGoal,
+                currentTaskFamily: input.currentTaskFamily,
                 recentStepInstructions: input.recentStepInstructions,
                 knowledgeItems: input.knowledgeItems
             )

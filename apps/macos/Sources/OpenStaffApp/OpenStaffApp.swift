@@ -4471,6 +4471,10 @@ enum OpenStaffWorkspacePaths {
         dataDirectory.appendingPathComponent("reports", isDirectory: true)
     }
 
+    static var preferencesDirectory: URL {
+        dataDirectory.appendingPathComponent("preferences", isDirectory: true)
+    }
+
     static var runtimeDirectory: URL {
         dataDirectory.appendingPathComponent("runtime", isDirectory: true)
     }

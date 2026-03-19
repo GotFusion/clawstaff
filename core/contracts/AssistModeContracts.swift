@@ -5,6 +5,7 @@ import Foundation
 public enum AssistPredictionStrategy: String, Codable, Sendable {
     case ruleV0
     case retrievalV1
+    case preferenceAwareRetrievalV1
     case modelV1Placeholder
 }
 
@@ -36,6 +37,7 @@ public struct AssistSuggestion: Codable, Equatable, Sendable {
     public let confidence: Double
     public let evidence: [AssistPredictionEvidence]
     public let predictorVersion: String
+    public let preferenceDecision: AssistPreferenceRerankDecision?
 
     public init(
         suggestionId: String,
@@ -45,7 +47,8 @@ public struct AssistSuggestion: Codable, Equatable, Sendable {
         action: AssistSuggestedAction,
         confidence: Double,
         evidence: [AssistPredictionEvidence] = [],
-        predictorVersion: String = AssistPredictionStrategy.ruleV0.rawValue
+        predictorVersion: String = AssistPredictionStrategy.ruleV0.rawValue,
+        preferenceDecision: AssistPreferenceRerankDecision? = nil
     ) {
         self.suggestionId = suggestionId
         self.knowledgeItemId = knowledgeItemId
@@ -55,6 +58,7 @@ public struct AssistSuggestion: Codable, Equatable, Sendable {
         self.confidence = confidence
         self.evidence = evidence
         self.predictorVersion = predictorVersion
+        self.preferenceDecision = preferenceDecision
     }
 }
 

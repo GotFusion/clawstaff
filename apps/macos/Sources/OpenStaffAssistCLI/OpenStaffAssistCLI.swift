@@ -20,10 +20,15 @@ struct OpenStaffAssistCLI {
             let sessionId = options.sessionId ?? primaryItem.sessionId
             let currentAppName = options.currentAppName ?? primaryItem.context.appName
             let currentAppBundleId = options.currentAppBundleId ?? primaryItem.context.appBundleId
+            let preferenceProfile = try AssistPreferenceProfileLoader().loadLatestProfile(
+                from: options.preferencesRootURL
+            )
 
             let modeLogger = StdoutOrchestratorStateLogger()
             let stateMachine = ModeStateMachine(initialMode: options.initialMode, logger: modeLogger)
-            let predictor = RetrievalBasedAssistPredictor()
+            let predictor = PreferenceAwareAssistPredictor(
+                preferenceProfile: preferenceProfile
+            )
             let prompter = AssistPopupConfirmationPrompter(forcedDecision: options.autoConfirm)
             let executor = AssistActionExecutor()
             let logWriter = AssistLoopLogWriter(logsRootDirectory: options.logsRootDirectoryURL)
@@ -48,6 +53,7 @@ struct OpenStaffAssistCLI {
                 currentAppBundleId: currentAppBundleId,
                 currentWindowTitle: options.currentWindowTitle ?? primaryItem.context.windowTitle,
                 currentTaskGoal: options.currentTaskGoal ?? primaryItem.goal,
+                currentTaskFamily: options.currentTaskFamily,
                 recentStepInstructions: options.recentStepInstructions,
                 knowledgeItems: items
             )
@@ -73,7 +79,7 @@ struct OpenStaffAssistCLI {
                 }
             }
 
-            if result.finalStatus != .completed {
+            if result.finalStatus != AssistLoopFinalStatus.completed {
                 Foundation.exit(2)
             }
         } catch {
@@ -98,6 +104,7 @@ struct OpenStaffAssistCLI {
           --app-bundle-id <bundleId>         Current app bundle ID override.
           --window-title <title>             Current window title override.
           --goal <text>                      Current task goal override.
+          --task-family <family>             Current task family override. Optional.
           --recent-step <instruction>        Recently completed step. Repeat this flag to build a sequence.
           --completed-steps <n>              Already completed step count. Default: 0
           --auto-confirm <yes|no>            Mock popup response from CLI flag.
@@ -105,6 +112,7 @@ struct OpenStaffAssistCLI {
           --emergency-stop-active            Set emergency stop active (blocks execution).
           --real-execution                   Disable dry-run tag in executor output.
           --simulate-execution-failure       Force execution failure for validation.
+          --preferences-root <path>          Preference store root. Default: data/preferences
           --logs-root <path>                 Assist log root directory. Default: data/logs
           --trace-id <id>                    Trace ID. Default: auto generated.
           --timestamp <iso8601>              Timestamp. Default: now.
@@ -124,6 +132,11 @@ struct OpenStaffAssistCLI {
             print("confidence=\(suggestion.confidence)")
             if !suggestion.evidence.isEmpty {
                 print("evidenceSources=\(suggestion.evidence.map { $0.knowledgeItemId }.joined(separator: ","))")
+            }
+            if let preferenceDecision = suggestion.preferenceDecision {
+                print("preferenceProfile=\(preferenceDecision.profileVersion)")
+                print("preferenceRuleIds=\(preferenceDecision.appliedRuleIds.joined(separator: ","))")
+                print("preferenceSummary=\(preferenceDecision.summary)")
             }
         }
         if let confirmation = result.confirmation {
@@ -147,6 +160,7 @@ struct AssistCLIOptions {
     let currentAppBundleId: String?
     let currentWindowTitle: String?
     let currentTaskGoal: String?
+    let currentTaskFamily: String?
     let recentStepInstructions: [String]
     let completedStepCount: Int
     let autoConfirm: Bool?
@@ -154,6 +168,7 @@ struct AssistCLIOptions {
     let emergencyStopActive: Bool
     let realExecution: Bool
     let simulateExecutionFailure: Bool
+    let preferencesRootPath: String
     let logsRootPath: String
     let traceId: String
     let timestamp: String
@@ -168,6 +183,10 @@ struct AssistCLIOptions {
         resolve(path: logsRootPath)
     }
 
+    var preferencesRootURL: URL {
+        resolve(path: preferencesRootPath)
+    }
+
     static func parse(arguments: [String]) throws -> AssistCLIOptions {
         var knowledgeItemPath: String?
         var sessionId: String?
@@ -177,6 +196,7 @@ struct AssistCLIOptions {
         var currentAppBundleId: String?
         var currentWindowTitle: String?
         var currentTaskGoal: String?
+        var currentTaskFamily: String?
         var recentStepInstructions: [String] = []
         var completedStepCount = 0
         var autoConfirm: Bool?
@@ -184,6 +204,7 @@ struct AssistCLIOptions {
         var emergencyStopActive = false
         var realExecution = false
         var simulateExecutionFailure = false
+        var preferencesRootPath = "data/preferences"
         var logsRootPath = defaultLogsRoot
         var traceId = "trace-\(UUID().uuidString.lowercased())"
         var timestamp = currentTimestamp()
@@ -246,6 +267,12 @@ struct AssistCLIOptions {
                     throw AssistCLIOptionError.missingValue("--goal")
                 }
                 currentTaskGoal = arguments[index]
+            case "--task-family":
+                index += 1
+                guard index < arguments.count else {
+                    throw AssistCLIOptionError.missingValue("--task-family")
+                }
+                currentTaskFamily = arguments[index]
             case "--recent-step":
                 index += 1
                 guard index < arguments.count else {
@@ -282,6 +309,12 @@ struct AssistCLIOptions {
                 realExecution = true
             case "--simulate-execution-failure":
                 simulateExecutionFailure = true
+            case "--preferences-root":
+                index += 1
+                guard index < arguments.count else {
+                    throw AssistCLIOptionError.missingValue("--preferences-root")
+                }
+                preferencesRootPath = arguments[index]
             case "--logs-root":
                 index += 1
                 guard index < arguments.count else {
@@ -344,6 +377,7 @@ struct AssistCLIOptions {
                 currentAppBundleId: currentAppBundleId,
                 currentWindowTitle: currentWindowTitle,
                 currentTaskGoal: currentTaskGoal,
+                currentTaskFamily: currentTaskFamily,
                 recentStepInstructions: recentStepInstructions,
                 completedStepCount: completedStepCount,
                 autoConfirm: autoConfirm,
@@ -351,6 +385,7 @@ struct AssistCLIOptions {
                 emergencyStopActive: emergencyStopActive,
                 realExecution: realExecution,
                 simulateExecutionFailure: simulateExecutionFailure,
+                preferencesRootPath: preferencesRootPath,
                 logsRootPath: logsRootPath,
                 traceId: traceId,
                 timestamp: timestamp,
@@ -368,6 +403,7 @@ struct AssistCLIOptions {
             currentAppBundleId: currentAppBundleId,
             currentWindowTitle: currentWindowTitle,
             currentTaskGoal: currentTaskGoal,
+            currentTaskFamily: currentTaskFamily,
             recentStepInstructions: recentStepInstructions,
             completedStepCount: completedStepCount,
             autoConfirm: autoConfirm,
@@ -375,6 +411,7 @@ struct AssistCLIOptions {
             emergencyStopActive: emergencyStopActive,
             realExecution: realExecution,
             simulateExecutionFailure: simulateExecutionFailure,
+            preferencesRootPath: preferencesRootPath,
             logsRootPath: logsRootPath,
             traceId: traceId,
             timestamp: timestamp,
@@ -478,6 +515,50 @@ struct AssistKnowledgeLoader {
             throw AssistKnowledgeLoaderError.decodeFailed(path: fileURL.path, underlying: error)
         }
     }
+}
+
+struct AssistPreferenceProfileLoader {
+    private let decoder = JSONDecoder()
+    private let fileManager = FileManager.default
+
+    func loadLatestProfile(from preferencesRoot: URL) throws -> PreferenceProfile? {
+        let profilesRoot = preferencesRoot.appendingPathComponent("profiles", isDirectory: true)
+        let latestPointerURL = profilesRoot.appendingPathComponent("latest.json", isDirectory: false)
+
+        if fileManager.fileExists(atPath: latestPointerURL.path) {
+            let pointer = try decode(AssistPreferenceProfilePointer.self, from: latestPointerURL)
+            let snapshotURL = profilesRoot.appendingPathComponent("\(pointer.profileVersion).json", isDirectory: false)
+            guard fileManager.fileExists(atPath: snapshotURL.path) else {
+                return nil
+            }
+            return try decode(PreferenceProfileSnapshot.self, from: snapshotURL).profile
+        }
+
+        guard fileManager.fileExists(atPath: profilesRoot.path) else {
+            return nil
+        }
+
+        let candidates = try fileManager.contentsOfDirectory(at: profilesRoot, includingPropertiesForKeys: nil)
+            .filter {
+                $0.pathExtension == "json" && $0.lastPathComponent != "latest.json"
+            }
+            .sorted { $0.lastPathComponent < $1.lastPathComponent }
+
+        guard let snapshotURL = candidates.last else {
+            return nil
+        }
+
+        return try decode(PreferenceProfileSnapshot.self, from: snapshotURL).profile
+    }
+
+    private func decode<T: Decodable>(_ type: T.Type, from fileURL: URL) throws -> T {
+        let data = try Data(contentsOf: fileURL)
+        return try decoder.decode(type, from: data)
+    }
+}
+
+private struct AssistPreferenceProfilePointer: Decodable {
+    let profileVersion: String
 }
 
 enum AssistCLIOptionError: LocalizedError {

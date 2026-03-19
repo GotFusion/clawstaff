@@ -10,10 +10,12 @@
 - `AssistModeLoop.swift`：辅助模式闭环（历史知识检索预测 -> 弹窗确认 -> 执行 -> 回写日志）。
 - `AssistKnowledgeRetriever.swift`：辅助模式历史知识检索器。
 - `RetrievalBasedAssistPredictor.swift`：基于检索结果生成个性化下一步建议。
+- `PreferenceAwareAssistPredictor.swift`：在 retrieval 结果之上按老师偏好做重排，并输出 rule ids / 候选压低原因。
 - `StudentModeLoop.swift`：学生模式闭环（目标输入 -> 自动规划 -> 技能执行 -> 审阅报告）。
 
 ## 文档
 - 设计说明：`mode-state-machine-v0.md`
 - 设计说明：`assist-mode-loop-v0.md`
 - 设计说明：`assist-knowledge-retrieval-v1.md`
+- 设计说明：`assist-preference-rerank-v1.md`
 - 设计说明：`student-mode-loop-v0.md`

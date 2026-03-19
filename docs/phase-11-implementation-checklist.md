@@ -358,16 +358,16 @@
 ## 阶段 11.4：策略装配层
 
 ### TODO 11.4.1 Assist 偏好重排
-- [ ] 在 `AssistKnowledgeRetriever` 结果之上增加偏好打分
-- [ ] 对 step preference、app preference、risk preference 加权
-- [ ] 输出“应用了哪些规则”的解释文本
+- [x] 在 `AssistKnowledgeRetriever` 结果之上增加偏好打分
+- [x] 对 step preference、app preference、risk preference 加权
+- [x] 输出“应用了哪些规则”的解释文本
 
 **输出物**
 - `core/orchestrator/PreferenceAwareAssistPredictor.swift`
 - `core/contracts/AssistPreferenceContracts.swift`
 
 **验收标准**
-- [ ] 同样历史知识下，推荐结果会因个人偏好不同而不同
+- [x] 同样历史知识下，推荐结果会因个人偏好不同而不同
 
 ### TODO 11.4.2 Skill mapper 偏好装配
 - [ ] 让 skill 生成过程接入：

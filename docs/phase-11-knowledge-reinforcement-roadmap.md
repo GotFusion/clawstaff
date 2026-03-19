@@ -1060,6 +1060,8 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.4.1 Assist 偏好重排先落地
 
+状态：已完成（2026-03-19，统一 assembly log 仍留在 TODO 11.4.6）
+
 - 只改 rerank，不改基础 retrieval。
 - 输出必须附带：
   - 命中的 rule ids
@@ -1070,7 +1072,7 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `core/contracts/AssistPreferenceContracts.swift`
 
 **验收标准**
-- [ ] assist 推荐可解释“为什么这次选择了历史 A 而不是历史 B”。
+- [x] assist 推荐可解释“为什么这次选择了历史 A 而不是历史 B”。
 
 #### TODO 11.4.2 Skill mapper 第二个接入
 

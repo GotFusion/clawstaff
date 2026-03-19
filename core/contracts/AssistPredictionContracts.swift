@@ -6,6 +6,7 @@ public struct AssistPredictionInput: Equatable {
     public let currentAppBundleId: String?
     public let currentWindowTitle: String?
     public let currentTaskGoal: String?
+    public let currentTaskFamily: String?
     public let recentStepInstructions: [String]
     public let knowledgeItems: [KnowledgeItem]
 
@@ -15,6 +16,7 @@ public struct AssistPredictionInput: Equatable {
         currentAppBundleId: String?,
         currentWindowTitle: String? = nil,
         currentTaskGoal: String? = nil,
+        currentTaskFamily: String? = nil,
         recentStepInstructions: [String] = [],
         knowledgeItems: [KnowledgeItem]
     ) {
@@ -23,6 +25,7 @@ public struct AssistPredictionInput: Equatable {
         self.currentAppBundleId = currentAppBundleId?.trimmingCharacters(in: .whitespacesAndNewlines)
         self.currentWindowTitle = currentWindowTitle?.trimmingCharacters(in: .whitespacesAndNewlines)
         self.currentTaskGoal = currentTaskGoal?.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.currentTaskFamily = currentTaskFamily?.trimmingCharacters(in: .whitespacesAndNewlines)
         self.recentStepInstructions = recentStepInstructions
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
@@ -57,6 +60,10 @@ public struct AssistPredictionEvidence: Codable, Equatable, Sendable {
     public let stepId: String
     public let stepInstruction: String
     public let targetDescription: String?
+    public let appName: String?
+    public let appBundleId: String?
+    public let windowTitle: String?
+    public let goal: String?
     public let score: Double
     public let matchedSignals: [AssistPredictionSignalMatch]
     public let reason: String
@@ -68,6 +75,10 @@ public struct AssistPredictionEvidence: Codable, Equatable, Sendable {
         stepId: String,
         stepInstruction: String,
         targetDescription: String? = nil,
+        appName: String? = nil,
+        appBundleId: String? = nil,
+        windowTitle: String? = nil,
+        goal: String? = nil,
         score: Double,
         matchedSignals: [AssistPredictionSignalMatch],
         reason: String
@@ -78,6 +89,10 @@ public struct AssistPredictionEvidence: Codable, Equatable, Sendable {
         self.stepId = stepId
         self.stepInstruction = stepInstruction
         self.targetDescription = targetDescription
+        self.appName = appName
+        self.appBundleId = appBundleId
+        self.windowTitle = windowTitle
+        self.goal = goal
         self.score = score
         self.matchedSignals = matchedSignals
         self.reason = reason

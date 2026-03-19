@@ -181,9 +181,19 @@ final class IntegratedModeWorkflowRunner {
         }
 
         let stateMachine = ModeStateMachine(initialMode: .teaching, logger: InMemoryOrchestratorStateLogger())
+        let preferenceSnapshot: PreferenceProfileSnapshot?
+        do {
+            preferenceSnapshot = try PreferenceMemoryStore(
+                preferencesRootDirectory: OpenStaffWorkspacePaths.preferencesDirectory
+            ).loadLatestProfileSnapshot()
+        } catch {
+            preferenceSnapshot = nil
+        }
         let orchestrator = AssistModeLoopOrchestrator(
             modeStateMachine: stateMachine,
-            predictor: RetrievalBasedAssistPredictor(),
+            predictor: PreferenceAwareAssistPredictor(
+                preferenceProfile: preferenceSnapshot?.profile
+            ),
             confirmationPrompter: AssistPopupConfirmationPrompter(forcedDecision: true),
             actionExecutor: AssistActionExecutor(),
             logWriter: AssistLoopLogWriter(logsRootDirectory: OpenStaffWorkspacePaths.logsDirectory)

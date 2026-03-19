@@ -29,6 +29,10 @@ public struct AssistKnowledgeRetriever {
                     stepId: candidate.step.stepId,
                     stepInstruction: candidate.step.instruction,
                     targetDescription: candidate.targetDescription,
+                    appName: candidate.item.context.appName,
+                    appBundleId: candidate.item.context.appBundleId,
+                    windowTitle: candidate.item.context.windowTitle,
+                    goal: candidate.item.goal,
                     score: rounded(score),
                     matchedSignals: signals.sorted { lhs, rhs in
                         if lhs.score == rhs.score {
