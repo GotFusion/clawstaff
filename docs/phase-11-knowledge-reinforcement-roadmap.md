@@ -1076,6 +1076,8 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.4.2 Skill mapper 第二个接入
 
+状态：已完成（2026-03-19，统一 `PolicyAssemblyDecision` 落盘仍留在 TODO 11.4.6）
+
 - 第一版只改：
   - `nativeAction` / `guiAction` 分流
   - locator 顺序
@@ -1088,14 +1090,19 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
   - `image anchor`
   - `relative coordinate`
   - `absolute coordinate`
-- 不改 schema，不改 preflight 门槛。
+- 保持 `openstaff.openclaw-skill.v1` 与现有 preflight 门槛不变；为 traceability 在 v1 上新增可选 preference 审计字段。
 
 **输出物**
 - `scripts/skills/openclaw_skill_mapper.py`
 - `scripts/skills/templates/*`
 
 **验收标准**
-- [ ] skill 产物能写出“本次引用的偏好规则”摘要。
+- [x] skill 产物能写出“本次引用的偏好规则”摘要。
+
+本次落地说明：
+- GUI workflow 调 mapper 时会自动传入 `data/preferences`，skill build 默认读取最新 profile。
+- `nativeAction` 步骤会记录 `Shortcuts / AppleScript / CLI / app adapter` 的优先顺序；`guiAction` 会把 locator 候选按固定顺序写入 `stepMappings`。
+- `SKILL.md` frontmatter metadata 与 `openstaff-skill.json -> provenance.skillBuild / stepMappings` 会同时记录命中的 preference rule ids、profile version 与 step 级说明。
 
 #### TODO 11.4.3 Repair planner 第三个接入
 

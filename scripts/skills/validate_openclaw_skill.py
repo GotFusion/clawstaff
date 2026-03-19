@@ -139,6 +139,11 @@ def validate_mapping_json(mapping: Any, frontmatter: dict[str, str]) -> list[str
         for key in ["knowledgeItemPath", "llmOutputPath"]:
             if not isinstance(source.get(key), str) or not source[key].strip():
                 errors.append(f"source.{key} must be a non-empty string.")
+        for key in ["preferenceProfilePath", "taskFamily", "skillFamily"]:
+            if key in source and source.get(key) is not None and (
+                not isinstance(source.get(key), str) or not source[key].strip()
+            ):
+                errors.append(f"source.{key} must be string or null.")
 
     if not isinstance(mapping.get("llmOutputAccepted"), bool):
         errors.append("llmOutputAccepted must be a boolean.")
@@ -254,6 +259,27 @@ def validate_mapping_json(mapping: Any, frontmatter: dict[str, str]) -> list[str
             repair_version = skill_build.get("repairVersion")
             if not isinstance(repair_version, int) or repair_version < 0:
                 errors.append("provenance.skillBuild.repairVersion must be a non-negative integer.")
+            preference_profile_version = skill_build.get("preferenceProfileVersion")
+            if preference_profile_version is not None and (
+                not isinstance(preference_profile_version, str) or not preference_profile_version.strip()
+            ):
+                errors.append("provenance.skillBuild.preferenceProfileVersion must be string or null.")
+            applied_preference_rule_ids = skill_build.get("appliedPreferenceRuleIds")
+            if applied_preference_rule_ids is not None:
+                if not isinstance(applied_preference_rule_ids, list):
+                    errors.append("provenance.skillBuild.appliedPreferenceRuleIds must be an array when present.")
+                else:
+                    for rule_idx, rule_id in enumerate(applied_preference_rule_ids):
+                        if not isinstance(rule_id, str) or not rule_id.strip():
+                            errors.append(
+                                "provenance.skillBuild.appliedPreferenceRuleIds"
+                                f"[{rule_idx}] must be a non-empty string."
+                            )
+            for key in ["preferenceSummary", "taskFamily", "skillFamily"]:
+                if key in skill_build and skill_build.get(key) is not None and (
+                    not isinstance(skill_build.get(key), str) or not skill_build[key].strip()
+                ):
+                    errors.append(f"provenance.skillBuild.{key} must be string or null.")
 
         step_mappings = provenance.get("stepMappings")
         if not isinstance(step_mappings, list) or len(step_mappings) == 0:
@@ -326,6 +352,40 @@ def validate_mapping_json(mapping: Any, frontmatter: dict[str, str]) -> list[str
                                     "provenance.stepMappings"
                                     f"[{idx}].semanticTargets[{target_idx}] missing key: {key}"
                                 )
+
+                action_kind = step_mapping.get("actionKind")
+                if action_kind is not None and action_kind not in {"nativeAction", "guiAction"}:
+                    errors.append(
+                        f"provenance.stepMappings[{idx}].actionKind must be nativeAction/guiAction when present."
+                    )
+
+                preferred_native_strategy = step_mapping.get("preferredNativeStrategy")
+                if preferred_native_strategy is not None and (
+                    not isinstance(preferred_native_strategy, str) or not preferred_native_strategy.strip()
+                ):
+                    errors.append(
+                        f"provenance.stepMappings[{idx}].preferredNativeStrategy must be string or null."
+                    )
+
+                for key in ["nativeStrategyOrder", "locatorStrategyOrder", "appliedRuleIds", "notes"]:
+                    values = step_mapping.get(key)
+                    if values is not None:
+                        if not isinstance(values, list):
+                            errors.append(f"provenance.stepMappings[{idx}].{key} must be an array when present.")
+                        else:
+                            for value_idx, value in enumerate(values):
+                                if not isinstance(value, str) or not value.strip():
+                                    errors.append(
+                                        f"provenance.stepMappings[{idx}].{key}[{value_idx}] must be a non-empty string."
+                                    )
+
+                requires_teacher_confirmation = step_mapping.get("requiresTeacherConfirmation")
+                if requires_teacher_confirmation is not None and not isinstance(
+                    requires_teacher_confirmation, bool
+                ):
+                    errors.append(
+                        f"provenance.stepMappings[{idx}].requiresTeacherConfirmation must be boolean when present."
+                    )
 
     return errors
 

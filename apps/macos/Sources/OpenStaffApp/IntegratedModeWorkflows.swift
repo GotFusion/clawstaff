@@ -415,6 +415,8 @@ final class IntegratedModeWorkflowRunner {
                 llmOutputPath.path,
                 "--skills-root",
                 OpenStaffWorkspacePaths.skillsPendingDirectory.path,
+                "--preferences-root",
+                OpenStaffWorkspacePaths.preferencesDirectory.path,
                 "--overwrite",
                 "--report",
                 mapperReportPath.path

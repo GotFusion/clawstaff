@@ -51,6 +51,24 @@
         "llmOutputPath": {
           "type": "string",
           "minLength": 1
+        },
+        "preferenceProfilePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "taskFamily": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "skillFamily": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -168,6 +186,37 @@
             },
             "llmOutputAccepted": {
               "type": "boolean"
+            },
+            "preferenceProfileVersion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "appliedPreferenceRuleIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "preferenceSummary": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "taskFamily": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "skillFamily": {
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           "additionalProperties": false
@@ -304,6 +353,50 @@
                     }
                   },
                   "additionalProperties": true
+                }
+              },
+              "actionKind": {
+                "type": "string",
+                "enum": [
+                  "nativeAction",
+                  "guiAction"
+                ]
+              },
+              "preferredNativeStrategy": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "nativeStrategyOrder": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "locatorStrategyOrder": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "appliedRuleIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "requiresTeacherConfirmation": {
+                "type": "boolean"
+              },
+              "notes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
                 }
               }
             },

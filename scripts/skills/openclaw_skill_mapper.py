@@ -16,6 +16,7 @@ from typing import Any
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+TEMPLATES_DIR = SCRIPT_DIR / "templates"
 LLM_DIR = SCRIPT_DIR.parent / "llm"
 if str(LLM_DIR) not in sys.path:
     sys.path.insert(0, str(LLM_DIR))
@@ -24,9 +25,19 @@ from validate_knowledge_parse_output import extract_json_from_text, validate_out
 
 
 SCHEMA_VERSION = "openstaff.openclaw-skill.v1"
-GENERATOR_VERSION = "openstaff-skill-mapper-v1"
+GENERATOR_VERSION = "openstaff-skill-mapper-v1.1"
 REPAIR_VERSION = 0
 ACTION_TYPES = {"openApp", "click", "input", "shortcut", "wait", "unknown"}
+GUI_ACTION_TYPES = {"click", "input"}
+NATIVE_ACTION_TYPES = {"openApp", "shortcut", "wait"}
+DEFAULT_NATIVE_STRATEGY_ORDER = ["shortcuts", "applescript", "cli", "app_adapter"]
+GUI_LOCATOR_STRATEGY_ORDER = [
+    "ax",
+    "textAnchor",
+    "imageAnchor",
+    "relativeCoordinate",
+    "absoluteCoordinate",
+]
 
 
 def iso_now() -> str:
@@ -138,7 +149,9 @@ def normalize_string_list(value: Any, fallback: list[str] | None = None) -> list
         normalized = [str(item).strip() for item in value if str(item).strip()]
         if normalized:
             return normalized
-    return list(fallback or ["unknown"])
+    if fallback is None:
+        return ["unknown"]
+    return list(fallback)
 
 
 def normalize_non_negative_int(value: Any, fallback: int = 0) -> int:
@@ -146,6 +159,69 @@ def normalize_non_negative_int(value: Any, fallback: int = 0) -> int:
         return max(0, int(value))
     except (TypeError, ValueError):
         return fallback
+
+
+def normalize_bool(value: Any, fallback: bool = False) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"true", "1", "yes"}:
+            return True
+        if lowered in {"false", "0", "no"}:
+            return False
+    return fallback
+
+
+def normalize_float(value: Any, fallback: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def normalize_optional_string(value: Any) -> str | None:
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return None
+
+
+def normalize_token(value: str | None) -> str:
+    return re.sub(r"[^a-z0-9]+", "", (value or "").strip().lower())
+
+
+def unique_strings(values: list[str]) -> list[str]:
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        normalized = value.strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        ordered.append(normalized)
+    return ordered
+
+
+def contains_any_token(value: str | None, tokens: list[str]) -> bool:
+    lowered = (value or "").lower()
+    return any(token in lowered for token in tokens)
+
+
+def repository_relative(path: Path) -> str:
+    try:
+        return path.relative_to(SCRIPT_DIR.parent.parent).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def render_template(path: Path, values: dict[str, str]) -> str:
+    template = read_text(path)
+
+    def replace(match: re.Match[str]) -> str:
+        key = match.group(1)
+        return values.get(key, "")
+
+    return re.sub(r"{{\s*([a-zA-Z0-9_]+)\s*}}", replace, template)
 
 
 def validate_knowledge_item(knowledge_item: Any) -> list[str]:
@@ -402,12 +478,601 @@ def normalize_execution_plan(
     return normalized, diagnostics
 
 
+def load_preference_profile(
+    preference_profile: Path | None = None,
+    preferences_root: Path | None = None,
+) -> tuple[dict[str, Any] | None, str | None, list[str]]:
+    diagnostics: list[str] = []
+    candidate_path: Path | None = None
+
+    if preference_profile:
+        candidate_path = preference_profile
+    elif preferences_root:
+        latest_path = preferences_root / "profiles" / "latest.json"
+        if latest_path.exists():
+            try:
+                latest_pointer = read_json(latest_path)
+            except Exception as exc:
+                diagnostics.append(f"Failed to read preference profile pointer: {exc}")
+                latest_pointer = None
+            if isinstance(latest_pointer, dict):
+                profile_version = normalize_optional_string(latest_pointer.get("profileVersion"))
+                if profile_version:
+                    candidate_path = preferences_root / "profiles" / f"{profile_version}.json"
+                else:
+                    diagnostics.append("Preference profile pointer missing profileVersion; ignored.")
+        elif preferences_root.exists():
+            diagnostics.append("Preference profile pointer not found; generated skill without preference profile.")
+
+    if candidate_path is None:
+        return None, None, diagnostics
+
+    if not candidate_path.exists():
+        diagnostics.append(f"Preference profile path not found: {candidate_path}")
+        return None, str(candidate_path), diagnostics
+
+    try:
+        payload = read_json(candidate_path)
+    except Exception as exc:
+        diagnostics.append(f"Failed to read preference profile: {exc}")
+        return None, str(candidate_path), diagnostics
+
+    if not isinstance(payload, dict):
+        diagnostics.append("Preference profile payload must be a JSON object; ignored.")
+        return None, str(candidate_path), diagnostics
+
+    schema_version = normalize_optional_string(payload.get("schemaVersion"))
+    if schema_version == "openstaff.learning.preference-profile-snapshot.v0":
+        profile = payload.get("profile")
+        if not isinstance(profile, dict):
+            diagnostics.append("Preference profile snapshot missing embedded profile; ignored.")
+            return None, str(candidate_path), diagnostics
+        return profile, str(candidate_path), diagnostics
+
+    if schema_version == "openstaff.learning.preference-profile.v0":
+        return payload, str(candidate_path), diagnostics
+
+    diagnostics.append(f"Unsupported preference profile schema: {schema_version or 'unknown'}")
+    return None, str(candidate_path), diagnostics
+
+
+def scope_match_score(
+    scope: dict[str, Any],
+    knowledge_item: dict[str, Any],
+    task_family: str | None = None,
+    skill_family: str | None = None,
+) -> tuple[float, str]:
+    level = normalize_optional_string(scope.get("level")) or "global"
+    context = knowledge_item.get("context", {})
+    app_bundle_id = normalize_token(context.get("appBundleId"))
+    app_name = normalize_token(context.get("appName"))
+    window_title = normalize_optional_string(context.get("windowTitle")) or ""
+
+    if level == "global":
+        return 0.72, "global scope"
+
+    if level == "app":
+        scope_bundle = normalize_token(scope.get("appBundleId"))
+        scope_name = normalize_token(scope.get("appName"))
+        if scope_bundle and scope_bundle == app_bundle_id:
+            return 1.0, f"app bundle matched {context.get('appBundleId')}"
+        if scope_name and scope_name == app_name:
+            return 0.82, f"app name matched {context.get('appName')}"
+        return 0.0, "app scope did not match current knowledge context"
+
+    if level == "windowPattern":
+        score, reason = scope_match_score(
+            {
+                "level": "app",
+                "appBundleId": scope.get("appBundleId"),
+                "appName": scope.get("appName"),
+            },
+            knowledge_item=knowledge_item,
+            task_family=task_family,
+            skill_family=skill_family,
+        )
+        if score <= 0:
+            return 0.0, reason
+        pattern = normalize_optional_string(scope.get("windowPattern"))
+        if not pattern or not window_title:
+            return 0.0, "windowPattern scope missing pattern or current window title"
+        try:
+            matched = re.search(pattern, window_title, flags=re.IGNORECASE) is not None
+        except re.error:
+            matched = normalize_token(pattern) == normalize_token(window_title)
+        if matched:
+            return 1.0, f"window pattern matched {window_title}"
+        return 0.0, f"window pattern did not match {window_title}"
+
+    if level == "taskFamily":
+        scope_family = normalize_token(scope.get("taskFamily"))
+        current_family = normalize_token(task_family)
+        if scope_family and current_family and scope_family == current_family:
+            return 1.0, f"taskFamily matched {task_family}"
+        return 0.0, "taskFamily scope did not match"
+
+    if level == "skillFamily":
+        scope_family = normalize_token(scope.get("skillFamily"))
+        current_family = normalize_token(skill_family)
+        if scope_family and current_family and scope_family == current_family:
+            return 1.0, f"skillFamily matched {skill_family}"
+        return 0.0, "skillFamily scope did not match"
+
+    return 0.0, f"unsupported scope level {level}"
+
+
+def preferred_native_strategy_from_directive(directive: dict[str, Any]) -> str | None:
+    candidates = [
+        normalize_optional_string(directive.get("proposedAction")),
+        normalize_optional_string(directive.get("hint")),
+        normalize_optional_string(directive.get("statement")),
+    ]
+    for candidate in candidates:
+        if contains_any_token(candidate, ["shortcut", "keyboard", "hotkey", "key combo"]):
+            return "shortcuts"
+        if contains_any_token(candidate, ["applescript", "osascript"]):
+            return "applescript"
+        if contains_any_token(candidate, ["cli", "shell", "terminal", "command line", "command-line"]):
+            return "cli"
+        if contains_any_token(candidate, ["adapter", "app intent", "app-intent", "app adapter", "native api"]):
+            return "app_adapter"
+    return None
+
+
+def directive_requires_confirmation(directive: dict[str, Any]) -> bool:
+    if directive.get("type") == "risk":
+        return True
+
+    candidates = [
+        normalize_optional_string(directive.get("proposedAction")),
+        normalize_optional_string(directive.get("hint")),
+        normalize_optional_string(directive.get("statement")),
+    ]
+    return any(
+        contains_any_token(
+            candidate,
+            ["confirm", "confirmation", "teacher", "approve", "guard", "blocked", "risky", "risk"],
+        )
+        for candidate in candidates
+    )
+
+
+def assemble_skill_preferences(
+    knowledge_item: dict[str, Any],
+    profile: dict[str, Any] | None,
+    profile_path: str | None = None,
+    task_family: str | None = None,
+    skill_family: str | None = None,
+) -> tuple[dict[str, Any], list[str]]:
+    diagnostics: list[str] = []
+    empty = {
+        "profileVersion": None,
+        "profilePath": profile_path,
+        "taskFamily": normalize_optional_string(task_family),
+        "skillFamily": normalize_optional_string(skill_family),
+        "appliedRuleIds": [],
+        "procedureNotes": [],
+        "locatorNotes": [],
+        "styleNotes": [],
+        "riskNotes": [],
+        "matchedDirectives": [],
+        "summary": "No skill preference rules applied.",
+        "requiresTeacherConfirmation": False,
+    }
+    if profile is None:
+        return empty, diagnostics
+
+    profile_version = normalize_optional_string(profile.get("profileVersion"))
+    directives = profile.get("skillPreferences")
+    if not isinstance(directives, list) or not directives:
+        diagnostics.append("Preference profile has no skillPreferences; generated skill without preference rules.")
+        empty["profileVersion"] = profile_version
+        return empty, diagnostics
+
+    matched_directives: list[dict[str, Any]] = []
+    for raw_directive in directives:
+        if not isinstance(raw_directive, dict):
+            continue
+
+        scope = raw_directive.get("scope")
+        if not isinstance(scope, dict):
+            scope = {"level": "global"}
+        match_score, match_reason = scope_match_score(
+            scope=scope,
+            knowledge_item=knowledge_item,
+            task_family=task_family,
+            skill_family=skill_family,
+        )
+        if match_score <= 0:
+            continue
+
+        matched_directives.append(
+            {
+                "ruleId": normalize_string(raw_directive.get("ruleId")),
+                "type": normalize_string(raw_directive.get("type")),
+                "scopeLevel": normalize_string(scope.get("level")),
+                "statement": normalize_string(raw_directive.get("statement")),
+                "hint": normalize_optional_string(raw_directive.get("hint")),
+                "proposedAction": normalize_optional_string(raw_directive.get("proposedAction")),
+                "teacherConfirmed": normalize_bool(raw_directive.get("teacherConfirmed")),
+                "updatedAt": normalize_string(raw_directive.get("updatedAt")),
+                "matchScore": round(match_score, 2),
+                "matchReason": match_reason,
+            }
+        )
+
+    if not matched_directives:
+        diagnostics.append("Preference profile loaded, but no skillPreferences matched current knowledge context.")
+        empty["profileVersion"] = profile_version
+        empty["summary"] = (
+            f"Preference profile {profile_version} loaded, but no skill preference rules matched."
+            if profile_version
+            else "Preference profile loaded, but no skill preference rules matched."
+        )
+        return empty, diagnostics
+
+    applied_rule_ids = unique_strings([directive["ruleId"] for directive in matched_directives])
+    procedure_notes = unique_strings(
+        [directive["hint"] or directive["statement"] for directive in matched_directives if directive["type"] == "procedure"]
+    )
+    locator_notes = unique_strings(
+        [directive["hint"] or directive["statement"] for directive in matched_directives if directive["type"] == "locator"]
+    )
+    style_notes = unique_strings(
+        [directive["hint"] or directive["statement"] for directive in matched_directives if directive["type"] == "style"]
+    )
+    risk_notes = unique_strings(
+        [directive["hint"] or directive["statement"] for directive in matched_directives if directive["type"] == "risk"]
+    )
+    requires_confirmation = any(directive_requires_confirmation(directive) for directive in matched_directives)
+
+    categories = unique_strings([directive["type"] for directive in matched_directives if directive["type"] != "unknown"])
+    category_text = ", ".join(categories) if categories else "generic"
+    summary = (
+        f"Applied {len(applied_rule_ids)} skill preference rule(s)"
+        + (f" from {profile_version}" if profile_version else "")
+        + f": {', '.join(applied_rule_ids)}. Categories: {category_text}."
+    )
+    if requires_confirmation:
+        summary += " Teacher confirmation was kept enabled by risk preference."
+
+    return (
+        {
+            "profileVersion": profile_version,
+            "profilePath": profile_path,
+            "taskFamily": normalize_optional_string(task_family),
+            "skillFamily": normalize_optional_string(skill_family),
+            "appliedRuleIds": applied_rule_ids,
+            "procedureNotes": procedure_notes,
+            "locatorNotes": locator_notes,
+            "styleNotes": style_notes,
+            "riskNotes": risk_notes,
+            "matchedDirectives": matched_directives,
+            "summary": summary,
+            "requiresTeacherConfirmation": requires_confirmation,
+        },
+        diagnostics,
+    )
+
+
+def determine_action_kind(step: dict[str, Any], knowledge_step: dict[str, Any]) -> str:
+    action_type = normalize_string(step.get("actionType"))
+    if action_type in NATIVE_ACTION_TYPES:
+        return "nativeAction"
+    if action_type in GUI_ACTION_TYPES:
+        return "guiAction"
+
+    target = knowledge_step.get("target")
+    if isinstance(target, dict):
+        semantic_targets = target.get("semanticTargets")
+        coordinate = target.get("coordinate")
+        if isinstance(semantic_targets, list) and semantic_targets:
+            return "guiAction"
+        if isinstance(coordinate, dict):
+            return "guiAction"
+
+    instruction = normalize_optional_string(step.get("instruction")) or ""
+    if contains_any_token(instruction, ["click", "点击", "input", "输入", "type"]):
+        return "guiAction"
+    return "nativeAction"
+
+
+def locator_group_for_target(target: dict[str, Any]) -> str | None:
+    locator_type = normalize_optional_string(target.get("locatorType"))
+    if locator_type in {"axPath", "roleAndTitle"}:
+        return "ax"
+    if locator_type == "textAnchor":
+        return "textAnchor"
+    if locator_type == "imageAnchor":
+        return "imageAnchor"
+    if locator_type == "coordinateFallback":
+        rect = target.get("boundingRect")
+        if isinstance(rect, dict):
+            width = normalize_float(rect.get("width"), 0.0)
+            height = normalize_float(rect.get("height"), 0.0)
+            if width > 1 or height > 1:
+                return "relativeCoordinate"
+        return "absoluteCoordinate"
+    return None
+
+
+def target_signature(target: dict[str, Any]) -> str:
+    rect = target.get("boundingRect")
+    if not isinstance(rect, dict):
+        rect = {}
+    image_anchor = target.get("imageAnchor")
+    if not isinstance(image_anchor, dict):
+        image_anchor = {}
+    signature = {
+        "locatorType": normalize_optional_string(target.get("locatorType")),
+        "appBundleId": normalize_optional_string(target.get("appBundleId")),
+        "windowTitlePattern": normalize_optional_string(target.get("windowTitlePattern")),
+        "elementRole": normalize_optional_string(target.get("elementRole")),
+        "elementTitle": normalize_optional_string(target.get("elementTitle")),
+        "elementIdentifier": normalize_optional_string(target.get("elementIdentifier")),
+        "axPath": normalize_optional_string(target.get("axPath")),
+        "textAnchor": normalize_optional_string(target.get("textAnchor")),
+        "imageAnchorPixelHash": normalize_optional_string(image_anchor.get("pixelHash")),
+        "boundingRect": {
+            "x": normalize_float(rect.get("x")),
+            "y": normalize_float(rect.get("y")),
+            "width": normalize_float(rect.get("width")),
+            "height": normalize_float(rect.get("height")),
+            "coordinateSpace": normalize_optional_string(rect.get("coordinateSpace")),
+        },
+    }
+    return json.dumps(signature, ensure_ascii=False, sort_keys=True)
+
+
+def make_window_pattern(context: dict[str, Any], semantic_targets: list[dict[str, Any]]) -> str | None:
+    for target in semantic_targets:
+        pattern = normalize_optional_string(target.get("windowTitlePattern"))
+        if pattern:
+            return pattern
+    window_title = normalize_optional_string(context.get("windowTitle"))
+    if window_title:
+        return f"^{re.escape(window_title)}$"
+    return None
+
+
+def best_relative_anchor_target(semantic_targets: list[dict[str, Any]]) -> dict[str, Any] | None:
+    for target in semantic_targets:
+        group = locator_group_for_target(target)
+        if group in {"ax", "textAnchor", "imageAnchor"} and isinstance(target.get("boundingRect"), dict):
+            return target
+    return None
+
+
+def build_relative_coordinate_target(
+    anchor_target: dict[str, Any] | None,
+    context: dict[str, Any],
+) -> dict[str, Any] | None:
+    if not anchor_target:
+        return None
+    rect = anchor_target.get("boundingRect")
+    if not isinstance(rect, dict):
+        return None
+
+    width = max(1.0, normalize_float(rect.get("width"), 1.0))
+    height = max(1.0, normalize_float(rect.get("height"), 1.0))
+    return {
+        "locatorType": "coordinateFallback",
+        "appBundleId": normalize_string(anchor_target.get("appBundleId"), normalize_string(context.get("appBundleId"))),
+        "windowTitlePattern": normalize_optional_string(anchor_target.get("windowTitlePattern"))
+        or make_window_pattern(context, [anchor_target]),
+        "boundingRect": {
+            "x": normalize_float(rect.get("x")),
+            "y": normalize_float(rect.get("y")),
+            "width": width,
+            "height": height,
+            "coordinateSpace": normalize_string(rect.get("coordinateSpace"), "screen"),
+        },
+        "confidence": round(min(0.32, max(0.12, normalize_float(anchor_target.get("confidence"), 0.18) * 0.5)), 2),
+        "source": "skill-mapper-relative-coordinate",
+    }
+
+
+def build_absolute_coordinate_target(
+    coordinate: dict[str, Any] | None,
+    context: dict[str, Any],
+    semantic_targets: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    if not isinstance(coordinate, dict):
+        return None
+    return {
+        "locatorType": "coordinateFallback",
+        "appBundleId": normalize_string(context.get("appBundleId")),
+        "windowTitlePattern": make_window_pattern(context, semantic_targets),
+        "boundingRect": {
+            "x": normalize_float(coordinate.get("x")),
+            "y": normalize_float(coordinate.get("y")),
+            "width": 1,
+            "height": 1,
+            "coordinateSpace": normalize_string(coordinate.get("coordinateSpace"), "screen"),
+        },
+        "confidence": 0.24,
+        "source": "skill-mapper-absolute-coordinate",
+    }
+
+
+def order_gui_semantic_targets(
+    knowledge_step: dict[str, Any],
+    context: dict[str, Any],
+) -> tuple[list[dict[str, Any]], str | None]:
+    target = knowledge_step.get("target")
+    if not isinstance(target, dict):
+        target = {}
+
+    semantic_targets = [item for item in target.get("semanticTargets", []) if isinstance(item, dict)]
+    coordinate = target.get("coordinate")
+    if not isinstance(coordinate, dict):
+        instruction = normalize_optional_string(knowledge_step.get("instruction"))
+        coordinate = infer_coordinate(instruction or "")
+
+    grouped: dict[str, list[dict[str, Any]]] = {group: [] for group in GUI_LOCATOR_STRATEGY_ORDER}
+    seen_signatures: set[str] = set()
+
+    for semantic_target in semantic_targets:
+        group = locator_group_for_target(semantic_target)
+        if group is None:
+            continue
+        signature = target_signature(semantic_target)
+        if signature in seen_signatures:
+            continue
+        seen_signatures.add(signature)
+        grouped[group].append(semantic_target)
+
+    relative_candidate = build_relative_coordinate_target(best_relative_anchor_target(semantic_targets), context)
+    if relative_candidate is not None:
+        signature = target_signature(relative_candidate)
+        if signature not in seen_signatures:
+            seen_signatures.add(signature)
+            grouped["relativeCoordinate"].append(relative_candidate)
+
+    absolute_candidate = build_absolute_coordinate_target(coordinate, context, semantic_targets)
+    if absolute_candidate is not None:
+        signature = target_signature(absolute_candidate)
+        if signature not in seen_signatures:
+            seen_signatures.add(signature)
+            grouped["absoluteCoordinate"].append(absolute_candidate)
+
+    ordered: list[dict[str, Any]] = []
+    for group in GUI_LOCATOR_STRATEGY_ORDER:
+        ordered.extend(grouped[group])
+
+    preferred_locator_type = normalize_optional_string(target.get("preferredLocatorType"))
+    if not preferred_locator_type and ordered:
+        preferred_locator_type = normalize_optional_string(ordered[0].get("locatorType"))
+
+    return ordered, preferred_locator_type
+
+
+def native_strategy_order_for_step(
+    step: dict[str, Any],
+    applicable_directives: list[dict[str, Any]],
+) -> list[str]:
+    preferred: list[str] = []
+    for directive in applicable_directives:
+        strategy = preferred_native_strategy_from_directive(directive)
+        if strategy:
+            preferred.append(strategy)
+
+    action_type = normalize_string(step.get("actionType"))
+    instruction = normalize_optional_string(step.get("instruction")) or ""
+    target = normalize_optional_string(step.get("target")) or ""
+    if action_type == "shortcut" or contains_any_token(instruction, ["shortcut", "快捷键", "keyboard"]):
+        preferred.insert(0, "shortcuts")
+    if contains_any_token(instruction, ["applescript", "osascript"]):
+        preferred.insert(0, "applescript")
+    if action_type == "openApp" or contains_any_token(target, ["app:", "bundle:", "open "]):
+        preferred.append("cli")
+
+    ordered = unique_strings(preferred + DEFAULT_NATIVE_STRATEGY_ORDER)
+    return ordered or list(DEFAULT_NATIVE_STRATEGY_ORDER)
+
+
+def step_notes_for_directives(
+    action_kind: str,
+    applicable_directives: list[dict[str, Any]],
+) -> list[str]:
+    notes: list[str] = []
+    for directive in applicable_directives:
+        directive_type = directive.get("type")
+        if directive_type == "locator" and action_kind != "guiAction":
+            continue
+        note = directive.get("hint") or directive.get("statement")
+        if isinstance(note, str) and note.strip():
+            notes.append(note.strip())
+    return unique_strings(notes)
+
+
+def applicable_directives_for_step(
+    action_kind: str,
+    matched_directives: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    applicable: list[dict[str, Any]] = []
+    for directive in matched_directives:
+        directive_type = directive.get("type")
+        if directive_type == "locator" and action_kind != "guiAction":
+            continue
+        applicable.append(directive)
+    return applicable
+
+
+def apply_preference_assembly(
+    mapped: dict[str, Any],
+    knowledge_item: dict[str, Any],
+    preference_assembly: dict[str, Any],
+) -> list[dict[str, Any]]:
+    plan = mapped.get("executionPlan", {})
+    mapped_steps = plan.get("steps", [])
+    knowledge_steps = knowledge_item.get("steps", [])
+    context = knowledge_item.get("context", {})
+    matched_directives = preference_assembly.get("matchedDirectives", [])
+    step_assemblies: list[dict[str, Any]] = []
+
+    for index, mapped_step in enumerate(mapped_steps):
+        if not isinstance(mapped_step, dict):
+            continue
+        knowledge_step = knowledge_steps[index] if index < len(knowledge_steps) and isinstance(knowledge_steps[index], dict) else {}
+        action_kind = determine_action_kind(mapped_step, knowledge_step)
+        applicable_directives = applicable_directives_for_step(action_kind, matched_directives)
+        applied_rule_ids = unique_strings([directive["ruleId"] for directive in applicable_directives])
+        notes = step_notes_for_directives(action_kind, applicable_directives)
+        requires_confirmation = preference_assembly.get("requiresTeacherConfirmation", False)
+
+        ordered_semantic_targets: list[dict[str, Any]] = []
+        preferred_locator_type: str | None = None
+        locator_strategy_order: list[str] = []
+        native_strategy_order: list[str] = []
+        preferred_native_strategy: str | None = None
+
+        if action_kind == "guiAction":
+            ordered_semantic_targets, preferred_locator_type = order_gui_semantic_targets(
+                knowledge_step=knowledge_step,
+                context=context,
+            )
+            locator_strategy_order = list(GUI_LOCATOR_STRATEGY_ORDER)
+        else:
+            native_strategy_order = native_strategy_order_for_step(mapped_step, applicable_directives)
+            preferred_native_strategy = native_strategy_order[0] if native_strategy_order else None
+
+        step_assemblies.append(
+            {
+                "stepId": normalize_string(mapped_step.get("stepId"), f"step-{index + 1:03d}"),
+                "actionKind": action_kind,
+                "appliedRuleIds": applied_rule_ids,
+                "preferredLocatorType": preferred_locator_type,
+                "locatorStrategyOrder": locator_strategy_order,
+                "orderedSemanticTargets": ordered_semantic_targets,
+                "nativeStrategyOrder": native_strategy_order,
+                "preferredNativeStrategy": preferred_native_strategy,
+                "requiresTeacherConfirmation": requires_confirmation,
+                "notes": notes,
+            }
+        )
+
+    if preference_assembly.get("requiresTeacherConfirmation"):
+        plan["requiresTeacherConfirmation"] = True
+
+    safety_notes = normalize_string_list(mapped.get("safetyNotes"), fallback=["unknown"])
+    extra_risk_notes = preference_assembly.get("riskNotes", [])
+    if isinstance(extra_risk_notes, list) and extra_risk_notes:
+        mapped["safetyNotes"] = unique_strings(safety_notes + extra_risk_notes)
+    else:
+        mapped["safetyNotes"] = safety_notes
+
+    return step_assemblies
+
+
 def build_provenance(
     skill_name: str,
     knowledge_item: dict[str, Any],
     mapped: dict[str, Any],
     created_at: str,
     llm_output_accepted: bool,
+    preference_assembly: dict[str, Any] | None = None,
+    step_assemblies: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     knowledge_source = knowledge_item.get("source", {})
     if not isinstance(knowledge_source, dict):
@@ -426,11 +1091,22 @@ def build_provenance(
     if not isinstance(context, dict):
         context = {}
 
+    step_assemblies = step_assemblies or []
     context_app_bundle_id = normalize_string(context.get("appBundleId"))
-    window_title = context.get("windowTitle")
-    window_title_pattern = None
-    if isinstance(window_title, str) and window_title.strip():
-        window_title_pattern = f"^{re.escape(window_title.strip())}$"
+
+    applied_rule_ids = []
+    profile_version = None
+    preference_summary = None
+    task_family = None
+    skill_family = None
+    if isinstance(preference_assembly, dict):
+        applied_rule_ids = normalize_string_list(preference_assembly.get("appliedRuleIds"), fallback=[])
+        if applied_rule_ids == ["unknown"]:
+            applied_rule_ids = []
+        profile_version = normalize_optional_string(preference_assembly.get("profileVersion"))
+        preference_summary = normalize_optional_string(preference_assembly.get("summary"))
+        task_family = normalize_optional_string(preference_assembly.get("taskFamily"))
+        skill_family = normalize_optional_string(preference_assembly.get("skillFamily"))
 
     for index, mapped_step in enumerate(mapped_steps):
         if not isinstance(mapped_step, dict):
@@ -453,7 +1129,15 @@ def build_provenance(
             )
             coordinate = infer_coordinate(instruction)
 
-        semantic_targets = target.get("semanticTargets")
+        assembly = (
+            step_assemblies[index]
+            if index < len(step_assemblies) and isinstance(step_assemblies[index], dict)
+            else {}
+        )
+
+        semantic_targets = assembly.get("orderedSemanticTargets")
+        if not isinstance(semantic_targets, list):
+            semantic_targets = target.get("semanticTargets")
         if not isinstance(semantic_targets, list):
             semantic_targets = []
 
@@ -471,15 +1155,20 @@ def build_provenance(
                 "confidence": 0.24,
                 "source": "skill-mapper-fallback",
             }
-            if window_title_pattern:
-                coordinate_fallback["windowTitlePattern"] = window_title_pattern
+            window_pattern = make_window_pattern(context, [])
+            if window_pattern:
+                coordinate_fallback["windowTitlePattern"] = window_pattern
             semantic_targets = [coordinate_fallback]
 
-        preferred_locator_type = target.get("preferredLocatorType")
+        preferred_locator_type = assembly.get("preferredLocatorType")
         if preferred_locator_type is not None:
             preferred_locator_type = normalize_string(preferred_locator_type)
-        elif coordinate and semantic_targets:
-            preferred_locator_type = "coordinateFallback"
+        else:
+            preferred_locator_type = target.get("preferredLocatorType")
+            if preferred_locator_type is not None:
+                preferred_locator_type = normalize_string(preferred_locator_type)
+            elif coordinate and semantic_targets:
+                preferred_locator_type = "coordinateFallback"
 
         skill_step_id = normalize_string(mapped_step.get("stepId"), f"step-{index + 1:03d}")
         step_mappings.append(
@@ -494,6 +1183,13 @@ def build_provenance(
                 "preferredLocatorType": preferred_locator_type,
                 "coordinate": coordinate,
                 "semanticTargets": [item for item in semantic_targets if isinstance(item, dict)],
+                "actionKind": normalize_string(assembly.get("actionKind"), "guiAction"),
+                "preferredNativeStrategy": normalize_optional_string(assembly.get("preferredNativeStrategy")),
+                "nativeStrategyOrder": normalize_string_list(assembly.get("nativeStrategyOrder"), fallback=[]),
+                "locatorStrategyOrder": normalize_string_list(assembly.get("locatorStrategyOrder"), fallback=[]),
+                "appliedRuleIds": normalize_string_list(assembly.get("appliedRuleIds"), fallback=[]),
+                "requiresTeacherConfirmation": normalize_bool(assembly.get("requiresTeacherConfirmation")),
+                "notes": normalize_string_list(assembly.get("notes"), fallback=[]),
             }
         )
 
@@ -526,6 +1222,11 @@ def build_provenance(
             "generatedAt": created_at,
             "repairVersion": REPAIR_VERSION,
             "llmOutputAccepted": llm_output_accepted,
+            "preferenceProfileVersion": profile_version,
+            "appliedPreferenceRuleIds": applied_rule_ids,
+            "preferenceSummary": preference_summary,
+            "taskFamily": task_family,
+            "skillFamily": skill_family,
         },
         "stepMappings": step_mappings,
     }
@@ -536,6 +1237,7 @@ def render_skill_markdown(
     mapped: dict[str, Any],
     knowledge_item: dict[str, Any],
     provenance: dict[str, Any],
+    preference_assembly: dict[str, Any] | None = None,
 ) -> str:
     plan = mapped["executionPlan"]
     context = mapped["context"]
@@ -555,19 +1257,44 @@ def render_skill_markdown(
             if preferred_locator_type is not None
             else "unknown"
         )
+        action_kind = normalize_string(provenance_step.get("actionKind"), "guiAction")
+        applied_rule_ids = normalize_string_list(provenance_step.get("appliedRuleIds"), fallback=[])
+        notes = normalize_string_list(provenance_step.get("notes"), fallback=[])
+        native_order = normalize_string_list(provenance_step.get("nativeStrategyOrder"), fallback=[])
+        locator_order = normalize_string_list(provenance_step.get("locatorStrategyOrder"), fallback=[])
+
         step_lines.extend(
             [
                 f"{idx}. [{step['actionType']}] {step['instruction']}",
                 f"   - knowledgeStepId: `{knowledge_step_id}`",
+                f"   - actionKind: `{action_kind}`",
                 f"   - target: `{step['target']}`",
                 f"   - preferredLocatorType: `{preferred_locator_text}`",
                 f"   - sourceEventIds: `{source_ids}`",
             ]
         )
+        if native_order:
+            step_lines.append(f"   - nativeStrategyOrder: `{', '.join(native_order)}`")
+        if locator_order:
+            step_lines.append(f"   - locatorStrategyOrder: `{', '.join(locator_order)}`")
+        if applied_rule_ids:
+            step_lines.append(f"   - appliedPreferenceRules: `{', '.join(applied_rule_ids)}`")
+        if notes:
+            step_lines.append(f"   - notes: `{'; '.join(notes)}`")
 
     safety_lines = "\n".join([f"- {note}" for note in mapped["safetyNotes"]])
-    summary = str(knowledge_item.get("summary", "")).strip() or "无摘要"
+    summary = str(knowledge_item.get("summary", "")).strip() or "No summary."
     requires_confirmation = "true" if plan["requiresTeacherConfirmation"] else "false"
+
+    preference_assembly = preference_assembly or {}
+    preference_rule_ids = normalize_string_list(preference_assembly.get("appliedRuleIds"), fallback=[])
+    if preference_rule_ids == ["unknown"]:
+        preference_rule_ids = []
+    action_kinds = unique_strings([
+        normalize_string(step_mapping.get("actionKind"), "guiAction")
+        for step_mapping in step_mappings
+        if isinstance(step_mapping, dict)
+    ])
     metadata_json = json.dumps(
         {
             "openclaw": {
@@ -580,6 +1307,11 @@ def render_skill_markdown(
                 "taskId": provenance["knowledge"]["taskId"],
                 "sessionId": provenance["knowledge"]["sessionId"],
                 "repairVersion": provenance["skillBuild"]["repairVersion"],
+                "preferenceProfileVersion": normalize_optional_string(
+                    provenance.get("skillBuild", {}).get("preferenceProfileVersion")
+                ),
+                "preferenceRuleIds": preference_rule_ids,
+                "actionKinds": action_kinds,
             },
         },
         ensure_ascii=False,
@@ -590,51 +1322,81 @@ def render_skill_markdown(
     provenance_trace = provenance["sourceTrace"]
     provenance_build = provenance["skillBuild"]
 
-    return f"""---
-name: {skill_name}
-description: {title}
-user-invocable: true
-disable-model-invocation: false
-metadata: {metadata_json}
----
+    context_lines = "\n".join(
+        [
+            f"- appName: `{context['appName']}`",
+            f"- appBundleId: `{context['appBundleId']}`",
+            f"- windowTitle: `{context['windowTitle']}`",
+        ]
+    )
+    provenance_lines = "\n".join(
+        [
+            f"- sessionId: `{provenance_knowledge['sessionId']}`",
+            f"- taskId: `{provenance_knowledge['taskId']}`",
+            f"- knowledgeItemId: `{provenance_knowledge['knowledgeItemId']}`",
+            f"- sourceTaskChunkSchemaVersion: `{provenance_trace['taskChunkSchemaVersion']}`",
+            f"- sourceEventCount: `{provenance_trace['eventCount']}`",
+            f"- knowledgeGeneratorVersion: `{provenance_knowledge['knowledgeGeneratorVersion']}`",
+            f"- skillGeneratorVersion: `{provenance_build['skillGeneratorVersion']}`",
+            f"- repairVersion: `{provenance_build['repairVersion']}`",
+        ]
+    )
 
-# {title}
+    preference_lines: list[str] = []
+    if provenance_build.get("preferenceProfileVersion"):
+        preference_lines.append(
+            f"- preferenceProfileVersion: `{provenance_build['preferenceProfileVersion']}`"
+        )
+    if preference_rule_ids:
+        preference_lines.append(f"- appliedPreferenceRules: `{', '.join(preference_rule_ids)}`")
+    else:
+        preference_lines.append("- appliedPreferenceRules: `none`")
+    preference_summary = normalize_optional_string(provenance_build.get("preferenceSummary"))
+    if preference_summary:
+        preference_lines.append(f"- preferenceSummary: {preference_summary}")
+    for label, notes in (
+        ("procedureNotes", preference_assembly.get("procedureNotes")),
+        ("locatorNotes", preference_assembly.get("locatorNotes")),
+        ("styleNotes", preference_assembly.get("styleNotes")),
+        ("riskNotes", preference_assembly.get("riskNotes")),
+    ):
+        normalized_notes = normalize_string_list(notes, fallback=[])
+        if normalized_notes:
+            preference_lines.append(f"- {label}: `{'; '.join(normalized_notes)}`")
+    preference_section = "\n".join(preference_lines)
 
-## Context
-- appName: `{context['appName']}`
-- appBundleId: `{context['appBundleId']}`
-- windowTitle: `{context['windowTitle']}`
+    failure_policy_lines = "\n".join(
+        [
+            f"- onContextMismatch: `{plan['failurePolicy']['onContextMismatch']}`",
+            f"- onStepError: `{plan['failurePolicy']['onStepError']}`",
+            f"- onUnknownAction: `{plan['failurePolicy']['onUnknownAction']}`",
+        ]
+    )
+    runtime_requirement_lines = "\n".join(
+        [
+            f"- requiresTeacherConfirmation: `{requires_confirmation}`",
+            f"- expectedStepCount: `{plan['completionCriteria']['expectedStepCount']}`",
+            f"- requiredFrontmostAppBundleId: `{plan['completionCriteria']['requiredFrontmostAppBundleId']}`",
+            f"- confidence: `{mapped['confidence']}`",
+        ]
+    )
 
-## Provenance
-- sessionId: `{provenance_knowledge['sessionId']}`
-- taskId: `{provenance_knowledge['taskId']}`
-- knowledgeItemId: `{provenance_knowledge['knowledgeItemId']}`
-- sourceTaskChunkSchemaVersion: `{provenance_trace['taskChunkSchemaVersion']}`
-- sourceEventCount: `{provenance_trace['eventCount']}`
-- knowledgeGeneratorVersion: `{provenance_knowledge['knowledgeGeneratorVersion']}`
-- skillGeneratorVersion: `{provenance_build['skillGeneratorVersion']}`
-- repairVersion: `{provenance_build['repairVersion']}`
-
-## Teacher Summary
-{summary}
-
-## Steps
-{os.linesep.join(step_lines)}
-
-## Safety Notes
-{safety_lines}
-
-## Failure Policy
-- onContextMismatch: `{plan['failurePolicy']['onContextMismatch']}`
-- onStepError: `{plan['failurePolicy']['onStepError']}`
-- onUnknownAction: `{plan['failurePolicy']['onUnknownAction']}`
-
-## Runtime Requirements
-- requiresTeacherConfirmation: `{requires_confirmation}`
-- expectedStepCount: `{plan['completionCriteria']['expectedStepCount']}`
-- requiredFrontmostAppBundleId: `{plan['completionCriteria']['requiredFrontmostAppBundleId']}`
-- confidence: `{mapped['confidence']}`
-"""
+    return render_template(
+        TEMPLATES_DIR / "skill.md.tmpl",
+        {
+            "skill_name": skill_name,
+            "title": title,
+            "metadata_json": metadata_json,
+            "context_lines": context_lines,
+            "provenance_lines": provenance_lines,
+            "preference_lines": preference_section,
+            "teacher_summary": summary,
+            "step_lines": os.linesep.join(step_lines),
+            "safety_lines": safety_lines,
+            "failure_policy_lines": failure_policy_lines,
+            "runtime_requirement_lines": runtime_requirement_lines,
+        },
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -657,6 +1419,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skill-name", help="Override generated skill name.")
     parser.add_argument("--overwrite", action="store_true", help="Overwrite existing skill folder.")
     parser.add_argument("--report", type=Path, help="Optional output path for mapping report JSON.")
+    parser.add_argument(
+        "--preferences-root",
+        type=Path,
+        help="Preference store root. If set, mapper loads profiles/latest.json automatically.",
+    )
+    parser.add_argument(
+        "--preference-profile",
+        type=Path,
+        help="Explicit PreferenceProfile or PreferenceProfileSnapshot JSON path.",
+    )
+    parser.add_argument("--task-family", help="Optional taskFamily for scope matching.")
+    parser.add_argument("--skill-family", help="Optional skillFamily for scope matching.")
     return parser.parse_args()
 
 
@@ -681,6 +1455,23 @@ def main() -> int:
         llm_valid=llm_valid,
     )
 
+    preference_profile, preference_profile_path, preference_diagnostics = load_preference_profile(
+        preference_profile=args.preference_profile,
+        preferences_root=args.preferences_root,
+    )
+    preference_assembly, preference_match_diagnostics = assemble_skill_preferences(
+        knowledge_item=knowledge_item,
+        profile=preference_profile,
+        profile_path=preference_profile_path,
+        task_family=args.task_family,
+        skill_family=args.skill_family,
+    )
+    step_assemblies = apply_preference_assembly(
+        mapped=normalized,
+        knowledge_item=knowledge_item,
+        preference_assembly=preference_assembly,
+    )
+
     skill_name = sanitize_skill_name(str(knowledge_item.get("taskId", "")), args.skill_name)
     skill_dir = args.skills_root / skill_name
     if skill_dir.exists() and not args.overwrite:
@@ -697,8 +1488,16 @@ def main() -> int:
         mapped=normalized,
         created_at=created_at,
         llm_output_accepted=llm_valid,
+        preference_assembly=preference_assembly,
+        step_assemblies=step_assemblies,
     )
-    skill_md = render_skill_markdown(skill_name, normalized, knowledge_item, provenance)
+    skill_md = render_skill_markdown(
+        skill_name=skill_name,
+        mapped=normalized,
+        knowledge_item=knowledge_item,
+        provenance=provenance,
+        preference_assembly=preference_assembly,
+    )
     mapped_payload = {
         "schemaVersion": SCHEMA_VERSION,
         "skillName": skill_name,
@@ -708,10 +1507,13 @@ def main() -> int:
         "source": {
             "knowledgeItemPath": str(args.knowledge_item),
             "llmOutputPath": str(args.llm_output),
+            "preferenceProfilePath": preference_profile_path,
+            "taskFamily": normalize_optional_string(args.task_family),
+            "skillFamily": normalize_optional_string(args.skill_family),
         },
         "provenance": provenance,
         "mappedOutput": normalized,
-        "diagnostics": llm_diagnostics + normalize_diagnostics,
+        "diagnostics": llm_diagnostics + normalize_diagnostics + preference_diagnostics + preference_match_diagnostics,
         "llmOutputAccepted": llm_valid,
         "createdAt": created_at,
         "generatorVersion": GENERATOR_VERSION,
@@ -726,6 +1528,8 @@ def main() -> int:
         "skillName": skill_name,
         "llmOutputAccepted": llm_valid,
         "diagnostics": mapped_payload["diagnostics"],
+        "preferenceProfileVersion": provenance["skillBuild"].get("preferenceProfileVersion"),
+        "preferenceRuleIds": provenance["skillBuild"].get("appliedPreferenceRuleIds", []),
     }
     if args.report:
         write_json(args.report, report_payload)

@@ -370,22 +370,27 @@
 - [x] 同样历史知识下，推荐结果会因个人偏好不同而不同
 
 ### TODO 11.4.2 Skill mapper 偏好装配
-- [ ] 让 skill 生成过程接入：
+- [x] 让 skill 生成过程接入：
   - `nativeAction` / `guiAction` 分流
   - locator preference
   - procedure preference
   - style / note preference
   - safety preference
-- [ ] `nativeAction` 优先映射到 `Shortcuts / AppleScript / CLI / app adapter`
-- [ ] `guiAction` 固定按 `AX -> text anchor -> image anchor -> relative coordinate -> absolute coordinate` 生成 locator 候选
-- [ ] 在 skill metadata 中记录所用偏好规则
+- [x] `nativeAction` 优先映射到 `Shortcuts / AppleScript / CLI / app adapter`
+- [x] `guiAction` 固定按 `AX -> text anchor -> image anchor -> relative coordinate -> absolute coordinate` 生成 locator 候选
+- [x] 在 skill metadata 中记录所用偏好规则
+
+实现说明（2026-03-19）：
+- `openclaw_skill_mapper.py` 新增 `--preferences-root` / `--preference-profile` / `--task-family` / `--skill-family`，可自动装配最新 `PreferenceProfile`。
+- `SKILL.md` 改由 `scripts/skills/templates/skill.md.tmpl` 渲染，新增 `Preference Assembly` 段与 step 级 `actionKind / strategy order / appliedPreferenceRules`。
+- `openstaff-skill.json` 继续保持 `openstaff.openclaw-skill.v1`，但为审计新增可选 preference 字段；`SkillPreflightValidator` 与 Python validator 均保持向后兼容。
 
 **输出物**
 - `scripts/skills/openclaw_skill_mapper.py`
 - `scripts/skills/templates/*`
 
 **验收标准**
-- [ ] skill 产物可追溯本次生成引用了哪些偏好规则
+- [x] skill 产物可追溯本次生成引用了哪些偏好规则
 
 ### TODO 11.4.3 Repair planner 偏好装配
 - [ ] 优先修 locator、先 replay、还是重新示教，支持偏好控制

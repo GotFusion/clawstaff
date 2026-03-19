@@ -8,6 +8,9 @@ OpenClaw skill 转换工具目录（Phase 3.3）。
   - 输出 `SKILL.md`（OpenClaw 可读取格式）和 `openstaff-skill.json`（`openstaff.openclaw-skill.v1` 审计映射产物）。
   - 内置字段校验与 fallback（LLM 输出不完整时回退到 `KnowledgeItem`）。
   - 统一写出 provenance：`knowledge` / `sourceTrace` / `skillBuild` / `stepMappings`。
+  - 可选读取 `PreferenceProfile`，把 `nativeAction / guiAction`、locator 顺序、native route 优先级、style / note / risk 偏好落进 skill metadata 与 provenance。
+- `templates/skill.md.tmpl`
+  - `SKILL.md` 渲染模板，统一输出 `Preference Assembly`、step 策略与运行要求摘要。
 - `validate_openclaw_skill.py`
   - 校验 skill 目录完整性（frontmatter、步骤段落、映射文件一致性），并兼容历史 `v0` 产物。
 - `schemas/openstaff-openclaw-skill.schema.json`
@@ -30,9 +33,18 @@ OpenClaw skill 转换工具目录（Phase 3.3）。
 python3 scripts/skills/openclaw_skill_mapper.py \
   --knowledge-item core/knowledge/examples/knowledge-item.sample.json \
   --llm-output scripts/llm/examples/knowledge-parse-output.sample.json \
+  --preferences-root data/preferences \
   --skills-root data/skills/pending \
   --overwrite
 ```
+
+常用可选参数：
+- `--preferences-root data/preferences`
+  - 自动读取 `profiles/latest.json` 指向的最新 profile snapshot。
+- `--preference-profile <path>`
+  - 直接指定 `PreferenceProfile` 或 `PreferenceProfileSnapshot` JSON。
+- `--task-family <value>` / `--skill-family <value>`
+  - 补充 task / skill scope 命中信息，便于让 risk / repair / skillFamily 规则生效。
 
 ### 2) 校验单条 skill
 
