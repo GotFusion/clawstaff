@@ -595,23 +595,24 @@
 - [x] 恢复后可重新构建 profile 并对齐 rule ids
 
 ### TODO 11.6.6 固化 hook / gateway 集成边界
-- [ ] 定义事件：
+- [x] 定义事件：
   - `learning.turn.created`
   - `learning.signal.extracted`
   - `preference.rule.promoted`
   - `preference.profile.updated`
-- [ ] 定义 gateway 方法：
+- [x] 定义 gateway 方法：
   - `preferences.listRules`
   - `preferences.listAssemblyDecisions`
   - `preferences.exportBundle`
-- [ ] 禁止外部插件直接依赖内部私有对象图
+- [x] 禁止外部插件直接依赖内部私有对象图
 
 **输出物**
 - `core/contracts/LearningIntegrationContracts.swift`
+- `core/storage/LearningGateway.swift`
 - `docs/integrations/learning-hooks-gateway-v0.md`
 
 **验收标准**
-- [ ] 外部插件或 worker 可只依赖公开边界消费学习结果
+- [x] 外部插件或 worker 可只依赖公开边界消费学习结果
 
 ---
 
@@ -642,4 +643,4 @@
 - [ ] student planner 仍处于 feature flag 后
 - [ ] `Personal Preference Benchmark` 已建立并可稳定运行
 - [x] 偏好治理、审计、回滚与漂移监控已接入
-- [ ] learning bundle 与 hook / gateway 边界已接入
+- [x] learning bundle 与 hook / gateway 边界已接入

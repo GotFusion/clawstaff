@@ -30,6 +30,10 @@
   - 默认挂在 `OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG=1` feature flag 后
   - 写入 `data/preferences/assembly/{date}/{module}/{sessionId}/{decisionId}.json`
   - 统一承载 assist / student / skill generation / repair 的 `appliedRuleIds / suppressedRuleIds / finalWeights / finalDecisionSummary`
+- `LearningGateway.swift`：learning 外部集成网关：
+  - 统一把 `preferences.listRules`、`preferences.listAssemblyDecisions` 与 `preferences.exportBundle` 收敛到公开 request/response 契约
+  - 内部复用 `PreferenceMemoryStore`、`PolicyAssemblyDecisionStore` 与 `scripts/learning/export_learning_bundle.py`
+  - 外部 worker / 插件无需直接依赖内部 store 或 bundle 脚本细节
 
 ## 后续实现
 - 知识文件存储结构与版本管理。

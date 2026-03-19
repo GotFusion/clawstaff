@@ -25,6 +25,7 @@ Shared contracts for cross-module communication.
 - `PreferenceSignalContracts.swift`: `PreferenceSignal`, `PreferenceSignalType`, `PreferenceSignalScopeReference`, `PreferenceSignalPromotionStatus`.
 - `PreferenceRuleContracts.swift`: `PreferenceRule`, `PreferenceRuleEvidence`, `PreferenceRuleActivationStatus`.
 - `PreferenceProfileContracts.swift`: `PreferenceProfile`, `PreferenceProfileDirective`, `PreferenceProfileSnapshot`.
+- `LearningIntegrationContracts.swift`: learning hook event envelope, gateway request/response, `LearningGatewayServing`.
 
 ## Rule
 

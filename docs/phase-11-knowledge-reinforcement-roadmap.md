@@ -1375,7 +1375,7 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - 恢复后的 payload 会落回标准 `data/learning/**` 与 `data/preferences/**` 布局；若 bundle 包含 `latestProfileVersion`，恢复时会同步重建 `data/preferences/profiles/latest.json`。
 - 新增 `tests/integration/test_learning_bundle.py`，固定覆盖 `export -> verify -> restore -> OpenStaffPreferenceProfileCLI --rebuild` 闭环，确保恢复后新的 profile snapshot 仍能对齐原始 `ruleId`。
 
-#### TODO 11.6.5 固化 hook / gateway 集成边界
+#### TODO 11.6.6 固化 hook / gateway 集成边界
 
 - 第一版至少提供 4 类事件：
   - `learning.turn.created`
@@ -1390,10 +1390,17 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 **输出物**
 - `core/contracts/LearningIntegrationContracts.swift`
+- `core/storage/LearningGateway.swift`
 - `docs/integrations/learning-hooks-gateway-v0.md`
 
 **验收标准**
-- [ ] 外部插件或 worker 可在不依赖内部私有对象的前提下消费学习结果。
+- [x] 外部插件或 worker 可在不依赖内部私有对象的前提下消费学习结果。
+
+本次落地说明：
+- 新增 `core/contracts/LearningIntegrationContracts.swift`，统一定义 4 类 hook 事件 envelope、3 个 gateway 方法名，以及 rules / assembly / bundle export 的公开 request/response 契约，外部消费者无需再依赖 `PreferenceRuleQuery`、`PolicyAssemblyDecisionQuery` 等内部查询对象。
+- 新增 `core/storage/LearningGateway.swift`，把 `PreferenceMemoryStore`、`PolicyAssemblyDecisionStore` 与 `scripts/learning/export_learning_bundle.py --json` 收敛到 `FileSystemLearningGateway` 后面；`preferences.exportBundle` 现固定复用公开 `PreferencesExportBundleRequest/Response` 边界，不向外泄露脚本参数拼装细节。
+- 新增 `OpenStaffAppTests/LearningGatewayTests.swift`，固定验证 `preferences.listRules`、`preferences.listAssemblyDecisions` 与 `preferences.exportBundle` 三条公开路径都可以只通过 contract 层完成消费与结果映射。
+- 新增 `docs/integrations/learning-hooks-gateway-v0.md`，明确 hook 何时发、gateway 何时查、外部插件允许依赖哪些公开契约，以及禁止直接读取哪些内部对象 / 存储路径。
 
 ---
 

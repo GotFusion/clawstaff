@@ -1,0 +1,1 @@
+../../../../core/contracts/LearningIntegrationContracts.swift

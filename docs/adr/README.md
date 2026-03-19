@@ -14,3 +14,4 @@
 - [ADR-0015 Preference Rule Promotion And Governance](./ADR-0015-preference-rule-promotion-and-governance.md)
 - [ADR-0019 Preference Drift Monitoring](./ADR-0019-preference-drift-monitoring.md)
 - [ADR-0022 Learning Bundle Export And Restore](./ADR-0022-learning-bundle-export-and-restore.md)
+- [ADR-0023 Learning Hooks And Gateway Contracts](./ADR-0023-learning-hooks-and-gateway-contracts.md)
