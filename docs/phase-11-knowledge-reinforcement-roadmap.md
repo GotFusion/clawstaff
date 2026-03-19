@@ -1251,6 +1251,22 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `run_personal_preference_benchmark.py` 现会为每条 case 记录 `moduleExecutionDurationSeconds`，并在写出 `manifest.json` 后自动生成 `metrics-summary.json`。
 - `docs/metrics/preference-learning-metrics.md` 明确了各指标口径；其中 `assistAcceptanceRate` 与 `teacherOverrideRate` 被显式标记为 benchmark proxy，避免与线上真实老师行为遥测混淆。
 
+#### TODO 11.5.3 接入发布门禁
+
+**输出物**
+- `scripts/release/run_regression.py`
+- `Makefile`
+
+**验收标准**
+- [x] `release-preflight` 会执行 personal preference benchmark，并在 benchmark 产出后追加 v0 gate 检查。
+- [x] `preferenceMatchRate / repairPathHitRate / quickFeedbackCompletionRate / medianFeedbackLatencySeconds / capturePolicyViolationCount` 等关键指标在发布前统一判定。
+- [x] `unsafeAutoExecutionRegression > 0`、`capturePolicyViolationCount > 0`、`teacherOverrideRate` 超过冻结基线允许恶化幅度时直接 fail。
+
+本次落地说明：
+- `scripts/release/run_regression.py` 现新增 `benchmark-personal-preference` 与 `benchmark-personal-preference-gates` 两个检查项，前者产出 benchmark 工件，后者通过 `aggregate_preference_metrics.py --check-gates` 把 v0 指标门槛真正接入发布门禁。
+- 发布脚本补充了 `--assist-executable / --student-executable / --review-executable / --preference-catalog / --preference-metrics-config` 参数，便于 CI 或本地复用已构建 CLI 并验证临时 gate 配置。
+- `Makefile` 新增 `benchmark-preference-gates` 与 `benchmark-preference-preflight`，可在不跑整套 release regression 的情况下单独复现偏好门禁。
+
 ---
 
 ### 阶段 11.6：安全与治理层（Week 9）

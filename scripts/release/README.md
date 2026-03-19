@@ -1,6 +1,6 @@
 # scripts/release/
 
-发布前回归检查工具（TODO 6.3）。
+发布前回归检查工具（TODO 6.3 / TODO 10.2 / TODO 11.5.3）。
 
 ## 包含内容
 - `run_regression.py`
@@ -12,7 +12,9 @@
     5. 三条 skill bundle preflight（schema / locator / 风险 / App 白名单）。
     6. replay verify sample。
     7. personal desktop benchmark。
-    8. 测试套件（`scripts/tests/run_all.py`）。
+    8. personal preference benchmark。
+    9. preference-learning v0 gate（`metrics-v0.json`）。
+    10. 测试套件（`scripts/tests/run_all.py`）。
   - 输出结构化回归报告 JSON。
 
 ## 推荐命令
@@ -25,10 +27,11 @@ python3 scripts/release/run_regression.py --suite all
 ```bash
 make release-regression
 make release-preflight
+make benchmark-preference-preflight
 ```
 
 如需复用已构建 CLI，加快本地门禁：
 
 ```bash
-make release-preflight ARGS="--openclaw-executable apps/macos/.build/debug/OpenStaffOpenClawCLI --replay-verify-executable apps/macos/.build/debug/OpenStaffReplayVerifyCLI"
+make release-preflight ARGS="--openclaw-executable apps/macos/.build/debug/OpenStaffOpenClawCLI --replay-verify-executable apps/macos/.build/debug/OpenStaffReplayVerifyCLI --assist-executable apps/macos/.build/debug/OpenStaffAssistCLI --student-executable apps/macos/.build/debug/OpenStaffStudentCLI --review-executable apps/macos/.build/debug/OpenStaffExecutionReviewCLI"
 ```

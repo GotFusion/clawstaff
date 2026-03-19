@@ -11,11 +11,13 @@ REVIEW_TARGET := OpenStaffExecutionReviewCLI
 PREFERENCE_PROFILE_TARGET := OpenStaffPreferenceProfileCLI
 OPENCLAW_TARGET := OpenStaffOpenClawCLI
 STUDENT_TARGET := OpenStaffStudentCLI
+PREFERENCE_BENCHMARK_ROOT ?= data/benchmarks/personal-preference
+PREFERENCE_BENCHMARK_MANIFEST ?= $(PREFERENCE_BENCHMARK_ROOT)/manifest.json
 SWIFT_WRAPPER := ./scripts/dev/with_xcode_env.sh
 SWIFT := $(SWIFT_WRAPPER) swift
 ARGS ?=
 
-.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify review preference-profile openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample benchmark-personal benchmark-preference test-swift test test-unit test-integration test-e2e release-regression release-preflight
+.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify review preference-profile openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample benchmark-personal benchmark-preference benchmark-preference-gates benchmark-preference-preflight test-swift test test-unit test-integration test-e2e release-regression release-preflight
 
 build:
 	$(SWIFT) build --package-path $(APP_PACKAGE_PATH)
@@ -99,6 +101,13 @@ benchmark-personal:
 
 benchmark-preference:
 	python3 scripts/benchmarks/run_personal_preference_benchmark.py $(ARGS)
+
+benchmark-preference-gates:
+	python3 scripts/benchmarks/aggregate_preference_metrics.py --benchmark-root $(PREFERENCE_BENCHMARK_ROOT) --manifest $(PREFERENCE_BENCHMARK_MANIFEST) --check-gates $(ARGS)
+
+benchmark-preference-preflight:
+	python3 scripts/benchmarks/run_personal_preference_benchmark.py --benchmark-root $(PREFERENCE_BENCHMARK_ROOT) --report $(PREFERENCE_BENCHMARK_MANIFEST) $(ARGS)
+	python3 scripts/benchmarks/aggregate_preference_metrics.py --benchmark-root $(PREFERENCE_BENCHMARK_ROOT) --manifest $(PREFERENCE_BENCHMARK_MANIFEST) --check-gates
 
 test:
 	python3 scripts/tests/run_all.py --suite all

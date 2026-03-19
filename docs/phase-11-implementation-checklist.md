@@ -503,16 +503,16 @@
 - [x] 每次 benchmark 都能输出统一指标摘要
 
 ### TODO 11.5.3 接入发布门禁
-- [ ] 将 preference benchmark 接入 `release-preflight`
-- [ ] 对关键指标设最低阈值
-- [ ] 对高风险 regression 直接 fail
+- [x] 将 preference benchmark 接入 `release-preflight`
+- [x] 对关键指标设最低阈值
+- [x] 对高风险 regression 直接 fail
 
 **输出物**
 - `scripts/release/run_regression.py`
 - `Makefile`
 
 **验收标准**
-- [ ] 偏好学习退化可在发布前被拦截
+- [x] 偏好学习退化可在发布前被拦截
 
 ---
 

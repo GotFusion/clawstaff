@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Run release regression and validation gates (TODO 6.3 / TODO 10.2).
+Run release regression and validation gates (TODO 6.3 / TODO 10.2 / TODO 11.5.3).
 """
 
 from __future__ import annotations
@@ -17,6 +17,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_ROOT = Path("/tmp/openstaff-release-regression")
+DEFAULT_PREFERENCE_CATALOG_PATH = REPO_ROOT / "data/benchmarks/personal-preference/catalog.json"
+DEFAULT_PREFERENCE_METRICS_CONFIG_PATH = REPO_ROOT / "data/benchmarks/personal-preference/metrics-v0.json"
 
 
 @dataclass
@@ -55,12 +57,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--skip-benchmark",
         action="store_true",
-        help="Skip personal benchmark execution.",
+        help="Skip all benchmark execution (personal desktop + personal preference).",
+    )
+    parser.add_argument(
+        "--skip-desktop-benchmark",
+        action="store_true",
+        help="Skip personal desktop benchmark execution.",
+    )
+    parser.add_argument(
+        "--skip-preference-benchmark",
+        action="store_true",
+        help="Skip personal preference benchmark execution.",
     )
     parser.add_argument(
         "--benchmark-case-limit",
         type=int,
-        help="Optional limit forwarded to the benchmark runner.",
+        help="Optional limit forwarded to both benchmark runners.",
     )
     parser.add_argument(
         "--openclaw-executable",
@@ -71,6 +83,36 @@ def parse_args() -> argparse.Namespace:
         "--replay-verify-executable",
         type=str,
         help="Optional prebuilt OpenStaffReplayVerifyCLI executable path for replay-verify checks.",
+    )
+    parser.add_argument(
+        "--assist-executable",
+        type=str,
+        help="Optional prebuilt OpenStaffAssistCLI executable path for preference benchmark execution.",
+    )
+    parser.add_argument(
+        "--student-executable",
+        type=str,
+        help="Optional prebuilt OpenStaffStudentCLI executable path for preference benchmark execution.",
+    )
+    parser.add_argument(
+        "--review-executable",
+        type=str,
+        help="Optional prebuilt OpenStaffExecutionReviewCLI executable path for preference benchmark execution.",
+    )
+    parser.add_argument(
+        "--preference-catalog",
+        type=Path,
+        default=DEFAULT_PREFERENCE_CATALOG_PATH,
+        help=f"Preference benchmark catalog JSON path (default: {DEFAULT_PREFERENCE_CATALOG_PATH}).",
+    )
+    parser.add_argument(
+        "--preference-metrics-config",
+        type=Path,
+        default=DEFAULT_PREFERENCE_METRICS_CONFIG_PATH,
+        help=(
+            "Preference benchmark metric gate config JSON path "
+            f"(default: {DEFAULT_PREFERENCE_METRICS_CONFIG_PATH})."
+        ),
     )
     parser.add_argument(
         "--report",
@@ -288,6 +330,68 @@ def append_benchmark_check(
     results.append(run_check(name="benchmark-personal-desktop", command=command))
 
 
+def append_preference_benchmark_checks(
+    results: list[CheckResult],
+    benchmark_root: Path,
+    *,
+    benchmark_case_limit: int | None,
+    assist_executable: str | None,
+    student_executable: str | None,
+    replay_verify_executable: str | None,
+    review_executable: str | None,
+    preference_catalog: Path,
+    preference_metrics_config: Path,
+) -> None:
+    manifest_path = benchmark_root / "manifest.json"
+    metrics_summary_path = benchmark_root / "metrics-summary.json"
+    benchmark_command = [
+        sys.executable,
+        str(REPO_ROOT / "scripts/benchmarks/run_personal_preference_benchmark.py"),
+        "--benchmark-root",
+        str(benchmark_root),
+        "--catalog",
+        str(preference_catalog),
+        "--report",
+        str(manifest_path),
+    ]
+    if benchmark_case_limit is not None:
+        benchmark_command.extend(["--case-limit", str(benchmark_case_limit)])
+    if assist_executable:
+        benchmark_command.extend(["--assist-executable", assist_executable])
+    if student_executable:
+        benchmark_command.extend(["--student-executable", student_executable])
+    if replay_verify_executable:
+        benchmark_command.extend(["--replay-verify-executable", replay_verify_executable])
+    if review_executable:
+        benchmark_command.extend(["--review-executable", review_executable])
+
+    results.append(run_check(name="benchmark-personal-preference", command=benchmark_command))
+
+    if not manifest_path.exists():
+        return
+
+    results.append(
+        run_check(
+            name="benchmark-personal-preference-gates",
+            command=[
+                sys.executable,
+                str(REPO_ROOT / "scripts/benchmarks/aggregate_preference_metrics.py"),
+                "--benchmark-root",
+                str(benchmark_root),
+                "--manifest",
+                str(manifest_path),
+                "--catalog",
+                str(preference_catalog),
+                "--config",
+                str(preference_metrics_config),
+                "--output",
+                str(metrics_summary_path),
+                "--check-gates",
+            ],
+        )
+    )
+
+
 def main() -> int:
     args = parse_args()
     run_id = datetime.now().strftime("run-%Y%m%d-%H%M%S")
@@ -315,12 +419,24 @@ def main() -> int:
     append_skill_pipeline_checks(results, skills_root)
     append_replay_verify_checks(results, args.replay_verify_executable)
 
-    if not args.skip_benchmark:
+    if not args.skip_benchmark and not args.skip_desktop_benchmark:
         append_benchmark_check(
             results,
             run_dir / "benchmark",
             benchmark_case_limit=args.benchmark_case_limit,
             openclaw_executable=args.openclaw_executable,
+        )
+    if not args.skip_benchmark and not args.skip_preference_benchmark:
+        append_preference_benchmark_checks(
+            results,
+            run_dir / "preference-benchmark",
+            benchmark_case_limit=args.benchmark_case_limit,
+            assist_executable=args.assist_executable,
+            student_executable=args.student_executable,
+            replay_verify_executable=args.replay_verify_executable,
+            review_executable=args.review_executable,
+            preference_catalog=args.preference_catalog.resolve(),
+            preference_metrics_config=args.preference_metrics_config.resolve(),
         )
 
     if not args.skip_tests:

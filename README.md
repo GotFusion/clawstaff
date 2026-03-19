@@ -31,6 +31,8 @@ make test
 make test-unit
 make test-integration
 make test-e2e
+make benchmark-preference-gates
+make benchmark-preference-preflight
 make release-regression
 make release-preflight
 ```
@@ -65,8 +67,10 @@ make release-preflight
 - `make test-unit`：仅执行单元测试。
 - `make test-integration`：仅执行集成测试。
 - `make test-e2e`：仅执行 E2E 测试。
+- `make benchmark-preference-gates`：按 `metrics-v0.json` 检查当前 `Personal Preference Benchmark` 产物是否仍满足 v0 门槛。
+- `make benchmark-preference-preflight`：跑完整 `Personal Preference Benchmark` 后立即执行 gate 检查，便于单独复现偏好发布门禁。
 - `make release-regression`：执行发布回归检查并输出报告。
-- `make release-preflight`：一键执行发布回归预检（现已包含 skill bundle preflight）。
+- `make release-preflight`：一键执行发布回归预检（现已包含 skill bundle preflight、personal preference benchmark 与 v0 gate）。
 
 ## 目录概览
 

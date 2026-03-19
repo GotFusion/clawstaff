@@ -90,6 +90,7 @@ runner 在写出 `manifest.json` 后，会继续自动生成 `<benchmark-root>/m
 
 ```bash
 make benchmark-preference
+make benchmark-preference-preflight
 ```
 
 也可以显式指定输出目录：
@@ -113,6 +114,8 @@ python3 scripts/benchmarks/aggregate_preference_metrics.py \
   --manifest /tmp/openstaff-preference-benchmark/manifest.json \
   --check-gates
 ```
+
+`release-preflight` 已默认接入这套 benchmark，并会在 benchmark 产出后追加一次 `--check-gates` 校验；因此偏好退化、风险回归或 capture policy 违规现在都能在发布前被直接拦截。
 
 runner 会按需自动构建所需 Swift CLI：
 
