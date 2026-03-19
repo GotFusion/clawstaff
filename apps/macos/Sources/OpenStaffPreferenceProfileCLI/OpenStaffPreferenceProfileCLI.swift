@@ -13,49 +13,14 @@ struct OpenStaffPreferenceProfileCLI {
 
             let store = PreferenceMemoryStore(preferencesRootDirectory: options.preferencesRootURL)
             let builder = PreferenceProfileBuilder()
+            let rollbackService = PreferenceRollbackService(profileBuilder: builder)
 
-            let output: PreferenceProfileCLIOutput
-            switch (options.rebuild, options.persist) {
-            case (false, false):
-                guard let snapshot = try store.loadLatestProfileSnapshot() else {
-                    throw PreferenceProfileCLIError.noProfileSnapshotFound(options.preferencesRootURL.path)
-                }
-                output = PreferenceProfileCLIOutput(
-                    mode: .loadedLatest,
-                    preferencesRootPath: options.preferencesRootURL.path,
-                    snapshot: snapshot,
-                    moduleSummaries: builder.summaries(for: snapshot.profile)
-                )
-            case (true, false):
-                let result = try builder.rebuild(
-                    using: store,
-                    profileVersion: options.profileVersion,
-                    generatedAt: options.timestamp,
-                    note: options.note
-                )
-                output = PreferenceProfileCLIOutput(
-                    mode: .rebuiltEphemeral,
-                    preferencesRootPath: options.preferencesRootURL.path,
-                    snapshot: result.snapshot,
-                    moduleSummaries: result.moduleSummaries
-                )
-            case (true, true):
-                let result = try builder.rebuildAndStore(
-                    using: store,
-                    actor: options.actor,
-                    profileVersion: options.profileVersion,
-                    generatedAt: options.timestamp,
-                    note: options.note
-                )
-                output = PreferenceProfileCLIOutput(
-                    mode: .rebuiltAndPersisted,
-                    preferencesRootPath: options.preferencesRootURL.path,
-                    snapshot: result.snapshot,
-                    moduleSummaries: result.moduleSummaries
-                )
-            case (false, true):
-                throw PreferenceProfileCLIError.persistRequiresRebuild
-            }
+            let output = try run(
+                options: options,
+                store: store,
+                builder: builder,
+                rollbackService: rollbackService
+            )
 
             if options.printJSON {
                 let encoder = JSONEncoder()
@@ -73,48 +38,241 @@ struct OpenStaffPreferenceProfileCLI {
         }
     }
 
+    fileprivate static func run(
+        options: PreferenceProfileCLIOptions,
+        store: PreferenceMemoryStore,
+        builder: PreferenceProfileBuilder,
+        rollbackService: PreferenceRollbackService
+    ) throws -> PreferenceProfileCLIOutput {
+        switch options.command {
+        case .loadLatest:
+            guard let snapshot = try store.loadLatestProfileSnapshot() else {
+                throw PreferenceProfileCLIError.noProfileSnapshotFound(options.preferencesRootURL.path)
+            }
+            return PreferenceProfileCLIOutput(
+                mode: .loadedLatest,
+                preferencesRootPath: options.preferencesRootURL.path,
+                snapshot: snapshot,
+                moduleSummaries: builder.summaries(for: snapshot.profile)
+            )
+        case .rebuild:
+            switch options.persist {
+            case false:
+                let result = try builder.rebuild(
+                    using: store,
+                    profileVersion: options.profileVersion,
+                    generatedAt: options.timestamp,
+                    note: options.annotation
+                )
+                return PreferenceProfileCLIOutput(
+                    mode: .rebuiltEphemeral,
+                    preferencesRootPath: options.preferencesRootURL.path,
+                    snapshot: result.snapshot,
+                    moduleSummaries: result.moduleSummaries
+                )
+            case true:
+                let result = try builder.rebuildAndStore(
+                    using: store,
+                    actor: options.actor,
+                    profileVersion: options.profileVersion,
+                    generatedAt: options.timestamp,
+                    note: options.annotation
+                )
+                return PreferenceProfileCLIOutput(
+                    mode: .rebuiltAndPersisted,
+                    preferencesRootPath: options.preferencesRootURL.path,
+                    snapshot: result.snapshot,
+                    moduleSummaries: result.moduleSummaries
+                )
+            }
+        case .audit:
+            let entries = try store.loadAuditEntries(
+                matching: PreferenceAuditLogQuery(
+                    date: options.auditDate,
+                    ruleId: options.auditRuleId,
+                    profileVersion: options.auditProfileVersion
+                )
+            )
+            return PreferenceProfileCLIOutput(
+                mode: .auditLoaded,
+                preferencesRootPath: options.preferencesRootURL.path,
+                auditEntries: entries
+            )
+        case .rollbackRule:
+            guard let ruleId = options.rollbackRuleId else {
+                throw PreferenceProfileCLIError.invalidRollbackConfiguration
+            }
+            if options.shouldApplyMutation {
+                let result = try rollbackService.applyRuleRevocation(
+                    ruleId: ruleId,
+                    using: store,
+                    actor: options.actor,
+                    timestamp: options.timestamp,
+                    reason: options.annotation,
+                    profileVersion: options.profileVersion
+                )
+                return PreferenceProfileCLIOutput(
+                    mode: .rollbackApplied,
+                    preferencesRootPath: options.preferencesRootURL.path,
+                    snapshot: result.snapshot,
+                    moduleSummaries: result.plan.moduleSummaries,
+                    rollbackPlan: result.plan,
+                    rollbackResult: result
+                )
+            }
+
+            let plan = try rollbackService.previewRuleRevocation(
+                ruleId: ruleId,
+                using: store,
+                actor: options.actor,
+                timestamp: options.timestamp,
+                reason: options.annotation,
+                projectedProfileVersion: options.profileVersion
+            )
+            return PreferenceProfileCLIOutput(
+                mode: .rollbackPreview,
+                preferencesRootPath: options.preferencesRootURL.path,
+                snapshot: plan.projectedSnapshot,
+                moduleSummaries: plan.moduleSummaries,
+                rollbackPlan: plan
+            )
+        case .rollbackProfile:
+            guard let rollbackProfileVersion = options.rollbackProfileVersion else {
+                throw PreferenceProfileCLIError.invalidRollbackConfiguration
+            }
+            if options.shouldApplyMutation {
+                let result = try rollbackService.applyProfileRollback(
+                    to: rollbackProfileVersion,
+                    using: store,
+                    actor: options.actor,
+                    timestamp: options.timestamp,
+                    reason: options.annotation,
+                    profileVersion: options.profileVersion
+                )
+                return PreferenceProfileCLIOutput(
+                    mode: .rollbackApplied,
+                    preferencesRootPath: options.preferencesRootURL.path,
+                    snapshot: result.snapshot,
+                    moduleSummaries: result.plan.moduleSummaries,
+                    rollbackPlan: result.plan,
+                    rollbackResult: result
+                )
+            }
+
+            let plan = try rollbackService.previewProfileRollback(
+                to: rollbackProfileVersion,
+                using: store,
+                actor: options.actor,
+                timestamp: options.timestamp,
+                reason: options.annotation,
+                projectedProfileVersion: options.profileVersion
+            )
+            return PreferenceProfileCLIOutput(
+                mode: .rollbackPreview,
+                preferencesRootPath: options.preferencesRootURL.path,
+                snapshot: plan.projectedSnapshot,
+                moduleSummaries: plan.moduleSummaries,
+                rollbackPlan: plan
+            )
+        }
+    }
+
     static func printHelp() {
         print("""
         OpenStaffPreferenceProfileCLI
 
         Usage:
-          make preference-profile ARGS="--preferences-root data/preferences --rebuild --persist --json"
           make preference-profile ARGS="--preferences-root data/preferences --json"
+          make preference-profile ARGS="--preferences-root data/preferences --rebuild --persist --json"
+          make preference-profile ARGS="--preferences-root data/preferences --audit --audit-rule-id rule-123 --json"
+          make preference-profile ARGS="--preferences-root data/preferences --rollback-profile-version profile-2026-03-19-001 --dry-run --json"
+          make preference-profile ARGS="--preferences-root data/preferences --rollback-rule rule-123 --persist --json"
 
         Flags:
-          --preferences-root <path>   Preference store root. Default: data/preferences
-          --rebuild                   Rebuild a profile snapshot from currently active rules.
-          --persist                   Persist the rebuilt snapshot and refresh latest pointer.
-          --profile-version <id>      Optional explicit profile version.
-          --timestamp <iso8601>       Snapshot timestamp. Default: now.
-          --actor <id>                Audit actor used when persisting. Default: cli
-          --note <text>               Optional snapshot note.
-          --json                      Print structured JSON output.
-          --help                      Show this help message.
+          --preferences-root <path>        Preference store root. Default: data/preferences
+          --rebuild                        Rebuild a profile snapshot from currently active rules.
+          --persist                        Persist rebuild / rollback results.
+          --profile-version <id>           Optional explicit output profile version.
+          --timestamp <iso8601>            Operation timestamp. Default: now.
+          --actor <id>                     Audit actor. Default: cli
+          --note <text>                    Optional note for rebuilds or rollback history.
+          --reason <text>                  Alias of --note for rollback operations.
+          --audit                          Load preference audit entries instead of profile snapshots.
+          --audit-date <yyyy-mm-dd>        Restrict audit log loading to a single date file.
+          --audit-rule-id <id>             Filter audit entries by rule id.
+          --audit-profile-version <id>     Filter audit entries by profile version.
+          --rollback-rule <id>             Preview or revoke a single rule.
+          --rollback-profile-version <id>  Preview or rollback to a stored profile snapshot.
+          --dry-run                        Force rollback modes to preview without writing.
+          --json                           Print structured JSON output.
+          --help                           Show this help message.
         """)
     }
 
     fileprivate static func printSummary(_ output: PreferenceProfileCLIOutput) {
-        let snapshot = output.snapshot
-        print(
-            "Preference profile \(output.mode.rawValue). " +
-            "profileVersion=\(snapshot.profileVersion) " +
-            "activeRules=\(snapshot.profile.activeRuleIds.count) " +
-            "directives=\(snapshot.profile.totalDirectiveCount)"
-        )
         print("preferencesRoot=\(output.preferencesRootPath)")
-        if let previousProfileVersion = snapshot.previousProfileVersion {
-            print("previousProfileVersion=\(previousProfileVersion)")
-        }
-        if let note = snapshot.note, !note.isEmpty {
-            print("note=\(note)")
+
+        if let rollbackPlan = output.rollbackPlan {
+            print(
+                "rollback \(output.mode.rawValue). " +
+                "operation=\(rollbackPlan.operation.rawValue) " +
+                "projectedProfileVersion=\(rollbackPlan.projectedSnapshot.profileVersion) " +
+                "impactedRules=\(rollbackPlan.impactedRuleIds.count) " +
+                "missingRules=\(rollbackPlan.missingRuleIds.count)"
+            )
+            if let currentProfileVersion = rollbackPlan.currentProfileVersion {
+                print("currentProfileVersion=\(currentProfileVersion)")
+            }
+            if let targetProfileVersion = rollbackPlan.targetProfileVersion {
+                print("targetProfileVersion=\(targetProfileVersion)")
+            }
+            if let ruleId = rollbackPlan.ruleId {
+                print("ruleId=\(ruleId)")
+            }
+            print("reason=\(rollbackPlan.reason)")
+            for impact in rollbackPlan.ruleImpacts {
+                print(
+                    "  impact rule=\(impact.ruleId) " +
+                    "status=\(impact.previousActivationStatus.rawValue)->\(impact.newActivationStatus.rawValue)"
+                )
+            }
+            if !rollbackPlan.missingRuleIds.isEmpty {
+                print("missingRuleIds=\(rollbackPlan.missingRuleIds.joined(separator: ","))")
+            }
         }
 
-        for summary in output.moduleSummaries {
+        if let auditEntries = output.auditEntries {
+            print("audit entries loaded. count=\(auditEntries.count)")
+            for entry in auditEntries {
+                let ruleFragment = entry.ruleId.map { " rule=\($0)" } ?? ""
+                let profileFragment = entry.profileVersion.map { " profile=\($0)" } ?? ""
+                print(
+                    "  \(entry.timestamp) action=\(entry.action.rawValue) " +
+                    "actor=\(entry.actor) source=\(entry.source.kind.rawValue)\(ruleFragment)\(profileFragment)"
+                )
+            }
+        }
+
+        if let snapshot = output.snapshot {
             print(
-                "  \(summary.module.rawValue): directives=\(summary.directiveCount) " +
-                "rules=\(summary.ruleIds.joined(separator: ","))"
+                "profile \(output.mode.rawValue). " +
+                "profileVersion=\(snapshot.profileVersion) " +
+                "activeRules=\(snapshot.profile.activeRuleIds.count) " +
+                "directives=\(snapshot.profile.totalDirectiveCount)"
             )
+            if let previousProfileVersion = snapshot.previousProfileVersion {
+                print("previousProfileVersion=\(previousProfileVersion)")
+            }
+            if let note = snapshot.note, !note.isEmpty {
+                print("note=\(note)")
+            }
+
+            for summary in output.moduleSummaries ?? [] {
+                print(
+                    "  \(summary.module.rawValue): directives=\(summary.directiveCount) " +
+                    "rules=\(summary.ruleIds.joined(separator: ","))"
+                )
+            }
         }
     }
 }
@@ -123,13 +281,45 @@ private enum PreferenceProfileCLIMode: String, Codable {
     case loadedLatest = "loaded_latest"
     case rebuiltEphemeral = "rebuilt_ephemeral"
     case rebuiltAndPersisted = "rebuilt_and_persisted"
+    case auditLoaded = "audit_loaded"
+    case rollbackPreview = "rollback_preview"
+    case rollbackApplied = "rollback_applied"
 }
 
 private struct PreferenceProfileCLIOutput: Codable {
     let mode: PreferenceProfileCLIMode
     let preferencesRootPath: String
-    let snapshot: PreferenceProfileSnapshot
-    let moduleSummaries: [PreferenceProfileModuleSummary]
+    let snapshot: PreferenceProfileSnapshot?
+    let moduleSummaries: [PreferenceProfileModuleSummary]?
+    let auditEntries: [PreferenceAuditLogEntry]?
+    let rollbackPlan: PreferenceRollbackPlan?
+    let rollbackResult: PreferenceRollbackResult?
+
+    init(
+        mode: PreferenceProfileCLIMode,
+        preferencesRootPath: String,
+        snapshot: PreferenceProfileSnapshot? = nil,
+        moduleSummaries: [PreferenceProfileModuleSummary]? = nil,
+        auditEntries: [PreferenceAuditLogEntry]? = nil,
+        rollbackPlan: PreferenceRollbackPlan? = nil,
+        rollbackResult: PreferenceRollbackResult? = nil
+    ) {
+        self.mode = mode
+        self.preferencesRootPath = preferencesRootPath
+        self.snapshot = snapshot
+        self.moduleSummaries = moduleSummaries
+        self.auditEntries = auditEntries
+        self.rollbackPlan = rollbackPlan
+        self.rollbackResult = rollbackResult
+    }
+}
+
+private enum PreferenceProfileCLICommand {
+    case loadLatest
+    case rebuild
+    case audit
+    case rollbackRule
+    case rollbackProfile
 }
 
 private struct PreferenceProfileCLIOptions {
@@ -139,12 +329,39 @@ private struct PreferenceProfileCLIOptions {
     let profileVersion: String?
     let timestamp: String
     let actor: String
-    let note: String?
+    let annotation: String?
+    let audit: Bool
+    let auditDate: String?
+    let auditRuleId: String?
+    let auditProfileVersion: String?
+    let rollbackRuleId: String?
+    let rollbackProfileVersion: String?
+    let dryRun: Bool
     let printJSON: Bool
     let showHelp: Bool
 
     var preferencesRootURL: URL {
         Self.resolve(path: preferencesRootPath)
+    }
+
+    var command: PreferenceProfileCLICommand {
+        if audit {
+            return .audit
+        }
+        if rollbackRuleId != nil {
+            return .rollbackRule
+        }
+        if rollbackProfileVersion != nil {
+            return .rollbackProfile
+        }
+        if rebuild {
+            return .rebuild
+        }
+        return .loadLatest
+    }
+
+    var shouldApplyMutation: Bool {
+        persist && !dryRun
     }
 
     static func parse(arguments: [String]) throws -> Self {
@@ -154,7 +371,14 @@ private struct PreferenceProfileCLIOptions {
         var profileVersion: String?
         var timestamp = currentTimestamp()
         var actor = "cli"
-        var note: String?
+        var annotation: String?
+        var audit = false
+        var auditDate: String?
+        var auditRuleId: String?
+        var auditProfileVersion: String?
+        var rollbackRuleId: String?
+        var rollbackProfileVersion: String?
+        var dryRun = false
         var printJSON = false
         var showHelp = false
 
@@ -191,12 +415,46 @@ private struct PreferenceProfileCLIOptions {
                     throw PreferenceProfileCLIError.missingValue("--actor")
                 }
                 actor = arguments[index]
-            case "--note":
+            case "--note", "--reason":
                 index += 1
                 guard index < arguments.count else {
-                    throw PreferenceProfileCLIError.missingValue("--note")
+                    throw PreferenceProfileCLIError.missingValue(token)
                 }
-                note = arguments[index]
+                annotation = arguments[index]
+            case "--audit":
+                audit = true
+            case "--audit-date":
+                index += 1
+                guard index < arguments.count else {
+                    throw PreferenceProfileCLIError.missingValue("--audit-date")
+                }
+                auditDate = arguments[index]
+            case "--audit-rule-id":
+                index += 1
+                guard index < arguments.count else {
+                    throw PreferenceProfileCLIError.missingValue("--audit-rule-id")
+                }
+                auditRuleId = arguments[index]
+            case "--audit-profile-version":
+                index += 1
+                guard index < arguments.count else {
+                    throw PreferenceProfileCLIError.missingValue("--audit-profile-version")
+                }
+                auditProfileVersion = arguments[index]
+            case "--rollback-rule":
+                index += 1
+                guard index < arguments.count else {
+                    throw PreferenceProfileCLIError.missingValue("--rollback-rule")
+                }
+                rollbackRuleId = arguments[index]
+            case "--rollback-profile-version":
+                index += 1
+                guard index < arguments.count else {
+                    throw PreferenceProfileCLIError.missingValue("--rollback-profile-version")
+                }
+                rollbackProfileVersion = arguments[index]
+            case "--dry-run":
+                dryRun = true
             case "--json":
                 printJSON = true
             case "--help", "-h":
@@ -218,6 +476,29 @@ private struct PreferenceProfileCLIOptions {
             if actor.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 throw PreferenceProfileCLIError.invalidValue("--actor", actor)
             }
+            if let auditDate, !isValidAuditDate(auditDate) {
+                throw PreferenceProfileCLIError.invalidValue("--audit-date", auditDate)
+            }
+
+            let primaryCommands = [
+                rebuild ? "--rebuild" : nil,
+                audit ? "--audit" : nil,
+                rollbackRuleId != nil ? "--rollback-rule" : nil,
+                rollbackProfileVersion != nil ? "--rollback-profile-version" : nil
+            ].compactMap { $0 }
+
+            if primaryCommands.count > 1 {
+                throw PreferenceProfileCLIError.conflictingCommands(primaryCommands)
+            }
+            if persist && audit {
+                throw PreferenceProfileCLIError.persistRequiresMutationCommand
+            }
+            if dryRun && !audit && rollbackRuleId == nil && rollbackProfileVersion == nil {
+                throw PreferenceProfileCLIError.dryRunRequiresRollback
+            }
+            if persist && !rebuild && rollbackRuleId == nil && rollbackProfileVersion == nil {
+                throw PreferenceProfileCLIError.persistRequiresMutationCommand
+            }
         }
 
         return Self(
@@ -227,7 +508,14 @@ private struct PreferenceProfileCLIOptions {
             profileVersion: profileVersion,
             timestamp: timestamp,
             actor: actor,
-            note: note,
+            annotation: annotation,
+            audit: audit,
+            auditDate: auditDate,
+            auditRuleId: auditRuleId,
+            auditProfileVersion: auditProfileVersion,
+            rollbackRuleId: rollbackRuleId,
+            rollbackProfileVersion: rollbackProfileVersion,
+            dryRun: dryRun,
             printJSON: printJSON,
             showHelp: showHelp
         )
@@ -251,6 +539,10 @@ private struct PreferenceProfileCLIOptions {
         return fallback.date(from: value) != nil
     }
 
+    private static func isValidAuditDate(_ value: String) -> Bool {
+        value.range(of: "^\\d{4}-\\d{2}-\\d{2}$", options: .regularExpression) != nil
+    }
+
     private static func resolve(path: String) -> URL {
         let url = URL(fileURLWithPath: path, relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
         return url.standardizedFileURL
@@ -261,7 +553,10 @@ private enum PreferenceProfileCLIError: LocalizedError {
     case missingValue(String)
     case invalidValue(String, String)
     case unknownFlag(String)
-    case persistRequiresRebuild
+    case conflictingCommands([String])
+    case persistRequiresMutationCommand
+    case dryRunRequiresRollback
+    case invalidRollbackConfiguration
     case noProfileSnapshotFound(String)
 
     var errorDescription: String? {
@@ -272,8 +567,14 @@ private enum PreferenceProfileCLIError: LocalizedError {
             return "Invalid value for \(flag): \(value)"
         case .unknownFlag(let flag):
             return "Unknown flag: \(flag)"
-        case .persistRequiresRebuild:
-            return "--persist requires --rebuild."
+        case .conflictingCommands(let commands):
+            return "Conflicting commands: \(commands.joined(separator: ", "))"
+        case .persistRequiresMutationCommand:
+            return "--persist requires --rebuild, --rollback-rule, or --rollback-profile-version."
+        case .dryRunRequiresRollback:
+            return "--dry-run is only supported with rollback commands."
+        case .invalidRollbackConfiguration:
+            return "Rollback command is missing its target identifier."
         case .noProfileSnapshotFound(let rootPath):
             return "No latest profile snapshot found under \(rootPath). Re-run with --rebuild."
         }

@@ -274,16 +274,18 @@ final class PreferenceMemoryStoreTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(auditEntries.count, 5)
         XCTAssertTrue(
             auditEntries.contains(where: {
-                $0.action == .ruleStatusChanged
+                $0.action == .ruleSuperseded
                     && $0.ruleId == "rule-app-old-001"
                     && $0.relatedRuleId == "rule-app-new-001"
+                    && $0.source.kind == .teacherAction
             })
         )
         XCTAssertTrue(
             auditEntries.contains(where: {
-                $0.action == .ruleStatusChanged
+                $0.action == .ruleRevoked
                     && $0.ruleId == "rule-task-revocable-001"
                     && $0.newActivationStatus == .revoked
+                    && $0.source.kind == .teacherAction
             })
         )
     }

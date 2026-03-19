@@ -23,53 +23,59 @@ public struct PreferenceRuleQuery: Equatable, Sendable {
     }
 }
 
-public enum PreferenceMemoryAuditAction: String, Codable, CaseIterable, Sendable {
-    case signalStored
-    case ruleStored
-    case ruleStatusChanged
-    case profileStored
-}
-
-public struct PreferenceMemoryAuditEntry: Codable, Equatable, Sendable {
-    public let schemaVersion: String
-    public let auditId: String
-    public let action: PreferenceMemoryAuditAction
-    public let timestamp: String
-    public let actor: String
-    public let signalIds: [String]
-    public let ruleId: String?
-    public let profileVersion: String?
-    public let previousActivationStatus: PreferenceRuleActivationStatus?
-    public let newActivationStatus: PreferenceRuleActivationStatus?
+public struct PreferenceRuleAuditContext: Equatable, Sendable {
+    public let action: PreferenceAuditLogAction?
+    public let source: PreferenceAuditSource
     public let relatedRuleId: String?
-    public let note: String?
+    public let relatedProfileVersion: String?
 
     public init(
-        schemaVersion: String = "openstaff.learning.preference-memory-audit.v0",
-        auditId: String,
-        action: PreferenceMemoryAuditAction,
-        timestamp: String,
-        actor: String,
-        signalIds: [String] = [],
-        ruleId: String? = nil,
-        profileVersion: String? = nil,
-        previousActivationStatus: PreferenceRuleActivationStatus? = nil,
-        newActivationStatus: PreferenceRuleActivationStatus? = nil,
+        action: PreferenceAuditLogAction? = nil,
+        source: PreferenceAuditSource = .manual(),
         relatedRuleId: String? = nil,
-        note: String? = nil
+        relatedProfileVersion: String? = nil
     ) {
-        self.schemaVersion = schemaVersion
-        self.auditId = auditId
         self.action = action
-        self.timestamp = timestamp
-        self.actor = actor
-        self.signalIds = signalIds.sorted()
-        self.ruleId = ruleId
-        self.profileVersion = profileVersion
-        self.previousActivationStatus = previousActivationStatus
-        self.newActivationStatus = newActivationStatus
+        self.source = source
         self.relatedRuleId = relatedRuleId
-        self.note = note
+        self.relatedProfileVersion = relatedProfileVersion
+    }
+
+    public static func manual(
+        action: PreferenceAuditLogAction? = nil,
+        source: PreferenceAuditSource = .manual(),
+        relatedRuleId: String? = nil,
+        relatedProfileVersion: String? = nil
+    ) -> Self {
+        Self(
+            action: action,
+            source: source,
+            relatedRuleId: relatedRuleId,
+            relatedProfileVersion: relatedProfileVersion
+        )
+    }
+}
+
+public struct PreferenceProfileAuditContext: Equatable, Sendable {
+    public let source: PreferenceAuditSource
+    public let relatedProfileVersion: String?
+
+    public init(
+        source: PreferenceAuditSource = .profileBuilder(),
+        relatedProfileVersion: String? = nil
+    ) {
+        self.source = source
+        self.relatedProfileVersion = relatedProfileVersion
+    }
+
+    public static func builder(
+        source: PreferenceAuditSource = .profileBuilder(),
+        relatedProfileVersion: String? = nil
+    ) -> Self {
+        Self(
+            source: source,
+            relatedProfileVersion: relatedProfileVersion
+        )
     }
 }
 
@@ -80,11 +86,11 @@ public struct PreferenceMemoryStore {
     public let profilesRootDirectory: URL
     public let assemblyRootDirectory: URL
     public let auditRootDirectory: URL
+    public let auditLogStore: PreferenceAuditLogStore
 
     private let fileManager: FileManager
     private let decoder: JSONDecoder
     private let prettyEncoder: JSONEncoder
-    private let lineEncoder: JSONEncoder
 
     public init(
         preferencesRootDirectory: URL,
@@ -96,16 +102,16 @@ public struct PreferenceMemoryStore {
         self.profilesRootDirectory = preferencesRootDirectory.appendingPathComponent("profiles", isDirectory: true)
         self.assemblyRootDirectory = preferencesRootDirectory.appendingPathComponent("assembly", isDirectory: true)
         self.auditRootDirectory = preferencesRootDirectory.appendingPathComponent("audit", isDirectory: true)
+        self.auditLogStore = PreferenceAuditLogStore(
+            auditRootDirectory: self.auditRootDirectory,
+            fileManager: fileManager
+        )
         self.fileManager = fileManager
         self.decoder = JSONDecoder()
 
         let prettyEncoder = JSONEncoder()
         prettyEncoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         self.prettyEncoder = prettyEncoder
-
-        let lineEncoder = JSONEncoder()
-        lineEncoder.outputFormatting = [.sortedKeys]
-        self.lineEncoder = lineEncoder
     }
 
     public func signalFileURL(for signal: PreferenceSignal) -> URL {
@@ -127,6 +133,7 @@ public struct PreferenceMemoryStore {
     public func storeSignals(
         _ signals: [PreferenceSignal],
         actor: String = "system",
+        source: PreferenceAuditSource = .signalIngestion(),
         note: String? = nil
     ) throws -> [URL] {
         guard !signals.isEmpty else {
@@ -177,12 +184,13 @@ public struct PreferenceMemoryStore {
             writtenURLs.append(fileURL)
 
             let timestamp = mergedSignals.map(\.timestamp).max() ?? firstSignal.timestamp
-            try appendAuditEntry(
-                PreferenceMemoryAuditEntry(
+            try auditLogStore.append(
+                PreferenceAuditLogEntry(
                     auditId: "audit-signal-\(UUID().uuidString)",
                     action: .signalStored,
                     timestamp: timestamp,
                     actor: actor,
+                    source: source,
                     signalIds: group.map(\.signalId),
                     note: note
                 )
@@ -196,6 +204,7 @@ public struct PreferenceMemoryStore {
     public func storeRule(
         _ rule: PreferenceRule,
         actor: String = "system",
+        auditContext: PreferenceRuleAuditContext = .manual(),
         note: String? = nil
     ) throws -> URL {
         guard !rule.sourceSignalIds.isEmpty else {
@@ -212,24 +221,23 @@ public struct PreferenceMemoryStore {
         try writeJSON(rule, to: fileURL)
         try refreshRuleIndexes(previousRule: previousRule, newRule: rule)
 
-        let action: PreferenceMemoryAuditAction
-        if let previousRule, previousRule.activationStatus != rule.activationStatus {
-            action = .ruleStatusChanged
-        } else {
-            action = .ruleStored
-        }
-
-        try appendAuditEntry(
-            PreferenceMemoryAuditEntry(
+        try auditLogStore.append(
+            PreferenceAuditLogEntry(
                 auditId: "audit-rule-\(UUID().uuidString)",
-                action: action,
+                action: auditAction(
+                    previousRule: previousRule,
+                    newRule: rule,
+                    auditContext: auditContext
+                ),
                 timestamp: rule.updatedAt,
                 actor: actor,
+                source: auditContext.source,
                 signalIds: rule.sourceSignalIds,
                 ruleId: rule.ruleId,
+                relatedProfileVersion: auditContext.relatedProfileVersion,
                 previousActivationStatus: previousRule?.activationStatus,
                 newActivationStatus: rule.activationStatus,
-                relatedRuleId: rule.supersededByRuleId,
+                relatedRuleId: auditContext.relatedRuleId ?? rule.supersededByRuleId,
                 note: note
             )
         )
@@ -241,6 +249,7 @@ public struct PreferenceMemoryStore {
     public func storeProfileSnapshot(
         _ snapshot: PreferenceProfileSnapshot,
         actor: String = "system",
+        auditContext: PreferenceProfileAuditContext = .builder(),
         note: String? = nil
     ) throws -> URL {
         guard snapshot.profile.profileVersion == snapshot.profileVersion else {
@@ -260,14 +269,16 @@ public struct PreferenceMemoryStore {
             ),
             to: latestProfilePointerURL
         )
-        try appendAuditEntry(
-            PreferenceMemoryAuditEntry(
+        try auditLogStore.append(
+            PreferenceAuditLogEntry(
                 auditId: "audit-profile-\(UUID().uuidString)",
-                action: .profileStored,
+                action: .profileSnapshotStored,
                 timestamp: snapshot.createdAt,
                 actor: actor,
+                source: auditContext.source,
                 signalIds: [],
                 profileVersion: snapshot.profileVersion,
+                relatedProfileVersion: auditContext.relatedProfileVersion ?? snapshot.previousProfileVersion,
                 note: note ?? snapshot.note
             )
         )
@@ -358,23 +369,14 @@ public struct PreferenceMemoryStore {
         }
     }
 
-    public func loadAuditEntries(on date: String? = nil) throws -> [PreferenceMemoryAuditEntry] {
-        let urls: [URL]
-        if let date {
-            let fileURL = auditFileURL(for: date)
-            urls = fileManager.fileExists(atPath: fileURL.path) ? [fileURL] : []
-        } else {
-            urls = try allAuditFileURLs()
-        }
+    public func loadAuditEntries(on date: String? = nil) throws -> [PreferenceAuditLogEntry] {
+        try auditLogStore.loadEntries(matching: PreferenceAuditLogQuery(date: date))
+    }
 
-        return try urls
-            .sorted(by: { $0.lastPathComponent < $1.lastPathComponent })
-            .flatMap { url in
-                try readJSONLines(PreferenceMemoryAuditEntry.self, from: url)
-            }
-            .sorted {
-                ($0.timestamp, $0.auditId) < ($1.timestamp, $1.auditId)
-            }
+    public func loadAuditEntries(
+        matching query: PreferenceAuditLogQuery
+    ) throws -> [PreferenceAuditLogEntry] {
+        try auditLogStore.loadEntries(matching: query)
     }
 
     @discardableResult
@@ -393,7 +395,15 @@ public struct PreferenceMemoryStore {
             updatedAt: timestamp,
             lifecycleReason: reason
         )
-        try storeRule(updatedRule, actor: actor, note: reason)
+        try storeRule(
+            updatedRule,
+            actor: actor,
+            auditContext: PreferenceRuleAuditContext(
+                action: .ruleRevoked,
+                source: .teacherAction(referenceId: ruleId, summary: reason)
+            ),
+            note: reason
+        )
         return updatedRule
     }
 
@@ -415,7 +425,16 @@ public struct PreferenceMemoryStore {
             supersededByRuleId: supersededByRuleId,
             lifecycleReason: reason
         )
-        try storeRule(updatedRule, actor: actor, note: reason)
+        try storeRule(
+            updatedRule,
+            actor: actor,
+            auditContext: PreferenceRuleAuditContext(
+                action: .ruleSuperseded,
+                source: .teacherAction(referenceId: ruleId, summary: reason),
+                relatedRuleId: supersededByRuleId
+            ),
+            note: reason
+        )
         return updatedRule
     }
 
@@ -646,17 +665,6 @@ public struct PreferenceMemoryStore {
         return try readJSON(PreferenceRuleIndexDocument.self, from: url)
     }
 
-    private func auditFileURL(for timestampOrDate: String) -> URL {
-        let dateKey = Self.dateKey(from: timestampOrDate)
-        return auditRootDirectory.appendingPathComponent("\(dateKey).jsonl", isDirectory: false)
-    }
-
-    private func appendAuditEntry(_ entry: PreferenceMemoryAuditEntry) throws {
-        let fileURL = auditFileURL(for: entry.timestamp)
-        try ensureDirectory(fileURL.deletingLastPathComponent())
-        try appendJSONLine(entry, to: fileURL)
-    }
-
     private func allRuleFileURLs() throws -> [URL] {
         guard fileManager.fileExists(atPath: rulesRootDirectory.path) else {
             return []
@@ -683,49 +691,10 @@ public struct PreferenceMemoryStore {
             }
     }
 
-    private func allAuditFileURLs() throws -> [URL] {
-        guard fileManager.fileExists(atPath: auditRootDirectory.path) else {
-            return []
-        }
-
-        return try fileManager.contentsOfDirectory(at: auditRootDirectory, includingPropertiesForKeys: nil)
-            .filter { $0.pathExtension == "jsonl" }
-    }
-
     private func writeJSON<T: Encodable>(_ value: T, to fileURL: URL) throws {
         do {
             let data = try prettyEncoder.encode(value)
             try data.write(to: fileURL, options: .atomic)
-        } catch {
-            throw PreferenceMemoryStoreError.writeFailed(path: fileURL.path, underlying: error)
-        }
-    }
-
-    private func appendJSONLine<T: Encodable>(_ value: T, to fileURL: URL) throws {
-        let lineData: Data
-        do {
-            lineData = try lineEncoder.encode(value) + Data([0x0A])
-        } catch {
-            throw PreferenceMemoryStoreError.encodeFailed(underlying: error)
-        }
-
-        if !fileManager.fileExists(atPath: fileURL.path) {
-            let created = fileManager.createFile(atPath: fileURL.path, contents: nil)
-            guard created else {
-                throw PreferenceMemoryStoreError.createFileFailed(path: fileURL.path)
-            }
-        }
-
-        guard let handle = try? FileHandle(forWritingTo: fileURL) else {
-            throw PreferenceMemoryStoreError.openFileFailed(path: fileURL.path)
-        }
-        defer {
-            try? handle.close()
-        }
-
-        do {
-            try handle.seekToEnd()
-            try handle.write(contentsOf: lineData)
         } catch {
             throw PreferenceMemoryStoreError.writeFailed(path: fileURL.path, underlying: error)
         }
@@ -754,20 +723,6 @@ public struct PreferenceMemoryStore {
         do {
             let data = try Data(contentsOf: fileURL)
             return try decoder.decode(type, from: data)
-        } catch {
-            throw PreferenceMemoryStoreError.decodeFailed(path: fileURL.path, underlying: error)
-        }
-    }
-
-    private func readJSONLines<T: Decodable>(_ type: T.Type, from fileURL: URL) throws -> [T] {
-        do {
-            let content = try String(contentsOf: fileURL, encoding: .utf8)
-            return try content
-                .split(whereSeparator: \.isNewline)
-                .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-                .map { line in
-                    try decoder.decode(type, from: Data(line.utf8))
-                }
         } catch {
             throw PreferenceMemoryStoreError.decodeFailed(path: fileURL.path, underlying: error)
         }
@@ -802,6 +757,36 @@ public struct PreferenceMemoryStore {
         let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "._-%"))
         return raw.addingPercentEncoding(withAllowedCharacters: allowed)
             ?? raw.replacingOccurrences(of: "/", with: "%2F")
+    }
+
+    private func auditAction(
+        previousRule: PreferenceRule?,
+        newRule: PreferenceRule,
+        auditContext: PreferenceRuleAuditContext
+    ) -> PreferenceAuditLogAction {
+        if let action = auditContext.action {
+            return action
+        }
+
+        if auditContext.source.kind == .rollbackService {
+            return .ruleRolledBack
+        }
+
+        guard let previousRule else {
+            return auditContext.source.kind == .rulePromotion ? .rulePromoted : .ruleCreated
+        }
+
+        if previousRule.activationStatus != .superseded,
+           newRule.activationStatus == .superseded {
+            return .ruleSuperseded
+        }
+
+        if previousRule.activationStatus != .revoked,
+           newRule.activationStatus == .revoked {
+            return .ruleRevoked
+        }
+
+        return .ruleUpdated
     }
 
 }

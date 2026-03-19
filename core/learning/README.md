@@ -21,6 +21,7 @@
 - `PreferenceRulePromoter`：把默认作用域白名单、风险分级阈值与 teacherConfirmed 门槛固化成可运行的规则晋升器。
 - `PreferencePromotionPolicy`：统一承载风险分级、局部 scope、规则过期窗口、自动执行限制与 conflict priority，并作为 promoter / resolver 的共享事实源。
 - `PreferenceConflictResolver`：为同组规则提供统一排序和“为何 A 覆盖 B”的结构化解释。
+- `PreferenceRollbackService`：把“撤销单条规则”和“回滚到历史 profile snapshot”统一收口成 `preview -> apply` 两阶段，并在 apply 后重建最新 profile。
 - `RuleBasedPreferenceSignalExtractor`：规则优先的 v0 提炼器，从 teacher review、replay、drift、benchmark、safety block 中生成基础 signal。
 - `PreferenceMemoryStore`：负责把 signals / rules / profiles / audit 落到 `data/preferences`，并维护最小查询索引。
 - `DirectiveHintBuilder`：把已接受的 directive signal 扇出成 `assist / skill mapper / repair planner / review suggestion` 可直接消费的 `DirectiveHint`。
@@ -37,6 +38,7 @@
 - `data/preferences/rules/{ruleId}.json`
 - `data/preferences/profiles/{profileVersion}.json`
 - `data/preferences/audit/{date}.jsonl`
+- `OpenStaffPreferenceProfileCLI --audit / --rollback-*`：偏好审计与回滚的第一版管理入口。
 - `data/preferences/extractions/{date}/{sessionId}/{turnId}--{evidenceId}.json`
 - `data/preferences/needs-review/{date}/{sessionId}/{turnId}--{evidenceId}.json`
 - `PreferenceRule`、`PreferenceProfile` 与 audit 统一挂在 `data/preferences` 下，不再散落到 `core/orchestrator`。

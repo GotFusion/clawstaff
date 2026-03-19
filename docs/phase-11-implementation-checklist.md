@@ -533,27 +533,29 @@
 - [x] 治理规则可配置，不硬编码在多个模块
 
 ### TODO 11.6.2 实现偏好审计日志
-- [ ] 记录规则创建、晋升、覆盖、撤销、回滚
-- [ ] 为每条操作保留操作者与来源
+- [x] 记录规则创建、晋升、覆盖、撤销、回滚
+- [x] 为每条操作保留操作者与来源
 
 **输出物**
 - `core/storage/PreferenceAuditLogStore.swift`
 - `data/preferences/audit/`
+- `apps/macos/Sources/OpenStaffPreferenceProfileCLI/OpenStaffPreferenceProfileCLI.swift`
 
 **验收标准**
-- [ ] 任意规则都能看见完整生命周期
+- [x] 任意规则都能看见完整生命周期
 
 ### TODO 11.6.3 实现偏好回滚
-- [ ] 支持撤销单条规则
-- [ ] 支持回滚到某个 profile snapshot
-- [ ] 支持 dry-run 查看回滚影响
+- [x] 支持撤销单条规则
+- [x] 支持回滚到某个 profile snapshot
+- [x] 支持 dry-run 查看回滚影响
 
 **输出物**
 - `core/learning/PreferenceRollbackService.swift`
+- `apps/macos/Sources/OpenStaffPreferenceProfileCLI/OpenStaffPreferenceProfileCLI.swift`
 - `apps/macos/Sources/OpenStaffApp/*`
 
 **验收标准**
-- [ ] 回滚后策略装配结果可复现变化
+- [x] 回滚后策略装配结果可复现变化
 
 ### TODO 11.6.4 实现偏好漂移监控
 - [ ] 检测长期不命中规则

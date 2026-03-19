@@ -20,8 +20,12 @@
 - `PreferenceMemoryStore.swift`：偏好记忆事实源与索引层：
   - 写入 `data/preferences/signals/{date}/{sessionId}/{turnId}.json`
   - 写入 `data/preferences/rules/{ruleId}.json`、`data/preferences/profiles/{profileVersion}.json`
-  - 追加 `data/preferences/audit/{date}.jsonl`
+  - 通过 `PreferenceAuditLogStore` 追加 `data/preferences/audit/{date}.jsonl`
   - 维护 `signals/index/by-id` 与 `rules/index/{global,by-app,by-task-family,by-skill-family}`，支持按作用域快速查询与规则回滚追溯
+- `PreferenceAuditLogStore.swift`：偏好生命周期审计层：
+  - 写入 `ruleCreated / rulePromoted / ruleSuperseded / ruleRevoked / ruleRolledBack / rollbackApplied`
+  - 每条审计日志固定带 `actor`、`source.kind/referenceId/summary` 与关联 `ruleId / profileVersion / signalIds`
+  - 支持按 `date / ruleId / profileVersion` 过滤查看完整生命周期
 - `PolicyAssemblyDecisionStore.swift`：偏好装配解释日志：
   - 默认挂在 `OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG=1` feature flag 后
   - 写入 `data/preferences/assembly/{date}/{module}/{sessionId}/{decisionId}.json`

@@ -1298,6 +1298,8 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.6.2 落地偏好审计与回滚
 
+状态：已完成（2026-03-19，含单条规则撤销、snapshot rollback 与 dry-run）
+
 - 审计日志至少记录：
   - 哪条规则何时创建
   - 来自哪些 signal / evidence
@@ -1306,10 +1308,17 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 **输出物**
 - `core/storage/PreferenceAuditLogStore.swift`
-- `apps/macos/Sources/OpenStaffApp/*`
+- `core/learning/PreferenceRollbackService.swift`
+- `apps/macos/Sources/OpenStaffPreferenceProfileCLI/OpenStaffPreferenceProfileCLI.swift`
 
 **验收标准**
-- [ ] 任意已生效规则都能回滚并重建 profile。
+- [x] 任意已生效规则都能回滚并重建 profile。
+
+本次落地说明：
+- 新增 `core/storage/PreferenceAuditLogStore.swift`，把 `ruleCreated / rulePromoted / ruleSuperseded / ruleRevoked / ruleRolledBack / rollbackApplied` 等生命周期事件统一写入 `data/preferences/audit/{date}.jsonl`，每条日志都固定带 `actor`、`source.kind/referenceId/summary`、关联 `ruleId / profileVersion / signalIds`，可按规则或 profile 过滤查看完整链路。
+- `PreferenceMemoryStore` 已改为统一依赖 `PreferenceAuditLogStore`；规则创建、信号入库、profile snapshot 持久化、supersede / revoke 都会写入新审计格式，因此不再只有模糊的 `ruleStatusChanged`，而是能明确区分“创建、覆盖、撤销、回滚”等语义动作。
+- 新增 `core/learning/PreferenceRollbackService.swift`，把“撤销单条规则”和“回滚到某个 profile snapshot”统一抽象为 `preview -> apply` 两阶段；dry-run 会返回 `impactedRuleIds / missingRuleIds / projectedSnapshot / moduleSummaries`，apply 会真正改写规则状态并重建最新 profile。
+- `OpenStaffPreferenceProfileCLI` 已扩展 `--audit`、`--rollback-rule`、`--rollback-profile-version`、`--dry-run` 与 `--persist`，现在可以直接在 CLI 里查看规则完整生命周期、预览回滚影响，或把最新 profile 回滚到历史快照。
 
 #### TODO 11.6.3 落地偏好漂移监控
 
