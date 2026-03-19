@@ -1218,7 +1218,7 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.5.2 固化 v0 指标与门槛
 
-- 第一版建议指标：
+- 第一版指标：
   - `preference-match-rate`
   - `assist-acceptance-rate`
   - `repair-path-hit-rate`
@@ -1227,7 +1227,7 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
   - `quick-feedback-completion-rate`
   - `median-feedback-latency-seconds`
   - `capture-policy-violation-count`
-- 第一版建议门槛：
+- 第一版门槛：
   - `preference-match-rate >= 0.70`
   - `repair-path-hit-rate >= 0.60`
   - `unsafe-auto-execution-regression = 0`
@@ -1239,9 +1239,17 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 **输出物**
 - `docs/metrics/preference-learning-metrics.md`
 - `scripts/benchmarks/aggregate_preference_metrics.py`
+- `data/benchmarks/personal-preference/metrics-v0.json`
+- `data/benchmarks/personal-preference/metrics-summary.json`
 
 **验收标准**
-- [ ] 指标可稳定比较不同版本的偏好学习效果。
+- [x] 指标可稳定比较不同版本的偏好学习效果。
+
+本次落地说明：
+- 新增 `scripts/benchmarks/aggregate_preference_metrics.py`，可从 `manifest.json + catalog.json + generated/*/case-report.json` 聚合 `preferenceMatchRate / assistAcceptanceRate / repairPathHitRate / teacherOverrideRate / unsafeAutoExecutionRegression / quickFeedbackCompletionRate / medianFeedbackLatencySeconds / capturePolicyViolationCount` 八项 v0 指标。
+- 新增 `data/benchmarks/personal-preference/metrics-v0.json`，冻结 baseline、Quick Feedback 支持动作、批准的 benchmark source root 与 v0 gate 配置。
+- `run_personal_preference_benchmark.py` 现会为每条 case 记录 `moduleExecutionDurationSeconds`，并在写出 `manifest.json` 后自动生成 `metrics-summary.json`。
+- `docs/metrics/preference-learning-metrics.md` 明确了各指标口径；其中 `assistAcceptanceRate` 与 `teacherOverrideRate` 被显式标记为 benchmark proxy，避免与线上真实老师行为遥测混淆。
 
 ---
 

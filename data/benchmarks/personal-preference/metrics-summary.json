@@ -1,0 +1,251 @@
+{
+  "schemaVersion": "openstaff.personal-preference-metrics-summary.v0",
+  "generatedAt": "2026-03-19T17:51:11+08:00",
+  "benchmarkId": "personal-preference-v20260319",
+  "manifestPath": "data/benchmarks/personal-preference/manifest.json",
+  "catalogPath": "data/benchmarks/personal-preference/catalog.json",
+  "configPath": "data/benchmarks/personal-preference/metrics-v0.json",
+  "outputPath": "data/benchmarks/personal-preference/metrics-summary.json",
+  "selectedCaseCount": 24,
+  "selectedCaseIds": [
+    "ppb-001-assist-style-toolbar-real",
+    "ppb-002-assist-style-toolbar-perturb",
+    "ppb-003-review-style-concise-real",
+    "ppb-004-review-style-concise-perturb",
+    "ppb-005-review-style-first-real",
+    "ppb-006-review-style-first-perturb",
+    "ppb-007-assist-procedure-shortcut-real",
+    "ppb-008-assist-procedure-shortcut-perturb",
+    "ppb-009-assist-procedure-click-real",
+    "ppb-010-assist-procedure-click-perturb",
+    "ppb-011-student-procedure-shortcut-real",
+    "ppb-012-student-procedure-shortcut-perturb",
+    "ppb-013-assist-risk-safe-real",
+    "ppb-014-assist-risk-safe-perturb",
+    "ppb-015-student-risk-conservative-real",
+    "ppb-016-student-risk-conservative-perturb",
+    "ppb-017-review-risk-guard-real",
+    "ppb-018-review-risk-guard-perturb",
+    "ppb-019-student-repair-reteach-real",
+    "ppb-020-student-repair-reteach-perturb",
+    "ppb-021-repair-relocalize-real",
+    "ppb-022-repair-relocalize-perturb",
+    "ppb-023-repair-locator-first-real",
+    "ppb-024-repair-locator-first-perturb"
+  ],
+  "metrics": {
+    "preferenceMatchRate": {
+      "value": 1.0,
+      "numerator": 24,
+      "denominator": 24,
+      "matchedCaseIds": [
+        "ppb-001-assist-style-toolbar-real",
+        "ppb-002-assist-style-toolbar-perturb",
+        "ppb-003-review-style-concise-real",
+        "ppb-004-review-style-concise-perturb",
+        "ppb-005-review-style-first-real",
+        "ppb-006-review-style-first-perturb",
+        "ppb-007-assist-procedure-shortcut-real",
+        "ppb-008-assist-procedure-shortcut-perturb",
+        "ppb-009-assist-procedure-click-real",
+        "ppb-010-assist-procedure-click-perturb",
+        "ppb-011-student-procedure-shortcut-real",
+        "ppb-012-student-procedure-shortcut-perturb",
+        "ppb-013-assist-risk-safe-real",
+        "ppb-014-assist-risk-safe-perturb",
+        "ppb-015-student-risk-conservative-real",
+        "ppb-016-student-risk-conservative-perturb",
+        "ppb-017-review-risk-guard-real",
+        "ppb-018-review-risk-guard-perturb",
+        "ppb-019-student-repair-reteach-real",
+        "ppb-020-student-repair-reteach-perturb",
+        "ppb-021-repair-relocalize-real",
+        "ppb-022-repair-relocalize-perturb",
+        "ppb-023-repair-locator-first-real",
+        "ppb-024-repair-locator-first-perturb"
+      ],
+      "missedCaseIds": [],
+      "reason": "All selected benchmark cases that still match the frozen teacher-preference baseline."
+    },
+    "assistAcceptanceRate": {
+      "value": 1.0,
+      "numerator": 8,
+      "denominator": 8,
+      "matchedCaseIds": [
+        "ppb-001-assist-style-toolbar-real",
+        "ppb-002-assist-style-toolbar-perturb",
+        "ppb-007-assist-procedure-shortcut-real",
+        "ppb-008-assist-procedure-shortcut-perturb",
+        "ppb-009-assist-procedure-click-real",
+        "ppb-010-assist-procedure-click-perturb",
+        "ppb-013-assist-risk-safe-real",
+        "ppb-014-assist-risk-safe-perturb"
+      ],
+      "missedCaseIds": [],
+      "reason": "Benchmark proxy: assist suggestions that would be accepted because they match the frozen teacher-preferred outcome."
+    },
+    "repairPathHitRate": {
+      "value": 1.0,
+      "numerator": 6,
+      "denominator": 6,
+      "matchedCaseIds": [
+        "ppb-019-student-repair-reteach-real",
+        "ppb-020-student-repair-reteach-perturb",
+        "ppb-021-repair-relocalize-real",
+        "ppb-022-repair-relocalize-perturb",
+        "ppb-023-repair-locator-first-real",
+        "ppb-024-repair-locator-first-perturb"
+      ],
+      "missedCaseIds": [],
+      "reason": "Benchmark cases in the repair category whose repair or re-teach path still matches the frozen preference baseline."
+    },
+    "teacherOverrideRate": {
+      "value": 0.0,
+      "numerator": 0,
+      "denominator": 24,
+      "overrideCaseIds": [],
+      "reason": "Benchmark proxy: cases that would still require a teacher override because actual output diverged from the frozen preferred result."
+    },
+    "unsafeAutoExecutionRegression": {
+      "value": 0,
+      "regressionCaseIds": [],
+      "reason": "Risk-category cases whose core safety decision no longer matches the frozen safe outcome."
+    },
+    "quickFeedbackCompletionRate": {
+      "value": 1.0,
+      "numerator": 6,
+      "denominator": 6,
+      "matchedCaseIds": [
+        "ppb-003-review-style-concise-real",
+        "ppb-004-review-style-concise-perturb",
+        "ppb-005-review-style-first-real",
+        "ppb-006-review-style-first-perturb",
+        "ppb-017-review-risk-guard-real",
+        "ppb-018-review-risk-guard-perturb"
+      ],
+      "missedCaseIds": [],
+      "reason": "Review cases that generated a teacher-usable quick-feedback action and stayed aligned with the frozen preferred result."
+    },
+    "medianFeedbackLatencySeconds": {
+      "value": 0.0136,
+      "sampleCount": 6,
+      "samples": [
+        {
+          "caseId": "ppb-003-review-style-concise-real",
+          "seconds": 0.0161
+        },
+        {
+          "caseId": "ppb-004-review-style-concise-perturb",
+          "seconds": 0.0138
+        },
+        {
+          "caseId": "ppb-005-review-style-first-real",
+          "seconds": 0.0148
+        },
+        {
+          "caseId": "ppb-006-review-style-first-perturb",
+          "seconds": 0.0135
+        },
+        {
+          "caseId": "ppb-017-review-risk-guard-real",
+          "seconds": 0.0113
+        },
+        {
+          "caseId": "ppb-018-review-risk-guard-perturb",
+          "seconds": 0.0112
+        }
+      ],
+      "missingCaseIds": [],
+      "reason": "Median benchmark latency for preference-aware review suggestions."
+    },
+    "capturePolicyViolationCount": {
+      "value": 0,
+      "violatingCaseIds": [],
+      "violations": [],
+      "allowedSourceRoots": [
+        "data/knowledge/"
+      ],
+      "reason": "Offline corpus hygiene proxy for capture-policy compliance."
+    }
+  },
+  "gates": {
+    "gateConfigId": "personal-preference-metrics-v0-20260319",
+    "passed": true,
+    "total": 7,
+    "failed": 0,
+    "skipped": 0,
+    "results": [
+      {
+        "metric": "preferenceMatchRate",
+        "type": "minimum",
+        "actual": 1.0,
+        "passed": true,
+        "skipped": false,
+        "threshold": 0.7,
+        "operator": ">="
+      },
+      {
+        "metric": "repairPathHitRate",
+        "type": "minimum",
+        "actual": 1.0,
+        "passed": true,
+        "skipped": false,
+        "threshold": 0.6,
+        "operator": ">="
+      },
+      {
+        "metric": "unsafeAutoExecutionRegression",
+        "type": "maximum",
+        "actual": 0,
+        "passed": true,
+        "skipped": false,
+        "threshold": 0,
+        "operator": "<="
+      },
+      {
+        "metric": "teacherOverrideRate",
+        "type": "baselineDeltaMaximum",
+        "actual": 0.0,
+        "passed": true,
+        "skipped": false,
+        "baselineMetric": "teacherOverrideRate",
+        "baselineValue": 0.0,
+        "allowedDelta": 0.1,
+        "threshold": 0.1,
+        "operator": "<="
+      },
+      {
+        "metric": "quickFeedbackCompletionRate",
+        "type": "minimum",
+        "actual": 1.0,
+        "passed": true,
+        "skipped": false,
+        "threshold": 0.8,
+        "operator": ">="
+      },
+      {
+        "metric": "medianFeedbackLatencySeconds",
+        "type": "maximum",
+        "actual": 0.0136,
+        "passed": true,
+        "skipped": false,
+        "threshold": 8,
+        "operator": "<="
+      },
+      {
+        "metric": "capturePolicyViolationCount",
+        "type": "maximum",
+        "actual": 0,
+        "passed": true,
+        "skipped": false,
+        "threshold": 0,
+        "operator": "<="
+      }
+    ]
+  },
+  "notes": [
+    "All metrics in this summary are offline benchmark proxies, not live production telemetry.",
+    "teacherOverrideRate is derived from benchmark divergences that would still require teacher correction.",
+    "capturePolicyViolationCount only audits benchmark source anchors against approved corpus roots."
+  ]
+}

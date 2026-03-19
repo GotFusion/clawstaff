@@ -1,8 +1,9 @@
 {
   "schemaVersion": "openstaff.personal-preference-benchmark.manifest.v0",
   "benchmarkId": "personal-preference-v20260319",
-  "generatedAt": "2026-03-19T17:26:00+08:00",
+  "generatedAt": "2026-03-19T17:51:11+08:00",
   "catalogPath": "data/benchmarks/personal-preference/catalog.json",
+  "metricsSummaryPath": "data/benchmarks/personal-preference/metrics-summary.json",
   "totalCases": 24,
   "passedCases": 24,
   "failedCases": [],
@@ -62,7 +63,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:25:59+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0149
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -92,7 +96,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:25:59+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0125
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -120,7 +127,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:25:59+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0161
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -148,7 +158,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:25:59+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0138
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -174,7 +187,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0148
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -200,7 +216,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0135
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -230,7 +249,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0107
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -260,7 +282,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0107
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -290,7 +315,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0109
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -320,7 +348,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0109
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -353,7 +384,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.014
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -386,7 +420,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0113
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -416,7 +453,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0104
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -446,7 +486,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0109
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -479,7 +522,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0114
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -512,7 +558,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0114
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -533,7 +582,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0113
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -554,7 +606,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0112
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -587,7 +642,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0108
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -620,7 +678,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0104
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -648,7 +709,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.01
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -676,7 +740,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0069
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -704,7 +771,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.0069
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     },
     {
       "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
@@ -732,7 +802,10 @@
       },
       "passed": true,
       "mismatches": [],
-      "generatedAt": "2026-03-19T17:26:00+08:00"
+      "measurements": {
+        "moduleExecutionDurationSeconds": 0.007
+      },
+      "generatedAt": "2026-03-19T17:51:11+08:00"
     }
   ]
 }

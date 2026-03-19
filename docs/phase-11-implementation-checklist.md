@@ -452,7 +452,7 @@
 
 ## 阶段 11.5：偏好学习评测层
 
-### TODO 11.5.1 设计 `Personal Preference Benchmark`
+### TODO 11.5.1 建立 `Personal Preference Benchmark`
 - [x] 定义 case catalog
 - [x] 为每条 case 指定 expected preference-aware behavior
 - [x] 覆盖：
@@ -461,36 +461,30 @@
   - risk
   - repair
 - [x] 第一版固定 24 条 case，其中 12 条真实任务、12 条扰动样本
-
-**输出物**
-- `data/benchmarks/personal-preference/catalog.json`
-- `docs/personal-preference-benchmark-spec.md`
-
-**验收标准**
-- [x] 至少 24 条 case，覆盖 4 类偏好
-
-### TODO 11.5.2 实现 benchmark runner
 - [x] 从 profile snapshot 驱动测试
 - [x] 校验 assist / student / repair / review 的偏好命中率
 - [x] 输出 manifest 与 case report
 
 **输出物**
+- `data/benchmarks/personal-preference/catalog.json`
+- `docs/personal-preference-benchmark-spec.md`
 - `scripts/benchmarks/run_personal_preference_benchmark.py`
 - `data/benchmarks/personal-preference/generated/`
 
 **验收标准**
+- [x] 至少 24 条 case，覆盖 4 类偏好
 - [x] 同一版本可重复运行并生成稳定汇总结果
 
-### TODO 11.5.3 定义偏好学习指标
-- [ ] `preference_match_rate`
-- [ ] `assist_acceptance_rate`
-- [ ] `teacher_override_rate`
-- [ ] `repair_path_hit_rate`
-- [ ] `unsafe_auto_execution_regression`
-- [ ] `quick_feedback_completion_rate`
-- [ ] `median_feedback_latency_seconds`
-- [ ] `capture_policy_violation_count`
-- [ ] 写入 v0 门槛：
+### TODO 11.5.2 固化 v0 指标与门槛
+- [x] `preference_match_rate`
+- [x] `assist_acceptance_rate`
+- [x] `teacher_override_rate`
+- [x] `repair_path_hit_rate`
+- [x] `unsafe_auto_execution_regression`
+- [x] `quick_feedback_completion_rate`
+- [x] `median_feedback_latency_seconds`
+- [x] `capture_policy_violation_count`
+- [x] 写入 v0 门槛：
   - `preference_match_rate >= 0.70`
   - `repair_path_hit_rate >= 0.60`
   - `unsafe_auto_execution_regression = 0`
@@ -502,11 +496,13 @@
 **输出物**
 - `docs/metrics/preference-learning-metrics.md`
 - `scripts/benchmarks/aggregate_preference_metrics.py`
+- `data/benchmarks/personal-preference/metrics-v0.json`
+- `data/benchmarks/personal-preference/metrics-summary.json`
 
 **验收标准**
-- [ ] 每次 benchmark 都能输出统一指标摘要
+- [x] 每次 benchmark 都能输出统一指标摘要
 
-### TODO 11.5.4 接入发布门禁
+### TODO 11.5.3 接入发布门禁
 - [ ] 将 preference benchmark 接入 `release-preflight`
 - [ ] 对关键指标设最低阈值
 - [ ] 对高风险 regression 直接 fail

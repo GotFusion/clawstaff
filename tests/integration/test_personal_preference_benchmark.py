@@ -9,6 +9,7 @@ import unittest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUNNER = REPO_ROOT / "scripts/benchmarks/run_personal_preference_benchmark.py"
+METRICS_RUNNER = REPO_ROOT / "scripts/benchmarks/aggregate_preference_metrics.py"
 CATALOG = REPO_ROOT / "data/benchmarks/personal-preference/catalog.json"
 ASSIST_EXECUTABLE = REPO_ROOT / "apps/macos/.build/debug/OpenStaffAssistCLI"
 STUDENT_EXECUTABLE = REPO_ROOT / "apps/macos/.build/debug/OpenStaffStudentCLI"
@@ -44,6 +45,7 @@ class PersonalPreferenceBenchmarkIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             benchmark_root = Path(tmpdir) / "benchmark"
             manifest_path = benchmark_root / "manifest.json"
+            metrics_path = benchmark_root / "metrics-summary.json"
             command = [
                 sys.executable,
                 str(RUNNER),
@@ -73,25 +75,58 @@ class PersonalPreferenceBenchmarkIntegrationTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, msg=result.stderr or result.stdout)
             self.assertTrue(manifest_path.exists())
+            self.assertTrue(metrics_path.exists())
 
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             self.assertEqual(manifest["totalCases"], 4)
             self.assertEqual(manifest["passedCases"], 4)
             self.assertEqual(len(manifest["failedCases"]), 0)
             self.assertEqual(manifest["metrics"]["preferenceMatchRate"], 1.0)
+            self.assertTrue(manifest["metricsSummaryPath"].endswith("metrics-summary.json"))
             self.assertEqual(
                 manifest["metrics"]["caseCountByModule"],
                 {"assist": 1, "repair": 1, "review": 1, "student": 1},
             )
 
+            metrics_summary = json.loads(metrics_path.read_text(encoding="utf-8"))
+            self.assertTrue(metrics_summary["gates"]["passed"])
+            self.assertEqual(metrics_summary["metrics"]["preferenceMatchRate"]["value"], 1.0)
+            self.assertEqual(metrics_summary["metrics"]["assistAcceptanceRate"]["value"], 1.0)
+            self.assertEqual(metrics_summary["metrics"]["repairPathHitRate"]["value"], 1.0)
+            self.assertEqual(metrics_summary["metrics"]["teacherOverrideRate"]["value"], 0.0)
+            self.assertEqual(metrics_summary["metrics"]["quickFeedbackCompletionRate"]["value"], 1.0)
+
             for case in manifest["cases"]:
                 self.assertTrue(case["passed"])
+                self.assertIn("measurements", case)
+                self.assertGreaterEqual(case["measurements"]["moduleExecutionDurationSeconds"], 0)
                 case_dir = benchmark_root / "generated" / case["caseId"]
                 self.assertTrue((case_dir / "source-record.json").exists())
                 self.assertTrue((case_dir / "profile-snapshot.json").exists())
                 self.assertTrue((case_dir / "module-result.json").exists())
                 self.assertTrue((case_dir / "review-result.json").exists())
                 self.assertTrue((case_dir / "case-report.json").exists())
+
+            recomputed_metrics_path = benchmark_root / "metrics-summary.recomputed.json"
+            recompute = self.run_cmd(
+                [
+                    sys.executable,
+                    str(METRICS_RUNNER),
+                    "--benchmark-root",
+                    str(benchmark_root),
+                    "--manifest",
+                    str(manifest_path),
+                    "--catalog",
+                    str(CATALOG),
+                    "--output",
+                    str(recomputed_metrics_path),
+                    "--check-gates",
+                ]
+            )
+            self.assertEqual(recompute.returncode, 0, msg=recompute.stderr or recompute.stdout)
+            recomputed = json.loads(recomputed_metrics_path.read_text(encoding="utf-8"))
+            self.assertEqual(recomputed["metrics"]["preferenceMatchRate"]["value"], 1.0)
+            self.assertEqual(recomputed["metrics"]["unsafeAutoExecutionRegression"]["value"], 0)
 
 
 if __name__ == "__main__":

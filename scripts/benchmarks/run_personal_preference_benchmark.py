@@ -11,6 +11,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
@@ -21,6 +22,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 PACKAGE_PATH = REPO_ROOT / "apps/macos"
 DEFAULT_BENCHMARK_ROOT = REPO_ROOT / "data/benchmarks/personal-preference"
 DEFAULT_CATALOG_PATH = DEFAULT_BENCHMARK_ROOT / "catalog.json"
+AGGREGATE_METRICS_SCRIPT = REPO_ROOT / "scripts/benchmarks/aggregate_preference_metrics.py"
 MANIFEST_SCHEMA_VERSION = "openstaff.personal-preference-benchmark.manifest.v0"
 CASE_REPORT_SCHEMA_VERSION = "openstaff.personal-preference-benchmark.case-report.v0"
 SOURCE_RECORD_SCHEMA_VERSION = "openstaff.personal-preference-benchmark.source-record.v0"
@@ -150,6 +152,17 @@ def run_command(
         text=True,
         check=False,
     )
+
+
+def run_timed_command(
+    command: list[str],
+    *,
+    env: dict[str, str] | None = None,
+    cwd: Path = REPO_ROOT,
+) -> tuple[subprocess.CompletedProcess[str], float]:
+    started = time.monotonic()
+    completed = run_command(command, env=env, cwd=cwd)
+    return completed, round(time.monotonic() - started, 4)
 
 
 def require_success(completed: subprocess.CompletedProcess[str], context: str) -> None:
@@ -441,7 +454,7 @@ def run_assist_case(
     case_dir: Path,
     profile_snapshot: dict[str, Any],
     executable: Path,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     fixture = case["fixture"]
     preferences_root = case_dir / "preferences"
     knowledge_root = case_dir / "knowledge"
@@ -489,7 +502,7 @@ def run_assist_case(
     for recent_step in fixture.get("recentSteps", []):
         command.extend(["--recent-step", recent_step])
 
-    completed = run_command(
+    completed, duration_seconds = run_timed_command(
         command,
         env={**os.environ, "OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG": "1"},
     )
@@ -500,13 +513,18 @@ def run_assist_case(
     suggestion = payload.get("suggestion") or {}
     action = suggestion.get("action") or {}
     decision = suggestion.get("preferenceDecision") or {}
-    return {
-        "finalStatus": payload.get("finalStatus"),
-        "selectedKnowledgeItemId": suggestion.get("knowledgeItemId"),
-        "predictorVersion": suggestion.get("predictorVersion"),
-        "actionInstruction": action.get("instruction"),
-        "appliedRuleIds": sorted(decision.get("appliedRuleIds") or []),
-    }
+    return (
+        {
+            "finalStatus": payload.get("finalStatus"),
+            "selectedKnowledgeItemId": suggestion.get("knowledgeItemId"),
+            "predictorVersion": suggestion.get("predictorVersion"),
+            "actionInstruction": action.get("instruction"),
+            "appliedRuleIds": sorted(decision.get("appliedRuleIds") or []),
+        },
+        {
+            "moduleExecutionDurationSeconds": duration_seconds,
+        },
+    )
 
 
 def run_student_case(
@@ -514,7 +532,7 @@ def run_student_case(
     case_dir: Path,
     profile_snapshot: dict[str, Any],
     executable: Path,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     fixture = case["fixture"]
     preferences_root = case_dir / "preferences"
     knowledge_root = case_dir / "knowledge"
@@ -553,7 +571,7 @@ def run_student_case(
     if fixture.get("preferredKnowledgeItemId"):
         command.extend(["--preferred-knowledge-item-id", fixture["preferredKnowledgeItemId"]])
 
-    completed = run_command(
+    completed, duration_seconds = run_timed_command(
         command,
         env={**os.environ, "OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG": "1"},
     )
@@ -563,15 +581,20 @@ def run_student_case(
 
     plan = payload.get("plan") or {}
     decision = plan.get("preferenceDecision") or {}
-    return {
-        "finalStatus": payload.get("finalStatus"),
-        "selectedKnowledgeItemId": plan.get("selectedKnowledgeItemId"),
-        "strategy": plan.get("strategy"),
-        "plannerVersion": plan.get("plannerVersion"),
-        "executionStyle": decision.get("executionStyle"),
-        "failureRecoveryPreference": decision.get("failureRecoveryPreference"),
-        "appliedRuleIds": sorted(decision.get("appliedRuleIds") or []),
-    }
+    return (
+        {
+            "finalStatus": payload.get("finalStatus"),
+            "selectedKnowledgeItemId": plan.get("selectedKnowledgeItemId"),
+            "strategy": plan.get("strategy"),
+            "plannerVersion": plan.get("plannerVersion"),
+            "executionStyle": decision.get("executionStyle"),
+            "failureRecoveryPreference": decision.get("failureRecoveryPreference"),
+            "appliedRuleIds": sorted(decision.get("appliedRuleIds") or []),
+        },
+        {
+            "moduleExecutionDurationSeconds": duration_seconds,
+        },
+    )
 
 
 def build_repair_skill_payload(fixture: dict[str, Any], profile_snapshot: dict[str, Any]) -> dict[str, Any]:
@@ -703,7 +726,7 @@ def run_repair_case(
     case_dir: Path,
     profile_snapshot: dict[str, Any],
     executable: Path,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     fixture = case["fixture"]
     preferences_root = case_dir / "preferences"
     skill_dir = case_dir / fixture["skillName"]
@@ -724,7 +747,7 @@ def run_repair_case(
         str(preferences_root),
         "--json",
     ]
-    completed = run_command(
+    completed, duration_seconds = run_timed_command(
         command,
         env={**os.environ, "OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG": "1"},
     )
@@ -737,12 +760,17 @@ def run_repair_case(
     preference_decision = repair_plan.get("preferenceDecision") or {}
     first_action = (repair_plan.get("actions") or [{}])[0]
     drift_report = payload.get("driftReport") or {}
-    return {
-        "driftStatus": drift_report.get("status"),
-        "dominantDriftKind": drift_report.get("dominantDriftKind"),
-        "selectedActionType": first_action.get("type"),
-        "appliedRuleIds": sorted(preference_decision.get("appliedRuleIds") or []),
-    }
+    return (
+        {
+            "driftStatus": drift_report.get("status"),
+            "dominantDriftKind": drift_report.get("dominantDriftKind"),
+            "selectedActionType": first_action.get("type"),
+            "appliedRuleIds": sorted(preference_decision.get("appliedRuleIds") or []),
+        },
+        {
+            "moduleExecutionDurationSeconds": duration_seconds,
+        },
+    )
 
 
 def build_review_scenario(
@@ -776,7 +804,7 @@ def run_review_case(
     case_dir: Path,
     profile_snapshot: dict[str, Any],
     executable: Path,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     scenario_path = case_dir / "review-scenario.json"
     write_json(scenario_path, build_review_scenario(case, profile_snapshot))
     command = [
@@ -785,16 +813,21 @@ def run_review_case(
         str(scenario_path),
         "--json",
     ]
-    completed = run_command(command)
+    completed, duration_seconds = run_timed_command(command)
     require_success(completed, f"review benchmark {case['caseId']}")
     payload = extract_last_json_object(completed.stdout)
     write_json(case_dir / "module-result.json", normalize_path_fields(payload))
     top = payload.get("topSuggestion") or {}
-    return {
-        "topAction": top.get("action"),
-        "suggestedNote": top.get("suggestedNote"),
-        "appliedRuleIds": sorted(top.get("appliedRuleIds") or []),
-    }
+    return (
+        {
+            "topAction": top.get("action"),
+            "suggestedNote": top.get("suggestedNote"),
+            "appliedRuleIds": sorted(top.get("appliedRuleIds") or []),
+        },
+        {
+            "moduleExecutionDurationSeconds": duration_seconds,
+        },
+    )
 
 
 def compare_expected(module: str, expected: dict[str, Any], actual: dict[str, Any]) -> tuple[bool, list[str]]:
@@ -864,13 +897,13 @@ def run_case(
     write_json(case_dir / "profile-snapshot.json", profile_snapshot)
 
     if case["module"] == "assist":
-        actual = run_assist_case(case, case_dir, profile_snapshot, executables["assist"])
+        actual, measurements = run_assist_case(case, case_dir, profile_snapshot, executables["assist"])
     elif case["module"] == "student":
-        actual = run_student_case(case, case_dir, profile_snapshot, executables["student"])
+        actual, measurements = run_student_case(case, case_dir, profile_snapshot, executables["student"])
     elif case["module"] == "repair":
-        actual = run_repair_case(case, case_dir, profile_snapshot, executables["repair"])
+        actual, measurements = run_repair_case(case, case_dir, profile_snapshot, executables["repair"])
     elif case["module"] == "review":
-        actual = run_review_case(case, case_dir, profile_snapshot, executables["review"])
+        actual, measurements = run_review_case(case, case_dir, profile_snapshot, executables["review"])
     else:
         raise BenchmarkError(f"Unsupported benchmark module: {case['module']}")
 
@@ -881,6 +914,7 @@ def run_case(
         "module": case["module"],
         "passed": passed,
         "mismatches": mismatches,
+        "measurements": measurements,
         "generatedAt": now_iso(),
     }
     case_report = {
@@ -895,6 +929,7 @@ def run_case(
         "actual": actual,
         "passed": passed,
         "mismatches": mismatches,
+        "measurements": measurements,
         "generatedAt": now_iso(),
     }
     write_json(case_dir / "review-result.json", review_result)
@@ -927,6 +962,34 @@ def aggregate_metrics(case_reports: list[dict[str, Any]]) -> dict[str, Any]:
         "caseCountByCategory": dict(sorted(by_category.items())),
         "caseCountByModule": dict(sorted(by_module.items())),
     }
+
+
+def aggregate_preference_metrics(
+    benchmark_root: Path,
+    *,
+    manifest_path: Path,
+    catalog_path: Path,
+) -> Path:
+    output_path = benchmark_root / "metrics-summary.json"
+    if not AGGREGATE_METRICS_SCRIPT.exists():
+        raise BenchmarkError(f"Missing metrics aggregation script: {AGGREGATE_METRICS_SCRIPT}")
+
+    completed = run_command(
+        [
+            sys.executable,
+            str(AGGREGATE_METRICS_SCRIPT),
+            "--benchmark-root",
+            str(benchmark_root),
+            "--manifest",
+            str(manifest_path),
+            "--catalog",
+            str(catalog_path),
+            "--output",
+            str(output_path),
+        ]
+    )
+    require_success(completed, "aggregate preference metrics")
+    return output_path
 
 
 def main() -> int:
@@ -966,11 +1029,13 @@ def main() -> int:
     ]
     failed_cases = [report["caseId"] for report in case_reports if not report["passed"]]
     metrics = aggregate_metrics(case_reports)
+    metrics_summary_path = benchmark_root / "metrics-summary.json"
     manifest = {
         "schemaVersion": MANIFEST_SCHEMA_VERSION,
         "benchmarkId": catalog.get("benchmarkId"),
         "generatedAt": now_iso(),
         "catalogPath": repo_relative(args.catalog.resolve()),
+        "metricsSummaryPath": repo_relative(metrics_summary_path),
         "totalCases": len(case_reports),
         "passedCases": len(case_reports) - len(failed_cases),
         "failedCases": failed_cases,
@@ -978,11 +1043,17 @@ def main() -> int:
         "cases": case_reports,
     }
     write_json(report_path, manifest)
+    aggregate_preference_metrics(
+        benchmark_root,
+        manifest_path=report_path,
+        catalog_path=args.catalog.resolve(),
+    )
 
     print(
         "Personal Preference Benchmark finished. "
         f"passed={manifest['passedCases']}/{manifest['totalCases']} "
-        f"report={report_path}"
+        f"report={report_path} "
+        f"metrics={metrics_summary_path}"
     )
     if failed_cases:
         for case_id in failed_cases:

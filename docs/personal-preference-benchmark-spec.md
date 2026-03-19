@@ -33,6 +33,7 @@ benchmark 不是在测“能不能执行”这一件事，而是在测 assist / 
   - `manifest.json` 冻结结果为 `24 / 24` 通过
   - `preferenceMatchRate = 1.0`
   - 四类偏好、四个模块的命中率当前均为 `1.0`
+  - `metrics-summary.json` 会额外冻结 `assistAcceptanceRate / repairPathHitRate / teacherOverrideRate / quickFeedbackCompletionRate / medianFeedbackLatencySeconds / capturePolicyViolationCount` 的 v0 汇总
 
 ## 目录结构
 
@@ -40,6 +41,10 @@ benchmark 不是在测“能不能执行”这一件事，而是在测 assist / 
   - 固定 case catalog、profile 定义、expected preference-aware behavior。
 - `data/benchmarks/personal-preference/manifest.json`
   - 最近一次完整 benchmark run 的汇总基线。
+- `data/benchmarks/personal-preference/metrics-v0.json`
+  - v0 baseline、Quick Feedback 动作集合、允许 source root 与门槛配置。
+- `data/benchmarks/personal-preference/metrics-summary.json`
+  - 最近一次 benchmark run 的 v0 指标摘要与 gate 结果。
 - `<benchmark-root>/generated/<caseId>/source-record.json`
   - case 的源锚点、catalog 哈希与可追溯信息。
 - `<benchmark-root>/generated/<caseId>/profile-snapshot.json`
@@ -52,6 +57,8 @@ benchmark 不是在测“能不能执行”这一件事，而是在测 assist / 
   - 单 case 汇总，供 manifest 聚合。
 
 默认 `benchmark-root` 为 `data/benchmarks/personal-preference/`。如果只是做 smoke test，建议显式传入临时目录，避免把 `generated/` 产物留在仓库工作区中。
+
+runner 在写出 `manifest.json` 后，会继续自动生成 `<benchmark-root>/metrics-summary.json`。
 
 ## Case 组成
 
@@ -98,6 +105,15 @@ python3 scripts/benchmarks/run_personal_preference_benchmark.py \
   --benchmark-root /tmp/openstaff-preference-benchmark
 ```
 
+只重算指标摘要时，可直接运行：
+
+```bash
+python3 scripts/benchmarks/aggregate_preference_metrics.py \
+  --benchmark-root /tmp/openstaff-preference-benchmark \
+  --manifest /tmp/openstaff-preference-benchmark/manifest.json \
+  --check-gates
+```
+
 runner 会按需自动构建所需 Swift CLI：
 
 - `OpenStaffAssistCLI`
@@ -131,4 +147,4 @@ runner 会按需自动构建所需 Swift CLI：
 - benchmark 同时使用 committed 历史锚点与规范化扰动样本，避免偏好评测退化成“记忆真实 case 文本”。
 - `source-record.json` 会把每条 case 回链到真实知识样本与 catalog 哈希，便于后续审计“为什么这条偏好测试要这么期待”。
 - review 链路单独引入 `OpenStaffExecutionReviewCLI`，避免为了 benchmark 人工拼接 GUI 状态，也让 `ExecutionReviewStore` 的偏好建议逻辑具备可回归入口。
-- 当前 manifest 只冻结 `preferenceMatchRate` 与按模块 / 类别统计；更细的 `teacher-override-rate`、`quick-feedback-completion-rate` 等指标，属于阶段 `11.5.2` 的后续工作。
+- `aggregate_preference_metrics.py` 会把 benchmark case 进一步聚合为 v0 指标摘要；其中 `teacherOverrideRate`、`assistAcceptanceRate` 等均明确标记为 benchmark proxy，避免和线上真实老师行为遥测混淆。

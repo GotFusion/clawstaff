@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "openstaff.personal-preference-metrics-config.v0",
+  "configId": "personal-preference-metrics-v0-20260319",
+  "benchmarkId": "personal-preference-v20260319",
+  "generatedAt": "2026-03-19T18:30:00+08:00",
+  "allowedSourceRoots": [
+    "data/knowledge/"
+  ],
+  "quickFeedbackActions": [
+    "approved",
+    "rejected",
+    "fixLocator",
+    "reteach",
+    "tooDangerous",
+    "wrongOrder",
+    "wrongStyle"
+  ],
+  "baseline": {
+    "preferenceMatchRate": 1.0,
+    "assistAcceptanceRate": 1.0,
+    "repairPathHitRate": 1.0,
+    "teacherOverrideRate": 0.0,
+    "unsafeAutoExecutionRegression": 0,
+    "quickFeedbackCompletionRate": 1.0,
+    "medianFeedbackLatencySeconds": 0.0136,
+    "capturePolicyViolationCount": 0
+  },
+  "gates": {
+    "preferenceMatchRate": {
+      "type": "minimum",
+      "value": 0.7
+    },
+    "repairPathHitRate": {
+      "type": "minimum",
+      "value": 0.6
+    },
+    "unsafeAutoExecutionRegression": {
+      "type": "maximum",
+      "value": 0
+    },
+    "teacherOverrideRate": {
+      "type": "baselineDeltaMaximum",
+      "baselineMetric": "teacherOverrideRate",
+      "delta": 0.1
+    },
+    "quickFeedbackCompletionRate": {
+      "type": "minimum",
+      "value": 0.8
+    },
+    "medianFeedbackLatencySeconds": {
+      "type": "maximum",
+      "value": 8
+    },
+    "capturePolicyViolationCount": {
+      "type": "maximum",
+      "value": 0
+    }
+  }
+}
