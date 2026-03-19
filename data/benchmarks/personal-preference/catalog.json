@@ -1,0 +1,1573 @@
+{
+  "schemaVersion": "openstaff.personal-preference-benchmark.catalog.v0",
+  "benchmarkId": "personal-preference-v20260319",
+  "generatedAt": "2026-03-19T18:00:00.000Z",
+  "profiles": {
+    "profile-style-toolbar-safari-001": {
+      "description": "Assist rerank prefers explicit toolbar-button phrasing.",
+      "generatedAt": "2026-03-19T10:00:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-style-toolbar-001",
+          "type": "style",
+          "scope": {
+            "level": "app",
+            "appBundleId": "com.apple.Safari",
+            "appName": "Safari"
+          },
+          "statement": "Prefer toolbar button wording for tab workflows in Safari.",
+          "hint": "Use explicit toolbar button language instead of vague click copy.",
+          "proposedAction": "prefer_toolbar_button_phrase",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    },
+    "profile-review-concise-locator-001": {
+      "description": "Review prefers locator-first suggestions and concise copy.",
+      "generatedAt": "2026-03-19T10:01:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-window-locator-001",
+          "type": "locator",
+          "scope": {
+            "level": "windowPattern",
+            "windowPattern": "^Main$",
+            "appBundleId": "com.test.app",
+            "appName": "TestApp"
+          },
+          "statement": "Main window failures should repair locator before other review actions.",
+          "hint": "Refresh semantic anchors before asking for re-teach.",
+          "proposedAction": "refresh_skill_locator",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        },
+        {
+          "ruleId": "rule-global-style-001",
+          "type": "style",
+          "scope": {
+            "level": "global"
+          },
+          "statement": "Review copy should stay concise and conclusion-first.",
+          "hint": "Keep review text concise and conclusion-first.",
+          "proposedAction": "shorten_review_copy",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:00:00.000Z"
+        }
+      ]
+    },
+    "profile-review-style-first-001": {
+      "description": "Review prefers calling out wrong style before generic rejection.",
+      "generatedAt": "2026-03-19T10:02:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-review-style-first-001",
+          "type": "style",
+          "scope": {
+            "level": "app",
+            "appBundleId": "com.apple.Safari",
+            "appName": "Safari"
+          },
+          "statement": "When menu traversal replaces shortcuts, mark it as wrong style first.",
+          "hint": "Prefer explicit wrong-style feedback when shortcut habits drift into menus.",
+          "proposedAction": "prefer_wrong_style_feedback",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    },
+    "profile-assist-shortcut-safari-001": {
+      "description": "Assist prefers keyboard shortcuts for tab workflows.",
+      "generatedAt": "2026-03-19T10:03:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-app-shortcut-001",
+          "type": "procedure",
+          "scope": {
+            "level": "app",
+            "appBundleId": "com.apple.Safari",
+            "appName": "Safari"
+          },
+          "statement": "Prefer keyboard shortcuts for opening tabs in Safari.",
+          "hint": "Use shortcuts instead of toolbar clicks when opening a new tab.",
+          "proposedAction": "prefer_keyboard_shortcut",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    },
+    "profile-assist-click-safari-001": {
+      "description": "Assist prefers explicit toolbar clicks for tab workflows.",
+      "generatedAt": "2026-03-19T10:04:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-app-click-001",
+          "type": "procedure",
+          "scope": {
+            "level": "app",
+            "appBundleId": "com.apple.Safari",
+            "appName": "Safari"
+          },
+          "statement": "Prefer clicking the toolbar tab button in Safari.",
+          "hint": "Use the toolbar button instead of shortcuts for a new tab.",
+          "proposedAction": "prefer_toolbar_click",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    },
+    "profile-student-shortcut-safari-001": {
+      "description": "Student planner prefers shortcut-based tab execution.",
+      "generatedAt": "2026-03-19T10:05:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-safari-shortcut-001",
+          "type": "procedure",
+          "scope": {
+            "level": "app",
+            "appBundleId": "com.apple.Safari",
+            "appName": "Safari"
+          },
+          "statement": "Prefer keyboard shortcut execution for tab workflows.",
+          "hint": "Prefer keyboard shortcut execution for tab workflows.",
+          "proposedAction": "prefer_keyboard_shortcut",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    },
+    "profile-assist-risk-safe-001": {
+      "description": "Assist avoids destructive browser actions when a safer option exists.",
+      "generatedAt": "2026-03-19T10:06:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-assist-risk-safe-001",
+          "type": "risk",
+          "scope": {
+            "level": "app",
+            "appBundleId": "com.apple.Safari",
+            "appName": "Safari"
+          },
+          "statement": "Keep browser management workflows low risk and easy to review.",
+          "hint": "Require extra caution for destructive browser actions.",
+          "proposedAction": "require_teacher_confirmation",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    },
+    "profile-student-risk-conservative-001": {
+      "description": "Student planner stays conservative for browser mutations.",
+      "generatedAt": "2026-03-19T10:07:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-safari-risk-001",
+          "type": "risk",
+          "scope": {
+            "level": "app",
+            "appBundleId": "com.apple.Safari",
+            "appName": "Safari"
+          },
+          "statement": "Require confirmation and stay conservative before browser mutations.",
+          "hint": "Require confirmation and stay conservative before browser mutations.",
+          "proposedAction": "require_teacher_confirmation",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    },
+    "profile-review-risk-guard-001": {
+      "description": "Review escalates blocked high-risk workflows to too-dangerous.",
+      "generatedAt": "2026-03-19T10:08:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-review-risk-001",
+          "type": "risk",
+          "scope": {
+            "level": "global"
+          },
+          "statement": "High-risk blocked workflows should be marked too dangerous first.",
+          "hint": "Keep teacher confirmation guard when logs say blocked or dangerous.",
+          "proposedAction": "require_teacher_confirmation",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    },
+    "profile-student-reteach-first-001": {
+      "description": "Student planner prefers re-teach before repair on fragile workflows.",
+      "generatedAt": "2026-03-19T10:09:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-form-reteach-001",
+          "type": "repair",
+          "scope": {
+            "level": "app",
+            "appBundleId": "com.apple.Safari",
+            "appName": "Safari"
+          },
+          "statement": "For this workflow, reteach current step before attempting a repair.",
+          "hint": "For this workflow, reteach current step before attempting a repair.",
+          "proposedAction": "reteachCurrentStep",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    },
+    "profile-repair-relocalize-001": {
+      "description": "Repair planner prefers relocalize before editing the skill bundle.",
+      "generatedAt": "2026-03-19T10:10:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-repair-replay-001",
+          "type": "repair",
+          "scope": {
+            "level": "taskFamily",
+            "taskFamily": "browser.navigation"
+          },
+          "statement": "Prefer replay and relocalize before editing the skill bundle.",
+          "hint": "Prefer replay and relocalize before editing the skill bundle.",
+          "proposedAction": "relocalize",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    },
+    "profile-repair-locator-first-001": {
+      "description": "Repair planner refreshes locators before fallback replay.",
+      "generatedAt": "2026-03-19T10:11:00.000Z",
+      "rules": [
+        {
+          "ruleId": "rule-window-locator-002",
+          "type": "locator",
+          "scope": {
+            "level": "windowPattern",
+            "windowPattern": "Find",
+            "appBundleId": "com.apple.Safari",
+            "appName": "Safari"
+          },
+          "statement": "Refresh semantic anchors before fallback replay.",
+          "hint": "Refresh semantic anchors before fallback replay.",
+          "proposedAction": "refresh_skill_locator",
+          "teacherConfirmed": true,
+          "updatedAt": "2026-03-19T10:20:00.000Z"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "caseId": "ppb-001-assist-style-toolbar-real",
+      "title": "Assist prefers explicit toolbar wording on a real Safari-derived tab workflow",
+      "module": "assist",
+      "preferenceCategory": "style",
+      "sourceType": "real",
+      "profileId": "profile-style-toolbar-safari-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-4214a172-teaching-20260310-142748-002.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 中打开新标签页",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "OpenStaff - GitHub",
+        "taskFamily": "browser.navigation",
+        "recentSteps": [
+          "点击 Pull Requests"
+        ],
+        "completedSteps": 1,
+        "candidates": [
+          {
+            "knowledgeItemId": "ki-toolbar-tab-001",
+            "taskId": "task-toolbar-tab-001",
+            "createdAt": "2026-03-13T11:00:00.000Z",
+            "summary": "通过工具栏按钮打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "点击 工具栏中的新标签页按钮"
+            ],
+            "addSemanticTargets": true
+          },
+          {
+            "knowledgeItemId": "ki-generic-tab-002",
+            "taskId": "task-generic-tab-002",
+            "createdAt": "2026-03-13T12:00:00.000Z",
+            "summary": "通过快捷键打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "快捷键 Command+T 打开新标签页"
+            ],
+            "addSemanticTargets": true
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-toolbar-tab-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 工具栏中的新标签页按钮",
+        "appliedRuleIds": [
+          "rule-style-toolbar-001"
+        ]
+      },
+      "timestamp": "2026-03-19T10:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-002-assist-style-toolbar-perturb",
+      "title": "Assist keeps toolbar wording preference on a perturbed Safari tab workflow",
+      "module": "assist",
+      "preferenceCategory": "style",
+      "sourceType": "perturbation",
+      "profileId": "profile-style-toolbar-safari-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-4214a172-teaching-20260310-142748-002.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 中打开新标签页",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "OpenStaff - GitHub",
+        "taskFamily": "browser.navigation",
+        "recentSteps": [
+          "点击 Pull Requests"
+        ],
+        "completedSteps": 1,
+        "candidates": [
+          {
+            "knowledgeItemId": "ki-toolbar-tab-003",
+            "taskId": "task-toolbar-tab-003",
+            "createdAt": "2026-03-13T11:10:00.000Z",
+            "summary": "通过浏览器工具栏打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "点击 浏览器工具栏中的新建标签页按钮"
+            ],
+            "addSemanticTargets": true
+          },
+          {
+            "knowledgeItemId": "ki-generic-tab-004",
+            "taskId": "task-generic-tab-004",
+            "createdAt": "2026-03-13T12:10:00.000Z",
+            "summary": "通过快捷键打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "快捷键 Command+T 新建标签页"
+            ],
+            "addSemanticTargets": true
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-toolbar-tab-003",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 浏览器工具栏中的新建标签页按钮",
+        "appliedRuleIds": [
+          "rule-style-toolbar-001"
+        ]
+      },
+      "timestamp": "2026-03-19T10:30:00.000Z",
+      "derivedFromCaseId": "ppb-001-assist-style-toolbar-real"
+    },
+    {
+      "caseId": "ppb-003-review-style-concise-real",
+      "title": "Review suggests locator-first concise feedback on a real failure shape",
+      "module": "review",
+      "preferenceCategory": "style",
+      "sourceType": "real",
+      "profileId": "profile-review-concise-locator-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-b3e503cf-teaching-20260310-164817-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "保存文档",
+        "summary": "老师打开保存对话框并点击保存按钮。",
+        "appName": "TestApp",
+        "appBundleId": "com.test.app",
+        "windowTitle": "Main",
+        "taskFamily": "document.save",
+        "skillFamily": "document.save_button",
+        "repairVersion": 2,
+        "teacherSteps": [
+          {
+            "stepId": "teacher-step-001",
+            "instruction": "点击工具栏中的保存按钮",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          },
+          {
+            "stepId": "teacher-step-002",
+            "instruction": "确认保存对话框中的主按钮",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          }
+        ],
+        "skillSteps": [
+          {
+            "stepId": "skill-step-001",
+            "instruction": "点击保存按钮",
+            "elementTitle": "保存",
+            "includeSemanticTarget": true
+          },
+          {
+            "stepId": "skill-step-002",
+            "instruction": "点击确认按钮",
+            "elementTitle": "确认",
+            "includeSemanticTarget": true
+          }
+        ],
+        "failedLog": {
+          "status": "failed",
+          "errorCode": "EXE-ACTION-FAILED",
+          "message": "未找到确认按钮，点击失败"
+        }
+      },
+      "expected": {
+        "topAction": "fixLocator",
+        "suggestedNote": "建议先修 locator，当前更像定位锚点失效。",
+        "appliedRuleIds": [
+          "rule-global-style-001",
+          "rule-window-locator-001"
+        ]
+      },
+      "timestamp": "2026-03-19T11:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-004-review-style-concise-perturb",
+      "title": "Review keeps concise locator-first copy on a perturbed publish flow",
+      "module": "review",
+      "preferenceCategory": "style",
+      "sourceType": "perturbation",
+      "profileId": "profile-review-concise-locator-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-b3e503cf-teaching-20260310-164817-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "发布草稿",
+        "summary": "老师点击发布按钮并确认发布。",
+        "appName": "TestApp",
+        "appBundleId": "com.test.app",
+        "windowTitle": "Main",
+        "taskFamily": "document.publish",
+        "skillFamily": "document.publish_button",
+        "repairVersion": 3,
+        "teacherSteps": [
+          {
+            "stepId": "teacher-step-001",
+            "instruction": "点击工具栏中的发布按钮",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          },
+          {
+            "stepId": "teacher-step-002",
+            "instruction": "确认发布对话框中的主按钮",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          }
+        ],
+        "skillSteps": [
+          {
+            "stepId": "skill-step-001",
+            "instruction": "点击发布按钮",
+            "elementTitle": "发布",
+            "includeSemanticTarget": true
+          },
+          {
+            "stepId": "skill-step-002",
+            "instruction": "点击确认发布按钮",
+            "elementTitle": "确认发布",
+            "includeSemanticTarget": true
+          }
+        ],
+        "failedLog": {
+          "status": "failed",
+          "errorCode": "EXE-ACTION-FAILED",
+          "message": "semantic anchor drift: 未找到确认发布按钮"
+        }
+      },
+      "expected": {
+        "topAction": "fixLocator",
+        "suggestedNote": "建议先修 locator，当前更像定位锚点失效。",
+        "appliedRuleIds": [
+          "rule-global-style-001",
+          "rule-window-locator-001"
+        ]
+      },
+      "timestamp": "2026-03-19T11:30:00.000Z",
+      "derivedFromCaseId": "ppb-003-review-style-concise-real"
+    },
+    {
+      "caseId": "ppb-005-review-style-first-real",
+      "title": "Review flags wrong style before generic rejection on a real shortcut drift",
+      "module": "review",
+      "preferenceCategory": "style",
+      "sourceType": "real",
+      "profileId": "profile-review-style-first-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-023212a2-teaching-20260310-202613-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "打开命令面板",
+        "summary": "老师习惯使用快捷键打开命令面板。",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Main",
+        "taskFamily": "browser.command_palette",
+        "skillFamily": "browser.command_palette",
+        "repairVersion": 1,
+        "teacherSteps": [
+          {
+            "stepId": "teacher-step-001",
+            "instruction": "按下 Command+K 打开命令面板",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          },
+          {
+            "stepId": "teacher-step-002",
+            "instruction": "输入 branch 并按回车",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          }
+        ],
+        "skillSteps": [
+          {
+            "stepId": "skill-step-001",
+            "instruction": "点击菜单中的命令面板",
+            "elementTitle": "命令面板",
+            "includeSemanticTarget": false
+          },
+          {
+            "stepId": "skill-step-002",
+            "instruction": "点击 Branch 菜单项",
+            "elementTitle": "Branch",
+            "includeSemanticTarget": false
+          }
+        ],
+        "failedLog": {
+          "status": "failed",
+          "errorCode": "EXE-ACTION-FAILED",
+          "message": "keyboard shortcut style mismatch, current menu path drifts from teacher habit"
+        }
+      },
+      "expected": {
+        "topAction": "wrongStyle",
+        "suggestedNote": "当前操作风格不对，建议改回老师常用的交互习惯与表达方式。",
+        "appliedRuleIds": [
+          "rule-review-style-first-001"
+        ]
+      },
+      "timestamp": "2026-03-19T12:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-006-review-style-first-perturb",
+      "title": "Review keeps wrong-style feedback on a perturbed menu-vs-shortcut drift",
+      "module": "review",
+      "preferenceCategory": "style",
+      "sourceType": "perturbation",
+      "profileId": "profile-review-style-first-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-023212a2-teaching-20260310-202613-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "打开搜索面板",
+        "summary": "老师习惯使用快捷键打开搜索面板。",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Main",
+        "taskFamily": "browser.search_panel",
+        "skillFamily": "browser.search_panel",
+        "repairVersion": 1,
+        "teacherSteps": [
+          {
+            "stepId": "teacher-step-001",
+            "instruction": "按下 Command+Shift+P 打开搜索面板",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          },
+          {
+            "stepId": "teacher-step-002",
+            "instruction": "输入 recent 并按回车",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          }
+        ],
+        "skillSteps": [
+          {
+            "stepId": "skill-step-001",
+            "instruction": "点击菜单中的搜索面板",
+            "elementTitle": "搜索面板",
+            "includeSemanticTarget": false
+          },
+          {
+            "stepId": "skill-step-002",
+            "instruction": "点击 Recent 菜单项",
+            "elementTitle": "Recent",
+            "includeSemanticTarget": false
+          }
+        ],
+        "failedLog": {
+          "status": "failed",
+          "errorCode": "EXE-ACTION-FAILED",
+          "message": "menu traversal style mismatch, shortcut habit was replaced by layered menus"
+        }
+      },
+      "expected": {
+        "topAction": "wrongStyle",
+        "suggestedNote": "当前操作风格不对，建议改回老师常用的交互习惯与表达方式。",
+        "appliedRuleIds": [
+          "rule-review-style-first-001"
+        ]
+      },
+      "timestamp": "2026-03-19T12:30:00.000Z",
+      "derivedFromCaseId": "ppb-005-review-style-first-real"
+    },
+    {
+      "caseId": "ppb-007-assist-procedure-shortcut-real",
+      "title": "Assist reranks toward shortcuts on a real Safari tab workflow",
+      "module": "assist",
+      "preferenceCategory": "procedure",
+      "sourceType": "real",
+      "profileId": "profile-assist-shortcut-safari-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-0cacb6a5-teaching-20260310-204532-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 中打开新标签页",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "OpenStaff - GitHub",
+        "taskFamily": "browser.navigation",
+        "recentSteps": [
+          "点击 Pull Requests"
+        ],
+        "completedSteps": 1,
+        "candidates": [
+          {
+            "knowledgeItemId": "ki-click-tab-002",
+            "taskId": "task-click-tab-002",
+            "createdAt": "2026-03-13T12:00:00.000Z",
+            "summary": "通过点击打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "点击 新标签页按钮"
+            ],
+            "addSemanticTargets": true
+          },
+          {
+            "knowledgeItemId": "ki-shortcut-tab-001",
+            "taskId": "task-shortcut-tab-001",
+            "createdAt": "2026-03-13T11:00:00.000Z",
+            "summary": "通过快捷键打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "快捷键 Command+T 打开新标签页"
+            ],
+            "addSemanticTargets": true
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-shortcut-tab-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "快捷键 Command+T 打开新标签页",
+        "appliedRuleIds": [
+          "rule-app-shortcut-001"
+        ]
+      },
+      "timestamp": "2026-03-19T13:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-008-assist-procedure-shortcut-perturb",
+      "title": "Assist keeps shortcut preference on a perturbed Safari tab workflow",
+      "module": "assist",
+      "preferenceCategory": "procedure",
+      "sourceType": "perturbation",
+      "profileId": "profile-assist-shortcut-safari-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-0cacb6a5-teaching-20260310-204532-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 中打开新标签页",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "OpenStaff - GitHub",
+        "taskFamily": "browser.navigation",
+        "recentSteps": [
+          "点击 Pull Requests"
+        ],
+        "completedSteps": 1,
+        "candidates": [
+          {
+            "knowledgeItemId": "ki-click-tab-004",
+            "taskId": "task-click-tab-004",
+            "createdAt": "2026-03-13T12:30:00.000Z",
+            "summary": "通过加号按钮打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "点击 标签栏加号按钮"
+            ],
+            "addSemanticTargets": true
+          },
+          {
+            "knowledgeItemId": "ki-shortcut-tab-003",
+            "taskId": "task-shortcut-tab-003",
+            "createdAt": "2026-03-13T11:30:00.000Z",
+            "summary": "通过快捷键打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "快捷键 Command+T 新建标签页"
+            ],
+            "addSemanticTargets": true
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-shortcut-tab-003",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "快捷键 Command+T 新建标签页",
+        "appliedRuleIds": [
+          "rule-app-shortcut-001"
+        ]
+      },
+      "timestamp": "2026-03-19T13:30:00.000Z",
+      "derivedFromCaseId": "ppb-007-assist-procedure-shortcut-real"
+    },
+    {
+      "caseId": "ppb-009-assist-procedure-click-real",
+      "title": "Assist reranks toward toolbar clicks on a real Safari tab workflow",
+      "module": "assist",
+      "preferenceCategory": "procedure",
+      "sourceType": "real",
+      "profileId": "profile-assist-click-safari-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-25d0d2ed-teaching-20260310-204424-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 中打开新标签页",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "OpenStaff - GitHub",
+        "taskFamily": "browser.navigation",
+        "recentSteps": [
+          "点击 Pull Requests"
+        ],
+        "completedSteps": 1,
+        "candidates": [
+          {
+            "knowledgeItemId": "ki-click-tab-005",
+            "taskId": "task-click-tab-005",
+            "createdAt": "2026-03-13T11:00:00.000Z",
+            "summary": "通过工具栏按钮打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "点击 工具栏中的新标签页按钮"
+            ],
+            "addSemanticTargets": true
+          },
+          {
+            "knowledgeItemId": "ki-shortcut-tab-005",
+            "taskId": "task-shortcut-tab-005",
+            "createdAt": "2026-03-13T12:00:00.000Z",
+            "summary": "通过快捷键打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "快捷键 Command+T 打开新标签页"
+            ],
+            "addSemanticTargets": true
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-click-tab-005",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 工具栏中的新标签页按钮",
+        "appliedRuleIds": [
+          "rule-app-click-001"
+        ]
+      },
+      "timestamp": "2026-03-19T14:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-010-assist-procedure-click-perturb",
+      "title": "Assist keeps click-first preference on a perturbed Safari tab workflow",
+      "module": "assist",
+      "preferenceCategory": "procedure",
+      "sourceType": "perturbation",
+      "profileId": "profile-assist-click-safari-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-25d0d2ed-teaching-20260310-204424-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 中打开新标签页",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "OpenStaff - GitHub",
+        "taskFamily": "browser.navigation",
+        "recentSteps": [
+          "点击 Pull Requests"
+        ],
+        "completedSteps": 1,
+        "candidates": [
+          {
+            "knowledgeItemId": "ki-click-tab-006",
+            "taskId": "task-click-tab-006",
+            "createdAt": "2026-03-13T11:20:00.000Z",
+            "summary": "通过标签栏加号按钮打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "点击 浏览器标签栏的加号按钮"
+            ],
+            "addSemanticTargets": true
+          },
+          {
+            "knowledgeItemId": "ki-shortcut-tab-006",
+            "taskId": "task-shortcut-tab-006",
+            "createdAt": "2026-03-13T12:20:00.000Z",
+            "summary": "通过快捷键打开新标签页。",
+            "stepInstructions": [
+              "点击 Pull Requests",
+              "快捷键 Command+T 新建标签页"
+            ],
+            "addSemanticTargets": true
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-click-tab-006",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 浏览器标签栏的加号按钮",
+        "appliedRuleIds": [
+          "rule-app-click-001"
+        ]
+      },
+      "timestamp": "2026-03-19T14:30:00.000Z",
+      "derivedFromCaseId": "ppb-009-assist-procedure-click-real"
+    },
+    {
+      "caseId": "ppb-011-student-procedure-shortcut-real",
+      "title": "Student planner selects shortcut execution on a real Safari-derived workflow",
+      "module": "student",
+      "preferenceCategory": "procedure",
+      "sourceType": "real",
+      "profileId": "profile-student-shortcut-safari-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-4214a172-teaching-20260310-142748-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 打开新标签页",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Main",
+        "candidates": [
+          {
+            "knowledgeItemId": "knowledge-001",
+            "taskId": "task-open-tab-menu",
+            "summary": "通过菜单逐步打开新标签页。",
+            "stepInstructions": [
+              "点击 File 菜单",
+              "点击 New Tab"
+            ],
+            "addSemanticTargets": false,
+            "constraints": [
+              {
+                "type": "manualConfirmationRequired",
+                "description": "菜单切换前需要确认当前页面状态。"
+              }
+            ]
+          },
+          {
+            "knowledgeItemId": "knowledge-002",
+            "taskId": "task-open-tab-shortcut",
+            "summary": "直接使用快捷键打开新标签页。",
+            "stepInstructions": [
+              "按下 Command+T 打开新标签页"
+            ],
+            "addSemanticTargets": true,
+            "constraints": []
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-002",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "assertive",
+        "appliedRuleIds": [
+          "rule-safari-shortcut-001"
+        ]
+      },
+      "timestamp": "2026-03-19T15:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-012-student-procedure-shortcut-perturb",
+      "title": "Student planner keeps shortcut execution on a perturbed Safari workflow",
+      "module": "student",
+      "preferenceCategory": "procedure",
+      "sourceType": "perturbation",
+      "profileId": "profile-student-shortcut-safari-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-4214a172-teaching-20260310-142748-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 打开新标签页",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Main",
+        "candidates": [
+          {
+            "knowledgeItemId": "knowledge-011",
+            "taskId": "task-open-tab-menu-2",
+            "summary": "通过菜单逐步打开新标签页。",
+            "stepInstructions": [
+              "点击 File 菜单",
+              "点击 New Tab"
+            ],
+            "addSemanticTargets": false,
+            "constraints": [
+              {
+                "type": "manualConfirmationRequired",
+                "description": "菜单切换前需要确认当前页面状态。"
+              }
+            ]
+          },
+          {
+            "knowledgeItemId": "knowledge-012",
+            "taskId": "task-open-tab-shortcut-2",
+            "summary": "直接使用快捷键打开新标签页。",
+            "stepInstructions": [
+              "按下 Command+T 新建标签页"
+            ],
+            "addSemanticTargets": true,
+            "constraints": []
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-012",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "assertive",
+        "appliedRuleIds": [
+          "rule-safari-shortcut-001"
+        ]
+      },
+      "timestamp": "2026-03-19T15:30:00.000Z",
+      "derivedFromCaseId": "ppb-011-student-procedure-shortcut-real"
+    },
+    {
+      "caseId": "ppb-013-assist-risk-safe-real",
+      "title": "Assist avoids destructive browser history actions on a real workflow",
+      "module": "assist",
+      "preferenceCategory": "risk",
+      "sourceType": "real",
+      "profileId": "profile-assist-risk-safe-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 中管理历史记录",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "History",
+        "taskFamily": "browser.history",
+        "recentSteps": [
+          "点击 History"
+        ],
+        "completedSteps": 1,
+        "candidates": [
+          {
+            "knowledgeItemId": "ki-history-open-001",
+            "taskId": "task-history-open-001",
+            "createdAt": "2026-03-13T11:00:00.000Z",
+            "summary": "打开历史记录侧边栏。",
+            "stepInstructions": [
+              "点击 History",
+              "点击 打开历史记录侧边栏"
+            ],
+            "addSemanticTargets": true
+          },
+          {
+            "knowledgeItemId": "ki-history-clear-002",
+            "taskId": "task-history-clear-002",
+            "createdAt": "2026-03-13T12:00:00.000Z",
+            "summary": "删除历史记录。",
+            "stepInstructions": [
+              "点击 History",
+              "点击 删除历史记录"
+            ],
+            "addSemanticTargets": true
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-history-open-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 打开历史记录侧边栏",
+        "appliedRuleIds": [
+          "rule-assist-risk-safe-001"
+        ]
+      },
+      "timestamp": "2026-03-19T16:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-014-assist-risk-safe-perturb",
+      "title": "Assist keeps low-risk browser actions on a perturbed workflow",
+      "module": "assist",
+      "preferenceCategory": "risk",
+      "sourceType": "perturbation",
+      "profileId": "profile-assist-risk-safe-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 中管理标签页",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Tabs",
+        "taskFamily": "browser.tabs",
+        "recentSteps": [
+          "点击 标签页菜单"
+        ],
+        "completedSteps": 1,
+        "candidates": [
+          {
+            "knowledgeItemId": "ki-tab-overview-001",
+            "taskId": "task-tab-overview-001",
+            "createdAt": "2026-03-13T11:10:00.000Z",
+            "summary": "打开标签页概览。",
+            "stepInstructions": [
+              "点击 标签页菜单",
+              "点击 打开标签页概览"
+            ],
+            "addSemanticTargets": true
+          },
+          {
+            "knowledgeItemId": "ki-close-all-tabs-002",
+            "taskId": "task-close-all-tabs-002",
+            "createdAt": "2026-03-13T12:10:00.000Z",
+            "summary": "关闭所有标签页。",
+            "stepInstructions": [
+              "点击 标签页菜单",
+              "点击 关闭所有标签页"
+            ],
+            "addSemanticTargets": true
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-tab-overview-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 打开标签页概览",
+        "appliedRuleIds": [
+          "rule-assist-risk-safe-001"
+        ]
+      },
+      "timestamp": "2026-03-19T16:30:00.000Z",
+      "derivedFromCaseId": "ppb-013-assist-risk-safe-real"
+    },
+    {
+      "caseId": "ppb-015-student-risk-conservative-real",
+      "title": "Student planner stays conservative on a real browser mutation workflow",
+      "module": "student",
+      "preferenceCategory": "risk",
+      "sourceType": "real",
+      "profileId": "profile-student-risk-conservative-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-002.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 中保存当前页面",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Main",
+        "candidates": [
+          {
+            "knowledgeItemId": "knowledge-020",
+            "taskId": "task-safe-save",
+            "summary": "通过稳妥步骤保存页面。",
+            "stepInstructions": [
+              "打开 File 菜单",
+              "点击 Save As"
+            ],
+            "addSemanticTargets": true,
+            "constraints": []
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-020",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "conservative",
+        "appliedRuleIds": [
+          "rule-safari-risk-001"
+        ]
+      },
+      "timestamp": "2026-03-19T17:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-016-student-risk-conservative-perturb",
+      "title": "Student planner keeps conservative style on a perturbed export workflow",
+      "module": "student",
+      "preferenceCategory": "risk",
+      "sourceType": "perturbation",
+      "profileId": "profile-student-risk-conservative-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-4589dbd7-teaching-20260310-143404-002.json"
+        }
+      ],
+      "fixture": {
+        "goal": "在 Safari 中导出当前页面",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Main",
+        "candidates": [
+          {
+            "knowledgeItemId": "knowledge-021",
+            "taskId": "task-safe-export",
+            "summary": "通过稳妥步骤导出页面。",
+            "stepInstructions": [
+              "打开 File 菜单",
+              "点击 Export",
+              "点击 PDF"
+            ],
+            "addSemanticTargets": true,
+            "constraints": []
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-021",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "conservative",
+        "appliedRuleIds": [
+          "rule-safari-risk-001"
+        ]
+      },
+      "timestamp": "2026-03-19T17:30:00.000Z",
+      "derivedFromCaseId": "ppb-015-student-risk-conservative-real"
+    },
+    {
+      "caseId": "ppb-017-review-risk-guard-real",
+      "title": "Review escalates blocked publish flows to too-dangerous on a real failure shape",
+      "module": "review",
+      "preferenceCategory": "risk",
+      "sourceType": "real",
+      "profileId": "profile-review-risk-guard-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "发布生产配置",
+        "summary": "老师要求在高风险场景保持人工确认。",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Deploy",
+        "taskFamily": "browser.publish",
+        "skillFamily": "browser.publish",
+        "repairVersion": 1,
+        "teacherSteps": [
+          {
+            "stepId": "teacher-step-001",
+            "instruction": "打开部署面板",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          },
+          {
+            "stepId": "teacher-step-002",
+            "instruction": "点击发布",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          }
+        ],
+        "skillSteps": [
+          {
+            "stepId": "skill-step-001",
+            "instruction": "打开部署面板",
+            "elementTitle": "部署面板",
+            "includeSemanticTarget": false
+          },
+          {
+            "stepId": "skill-step-002",
+            "instruction": "点击发布",
+            "elementTitle": "发布",
+            "includeSemanticTarget": false
+          }
+        ],
+        "failedLog": {
+          "status": "blocked",
+          "errorCode": "EXE-ACTION-BLOCKED",
+          "message": "blocked high risk publish action requires teacher confirmation"
+        }
+      },
+      "expected": {
+        "topAction": "tooDangerous",
+        "suggestedNote": "本次执行已触发风险阻断，建议继续保留人工确认。"
+      },
+      "timestamp": "2026-03-19T18:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-018-review-risk-guard-perturb",
+      "title": "Review keeps too-dangerous feedback on a perturbed destructive reset flow",
+      "module": "review",
+      "preferenceCategory": "risk",
+      "sourceType": "perturbation",
+      "profileId": "profile-review-risk-guard-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-001.json"
+        }
+      ],
+      "fixture": {
+        "goal": "删除浏览器数据",
+        "summary": "老师要求在删除类动作上保持人工确认。",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Reset",
+        "taskFamily": "browser.reset",
+        "skillFamily": "browser.reset",
+        "repairVersion": 1,
+        "teacherSteps": [
+          {
+            "stepId": "teacher-step-001",
+            "instruction": "打开清理面板",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          },
+          {
+            "stepId": "teacher-step-002",
+            "instruction": "点击删除所有数据",
+            "elementTitle": null,
+            "includeSemanticTarget": false
+          }
+        ],
+        "skillSteps": [
+          {
+            "stepId": "skill-step-001",
+            "instruction": "打开清理面板",
+            "elementTitle": "清理面板",
+            "includeSemanticTarget": false
+          },
+          {
+            "stepId": "skill-step-002",
+            "instruction": "点击删除所有数据",
+            "elementTitle": "删除所有数据",
+            "includeSemanticTarget": false
+          }
+        ],
+        "failedLog": {
+          "status": "blocked",
+          "errorCode": "EXE-ACTION-BLOCKED",
+          "message": "blocked dangerous reset action still requires teacher confirmation"
+        }
+      },
+      "expected": {
+        "topAction": "tooDangerous",
+        "suggestedNote": "本次执行已触发风险阻断，建议继续保留人工确认。"
+      },
+      "timestamp": "2026-03-19T18:30:00.000Z",
+      "derivedFromCaseId": "ppb-017-review-risk-guard-real"
+    },
+    {
+      "caseId": "ppb-019-student-repair-reteach-real",
+      "title": "Student planner prefers re-teach before repair on a real form workflow",
+      "module": "student",
+      "preferenceCategory": "repair",
+      "sourceType": "real",
+      "profileId": "profile-student-reteach-first-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-002.json"
+        }
+      ],
+      "fixture": {
+        "goal": "填写表单并提交",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Main",
+        "candidates": [
+          {
+            "knowledgeItemId": "knowledge-030",
+            "taskId": "task-form-fill",
+            "summary": "用较短步骤填写表单。",
+            "stepInstructions": [
+              "点击姓名输入框并输入内容",
+              "点击提交按钮"
+            ],
+            "addSemanticTargets": false,
+            "constraints": []
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-030",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "failureRecoveryPreference": "reteachBeforeRepair",
+        "appliedRuleIds": [
+          "rule-form-reteach-001"
+        ]
+      },
+      "timestamp": "2026-03-19T19:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-020-student-repair-reteach-perturb",
+      "title": "Student planner keeps re-teach-first preference on a perturbed form workflow",
+      "module": "student",
+      "preferenceCategory": "repair",
+      "sourceType": "perturbation",
+      "profileId": "profile-student-reteach-first-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-002.json"
+        }
+      ],
+      "fixture": {
+        "goal": "填写资料并保存",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Main",
+        "candidates": [
+          {
+            "knowledgeItemId": "knowledge-031",
+            "taskId": "task-form-save",
+            "summary": "以较短步骤填写资料并保存。",
+            "stepInstructions": [
+              "点击邮箱输入框并输入内容",
+              "点击保存按钮"
+            ],
+            "addSemanticTargets": false,
+            "constraints": []
+          }
+        ]
+      },
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-031",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "failureRecoveryPreference": "reteachBeforeRepair",
+        "appliedRuleIds": [
+          "rule-form-reteach-001"
+        ]
+      },
+      "timestamp": "2026-03-19T19:30:00.000Z",
+      "derivedFromCaseId": "ppb-019-student-repair-reteach-real"
+    },
+    {
+      "caseId": "ppb-021-repair-relocalize-real",
+      "title": "Repair planner keeps locator update on text-only drift despite replay-first preference",
+      "module": "repair",
+      "preferenceCategory": "repair",
+      "sourceType": "real",
+      "profileId": "profile-repair-relocalize-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-003.json"
+        }
+      ],
+      "fixture": {
+        "skillName": "openstaff-browser-open-tab",
+        "goal": "Open a browser tab",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Find",
+        "taskFamily": "browser.navigation",
+        "skillFamily": "browser.open_tab",
+        "repairVersion": 2,
+        "skillInstruction": "Click Save",
+        "skillTargetTitle": "Save",
+        "snapshotFocusedTitle": "Submit",
+        "snapshotVisibleTitle": "Submit"
+      },
+      "expected": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-repair-replay-001"
+        ]
+      },
+      "timestamp": "2026-03-19T20:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-022-repair-relocalize-perturb",
+      "title": "Repair planner keeps locator update on perturbed text-only drift despite replay-first preference",
+      "module": "repair",
+      "preferenceCategory": "repair",
+      "sourceType": "perturbation",
+      "profileId": "profile-repair-relocalize-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-5c113c56-teaching-20260310-144428-003.json"
+        }
+      ],
+      "fixture": {
+        "skillName": "openstaff-browser-open-search",
+        "goal": "Open browser search",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Find",
+        "taskFamily": "browser.navigation",
+        "skillFamily": "browser.open_tab",
+        "repairVersion": 3,
+        "skillInstruction": "Click Search",
+        "skillTargetTitle": "Search",
+        "snapshotFocusedTitle": "Find",
+        "snapshotVisibleTitle": "Find"
+      },
+      "expected": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-repair-replay-001"
+        ]
+      },
+      "timestamp": "2026-03-19T20:30:00.000Z",
+      "derivedFromCaseId": "ppb-021-repair-relocalize-real"
+    },
+    {
+      "caseId": "ppb-023-repair-locator-first-real",
+      "title": "Repair planner refreshes locators first on a real browser drift pattern",
+      "module": "repair",
+      "preferenceCategory": "repair",
+      "sourceType": "real",
+      "profileId": "profile-repair-locator-first-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-8ec4947b-teaching-20260310-202519-001.json"
+        }
+      ],
+      "fixture": {
+        "skillName": "openstaff-browser-open-tab-locator",
+        "goal": "Open a browser tab",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Find",
+        "taskFamily": "browser.navigation",
+        "skillFamily": "browser.open_tab",
+        "repairVersion": 2,
+        "skillInstruction": "Click Save",
+        "skillTargetTitle": "Save",
+        "snapshotFocusedTitle": "Submit",
+        "snapshotVisibleTitle": "Submit"
+      },
+      "expected": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-window-locator-002"
+        ]
+      },
+      "timestamp": "2026-03-19T21:00:00.000Z"
+    },
+    {
+      "caseId": "ppb-024-repair-locator-first-perturb",
+      "title": "Repair planner keeps locator-first preference on a perturbed browser drift pattern",
+      "module": "repair",
+      "preferenceCategory": "repair",
+      "sourceType": "perturbation",
+      "profileId": "profile-repair-locator-first-001",
+      "sourceAnchors": [
+        {
+          "kind": "knowledge",
+          "path": "data/knowledge/2026-03-10/task-session-gui-8ec4947b-teaching-20260310-202519-001.json"
+        }
+      ],
+      "fixture": {
+        "skillName": "openstaff-browser-open-tab-locator-2",
+        "goal": "Open a browser tab",
+        "appName": "Safari",
+        "appBundleId": "com.apple.Safari",
+        "windowTitle": "Find",
+        "taskFamily": "browser.navigation",
+        "skillFamily": "browser.open_tab",
+        "repairVersion": 4,
+        "skillInstruction": "Click Confirm",
+        "skillTargetTitle": "Confirm",
+        "snapshotFocusedTitle": "Submit",
+        "snapshotVisibleTitle": "Submit"
+      },
+      "expected": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-window-locator-002"
+        ]
+      },
+      "timestamp": "2026-03-19T21:30:00.000Z",
+      "derivedFromCaseId": "ppb-023-repair-locator-first-real"
+    }
+  ]
+}

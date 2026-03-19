@@ -1209,7 +1209,12 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 - `scripts/benchmarks/run_personal_preference_benchmark.py`
 
 **验收标准**
-- [ ] 24 条 case 都能重复运行并生成稳定 report。
+- [x] 24 条 case 都能重复运行并生成稳定 report。
+
+本次落地说明：
+- 新增 `data/benchmarks/personal-preference/catalog.json` 与 `manifest.json`，固定 `24` 条 case、`12` 个 profile，覆盖 `style / procedure / risk / repair` 四类偏好，且真实样本与扰动样本各 `12` 条。
+- 新增 `scripts/benchmarks/run_personal_preference_benchmark.py`，可从 catalog 自动物化 profile snapshot，并分别驱动 assist / student / review / repair 四条偏好链路，输出 `source-record / module-result / review-result / case-report / manifest`。
+- 新增 `docs/personal-preference-benchmark-spec.md` 与 `OpenStaffExecutionReviewCLI`，让 review 建议链路也能被 benchmark 直接回归；当前基线 `personal-preference-v20260319` 已稳定跑通 `24 / 24`。
 
 #### TODO 11.5.2 固化 v0 指标与门槛
 

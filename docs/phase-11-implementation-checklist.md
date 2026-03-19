@@ -453,33 +453,33 @@
 ## 阶段 11.5：偏好学习评测层
 
 ### TODO 11.5.1 设计 `Personal Preference Benchmark`
-- [ ] 定义 case catalog
-- [ ] 为每条 case 指定 expected preference-aware behavior
-- [ ] 覆盖：
+- [x] 定义 case catalog
+- [x] 为每条 case 指定 expected preference-aware behavior
+- [x] 覆盖：
   - style
   - procedure
   - risk
   - repair
-- [ ] 第一版固定 24 条 case，其中 12 条真实任务、12 条扰动样本
+- [x] 第一版固定 24 条 case，其中 12 条真实任务、12 条扰动样本
 
 **输出物**
 - `data/benchmarks/personal-preference/catalog.json`
 - `docs/personal-preference-benchmark-spec.md`
 
 **验收标准**
-- [ ] 至少 24 条 case，覆盖 4 类偏好
+- [x] 至少 24 条 case，覆盖 4 类偏好
 
 ### TODO 11.5.2 实现 benchmark runner
-- [ ] 从 profile snapshot 驱动测试
-- [ ] 校验 assist / student / repair / review 的偏好命中率
-- [ ] 输出 manifest 与 case report
+- [x] 从 profile snapshot 驱动测试
+- [x] 校验 assist / student / repair / review 的偏好命中率
+- [x] 输出 manifest 与 case report
 
 **输出物**
 - `scripts/benchmarks/run_personal_preference_benchmark.py`
 - `data/benchmarks/personal-preference/generated/`
 
 **验收标准**
-- [ ] 同一版本可重复运行并生成稳定汇总结果
+- [x] 同一版本可重复运行并生成稳定汇总结果
 
 ### TODO 11.5.3 定义偏好学习指标
 - [ ] `preference_match_rate`

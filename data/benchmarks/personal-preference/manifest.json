@@ -1,0 +1,738 @@
+{
+  "schemaVersion": "openstaff.personal-preference-benchmark.manifest.v0",
+  "benchmarkId": "personal-preference-v20260319",
+  "generatedAt": "2026-03-19T17:26:00+08:00",
+  "catalogPath": "data/benchmarks/personal-preference/catalog.json",
+  "totalCases": 24,
+  "passedCases": 24,
+  "failedCases": [],
+  "metrics": {
+    "preferenceMatchRate": 1.0,
+    "matchRateByCategory": {
+      "procedure": 1.0,
+      "repair": 1.0,
+      "risk": 1.0,
+      "style": 1.0
+    },
+    "matchRateByModule": {
+      "assist": 1.0,
+      "repair": 1.0,
+      "review": 1.0,
+      "student": 1.0
+    },
+    "caseCountByCategory": {
+      "procedure": 6,
+      "repair": 6,
+      "risk": 6,
+      "style": 6
+    },
+    "caseCountByModule": {
+      "assist": 8,
+      "repair": 4,
+      "review": 6,
+      "student": 6
+    }
+  },
+  "cases": [
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-001-assist-style-toolbar-real",
+      "title": "Assist prefers explicit toolbar wording on a real Safari-derived tab workflow",
+      "module": "assist",
+      "preferenceCategory": "style",
+      "sourceType": "real",
+      "profileId": "profile-style-toolbar-safari-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-toolbar-tab-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 工具栏中的新标签页按钮",
+        "appliedRuleIds": [
+          "rule-style-toolbar-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-toolbar-tab-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 工具栏中的新标签页按钮",
+        "appliedRuleIds": [
+          "rule-style-toolbar-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:25:59+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-002-assist-style-toolbar-perturb",
+      "title": "Assist keeps toolbar wording preference on a perturbed Safari tab workflow",
+      "module": "assist",
+      "preferenceCategory": "style",
+      "sourceType": "perturbation",
+      "profileId": "profile-style-toolbar-safari-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-toolbar-tab-003",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 浏览器工具栏中的新建标签页按钮",
+        "appliedRuleIds": [
+          "rule-style-toolbar-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-toolbar-tab-003",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 浏览器工具栏中的新建标签页按钮",
+        "appliedRuleIds": [
+          "rule-style-toolbar-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:25:59+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-003-review-style-concise-real",
+      "title": "Review suggests locator-first concise feedback on a real failure shape",
+      "module": "review",
+      "preferenceCategory": "style",
+      "sourceType": "real",
+      "profileId": "profile-review-concise-locator-001",
+      "expected": {
+        "topAction": "fixLocator",
+        "suggestedNote": "建议先修 locator，当前更像定位锚点失效。",
+        "appliedRuleIds": [
+          "rule-global-style-001",
+          "rule-window-locator-001"
+        ]
+      },
+      "actual": {
+        "topAction": "fixLocator",
+        "suggestedNote": "建议先修 locator，当前更像定位锚点失效。",
+        "appliedRuleIds": [
+          "rule-global-style-001",
+          "rule-window-locator-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:25:59+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-004-review-style-concise-perturb",
+      "title": "Review keeps concise locator-first copy on a perturbed publish flow",
+      "module": "review",
+      "preferenceCategory": "style",
+      "sourceType": "perturbation",
+      "profileId": "profile-review-concise-locator-001",
+      "expected": {
+        "topAction": "fixLocator",
+        "suggestedNote": "建议先修 locator，当前更像定位锚点失效。",
+        "appliedRuleIds": [
+          "rule-global-style-001",
+          "rule-window-locator-001"
+        ]
+      },
+      "actual": {
+        "topAction": "fixLocator",
+        "suggestedNote": "建议先修 locator，当前更像定位锚点失效。",
+        "appliedRuleIds": [
+          "rule-global-style-001",
+          "rule-window-locator-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:25:59+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-005-review-style-first-real",
+      "title": "Review flags wrong style before generic rejection on a real shortcut drift",
+      "module": "review",
+      "preferenceCategory": "style",
+      "sourceType": "real",
+      "profileId": "profile-review-style-first-001",
+      "expected": {
+        "topAction": "wrongStyle",
+        "suggestedNote": "当前操作风格不对，建议改回老师常用的交互习惯与表达方式。",
+        "appliedRuleIds": [
+          "rule-review-style-first-001"
+        ]
+      },
+      "actual": {
+        "topAction": "wrongStyle",
+        "suggestedNote": "当前操作风格不对，建议改回老师常用的交互习惯与表达方式。",
+        "appliedRuleIds": [
+          "rule-review-style-first-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-006-review-style-first-perturb",
+      "title": "Review keeps wrong-style feedback on a perturbed menu-vs-shortcut drift",
+      "module": "review",
+      "preferenceCategory": "style",
+      "sourceType": "perturbation",
+      "profileId": "profile-review-style-first-001",
+      "expected": {
+        "topAction": "wrongStyle",
+        "suggestedNote": "当前操作风格不对，建议改回老师常用的交互习惯与表达方式。",
+        "appliedRuleIds": [
+          "rule-review-style-first-001"
+        ]
+      },
+      "actual": {
+        "topAction": "wrongStyle",
+        "suggestedNote": "当前操作风格不对，建议改回老师常用的交互习惯与表达方式。",
+        "appliedRuleIds": [
+          "rule-review-style-first-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-007-assist-procedure-shortcut-real",
+      "title": "Assist reranks toward shortcuts on a real Safari tab workflow",
+      "module": "assist",
+      "preferenceCategory": "procedure",
+      "sourceType": "real",
+      "profileId": "profile-assist-shortcut-safari-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-shortcut-tab-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "快捷键 Command+T 打开新标签页",
+        "appliedRuleIds": [
+          "rule-app-shortcut-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-shortcut-tab-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "快捷键 Command+T 打开新标签页",
+        "appliedRuleIds": [
+          "rule-app-shortcut-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-008-assist-procedure-shortcut-perturb",
+      "title": "Assist keeps shortcut preference on a perturbed Safari tab workflow",
+      "module": "assist",
+      "preferenceCategory": "procedure",
+      "sourceType": "perturbation",
+      "profileId": "profile-assist-shortcut-safari-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-shortcut-tab-003",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "快捷键 Command+T 新建标签页",
+        "appliedRuleIds": [
+          "rule-app-shortcut-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-shortcut-tab-003",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "快捷键 Command+T 新建标签页",
+        "appliedRuleIds": [
+          "rule-app-shortcut-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-009-assist-procedure-click-real",
+      "title": "Assist reranks toward toolbar clicks on a real Safari tab workflow",
+      "module": "assist",
+      "preferenceCategory": "procedure",
+      "sourceType": "real",
+      "profileId": "profile-assist-click-safari-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-click-tab-005",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 工具栏中的新标签页按钮",
+        "appliedRuleIds": [
+          "rule-app-click-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-click-tab-005",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 工具栏中的新标签页按钮",
+        "appliedRuleIds": [
+          "rule-app-click-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-010-assist-procedure-click-perturb",
+      "title": "Assist keeps click-first preference on a perturbed Safari tab workflow",
+      "module": "assist",
+      "preferenceCategory": "procedure",
+      "sourceType": "perturbation",
+      "profileId": "profile-assist-click-safari-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-click-tab-006",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 浏览器标签栏的加号按钮",
+        "appliedRuleIds": [
+          "rule-app-click-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-click-tab-006",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 浏览器标签栏的加号按钮",
+        "appliedRuleIds": [
+          "rule-app-click-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-011-student-procedure-shortcut-real",
+      "title": "Student planner selects shortcut execution on a real Safari-derived workflow",
+      "module": "student",
+      "preferenceCategory": "procedure",
+      "sourceType": "real",
+      "profileId": "profile-student-shortcut-safari-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-002",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "assertive",
+        "appliedRuleIds": [
+          "rule-safari-shortcut-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-002",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "assertive",
+        "failureRecoveryPreference": "repairBeforeReteach",
+        "appliedRuleIds": [
+          "rule-safari-shortcut-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-012-student-procedure-shortcut-perturb",
+      "title": "Student planner keeps shortcut execution on a perturbed Safari workflow",
+      "module": "student",
+      "preferenceCategory": "procedure",
+      "sourceType": "perturbation",
+      "profileId": "profile-student-shortcut-safari-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-012",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "assertive",
+        "appliedRuleIds": [
+          "rule-safari-shortcut-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-012",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "assertive",
+        "failureRecoveryPreference": "repairBeforeReteach",
+        "appliedRuleIds": [
+          "rule-safari-shortcut-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-013-assist-risk-safe-real",
+      "title": "Assist avoids destructive browser history actions on a real workflow",
+      "module": "assist",
+      "preferenceCategory": "risk",
+      "sourceType": "real",
+      "profileId": "profile-assist-risk-safe-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-history-open-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 打开历史记录侧边栏",
+        "appliedRuleIds": [
+          "rule-assist-risk-safe-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-history-open-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 打开历史记录侧边栏",
+        "appliedRuleIds": [
+          "rule-assist-risk-safe-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-014-assist-risk-safe-perturb",
+      "title": "Assist keeps low-risk browser actions on a perturbed workflow",
+      "module": "assist",
+      "preferenceCategory": "risk",
+      "sourceType": "perturbation",
+      "profileId": "profile-assist-risk-safe-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-tab-overview-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 打开标签页概览",
+        "appliedRuleIds": [
+          "rule-assist-risk-safe-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "ki-tab-overview-001",
+        "predictorVersion": "preferenceAwareRetrievalV1",
+        "actionInstruction": "点击 打开标签页概览",
+        "appliedRuleIds": [
+          "rule-assist-risk-safe-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-015-student-risk-conservative-real",
+      "title": "Student planner stays conservative on a real browser mutation workflow",
+      "module": "student",
+      "preferenceCategory": "risk",
+      "sourceType": "real",
+      "profileId": "profile-student-risk-conservative-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-020",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "conservative",
+        "appliedRuleIds": [
+          "rule-safari-risk-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-020",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "conservative",
+        "failureRecoveryPreference": "repairBeforeReteach",
+        "appliedRuleIds": [
+          "rule-safari-risk-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-016-student-risk-conservative-perturb",
+      "title": "Student planner keeps conservative style on a perturbed export workflow",
+      "module": "student",
+      "preferenceCategory": "risk",
+      "sourceType": "perturbation",
+      "profileId": "profile-student-risk-conservative-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-021",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "conservative",
+        "appliedRuleIds": [
+          "rule-safari-risk-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-021",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "conservative",
+        "failureRecoveryPreference": "repairBeforeReteach",
+        "appliedRuleIds": [
+          "rule-safari-risk-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-017-review-risk-guard-real",
+      "title": "Review escalates blocked publish flows to too-dangerous on a real failure shape",
+      "module": "review",
+      "preferenceCategory": "risk",
+      "sourceType": "real",
+      "profileId": "profile-review-risk-guard-001",
+      "expected": {
+        "topAction": "tooDangerous",
+        "suggestedNote": "本次执行已触发风险阻断，建议继续保留人工确认。"
+      },
+      "actual": {
+        "topAction": "tooDangerous",
+        "suggestedNote": "本次执行已触发风险阻断，建议继续保留人工确认。",
+        "appliedRuleIds": []
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-018-review-risk-guard-perturb",
+      "title": "Review keeps too-dangerous feedback on a perturbed destructive reset flow",
+      "module": "review",
+      "preferenceCategory": "risk",
+      "sourceType": "perturbation",
+      "profileId": "profile-review-risk-guard-001",
+      "expected": {
+        "topAction": "tooDangerous",
+        "suggestedNote": "本次执行已触发风险阻断，建议继续保留人工确认。"
+      },
+      "actual": {
+        "topAction": "tooDangerous",
+        "suggestedNote": "本次执行已触发风险阻断，建议继续保留人工确认。",
+        "appliedRuleIds": []
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-019-student-repair-reteach-real",
+      "title": "Student planner prefers re-teach before repair on a real form workflow",
+      "module": "student",
+      "preferenceCategory": "repair",
+      "sourceType": "real",
+      "profileId": "profile-student-reteach-first-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-030",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "failureRecoveryPreference": "reteachBeforeRepair",
+        "appliedRuleIds": [
+          "rule-form-reteach-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-030",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "conservative",
+        "failureRecoveryPreference": "reteachBeforeRepair",
+        "appliedRuleIds": [
+          "rule-form-reteach-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-020-student-repair-reteach-perturb",
+      "title": "Student planner keeps re-teach-first preference on a perturbed form workflow",
+      "module": "student",
+      "preferenceCategory": "repair",
+      "sourceType": "perturbation",
+      "profileId": "profile-student-reteach-first-001",
+      "expected": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-031",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "failureRecoveryPreference": "reteachBeforeRepair",
+        "appliedRuleIds": [
+          "rule-form-reteach-001"
+        ]
+      },
+      "actual": {
+        "finalStatus": "completed",
+        "selectedKnowledgeItemId": "knowledge-031",
+        "strategy": "preferenceAwareRuleV1",
+        "plannerVersion": "preference-aware-rule-v1",
+        "executionStyle": "conservative",
+        "failureRecoveryPreference": "reteachBeforeRepair",
+        "appliedRuleIds": [
+          "rule-form-reteach-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-021-repair-relocalize-real",
+      "title": "Repair planner keeps locator update on text-only drift despite replay-first preference",
+      "module": "repair",
+      "preferenceCategory": "repair",
+      "sourceType": "real",
+      "profileId": "profile-repair-relocalize-001",
+      "expected": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-repair-replay-001"
+        ]
+      },
+      "actual": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-repair-replay-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-022-repair-relocalize-perturb",
+      "title": "Repair planner keeps locator update on perturbed text-only drift despite replay-first preference",
+      "module": "repair",
+      "preferenceCategory": "repair",
+      "sourceType": "perturbation",
+      "profileId": "profile-repair-relocalize-001",
+      "expected": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-repair-replay-001"
+        ]
+      },
+      "actual": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-repair-replay-001"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-023-repair-locator-first-real",
+      "title": "Repair planner refreshes locators first on a real browser drift pattern",
+      "module": "repair",
+      "preferenceCategory": "repair",
+      "sourceType": "real",
+      "profileId": "profile-repair-locator-first-001",
+      "expected": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-window-locator-002"
+        ]
+      },
+      "actual": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-window-locator-002"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    },
+    {
+      "schemaVersion": "openstaff.personal-preference-benchmark.case-report.v0",
+      "caseId": "ppb-024-repair-locator-first-perturb",
+      "title": "Repair planner keeps locator-first preference on a perturbed browser drift pattern",
+      "module": "repair",
+      "preferenceCategory": "repair",
+      "sourceType": "perturbation",
+      "profileId": "profile-repair-locator-first-001",
+      "expected": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-window-locator-002"
+        ]
+      },
+      "actual": {
+        "driftStatus": "driftDetected",
+        "dominantDriftKind": "uiTextChanged",
+        "selectedActionType": "updateSkillLocator",
+        "appliedRuleIds": [
+          "rule-window-locator-002"
+        ]
+      },
+      "passed": true,
+      "mismatches": [],
+      "generatedAt": "2026-03-19T17:26:00+08:00"
+    }
+  ]
+}
