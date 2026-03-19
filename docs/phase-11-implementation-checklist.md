@@ -558,11 +558,14 @@
 - [x] 回滚后策略装配结果可复现变化
 
 ### TODO 11.6.4 实现偏好漂移监控
-- [ ] 检测长期不命中规则
-- [ ] 检测 override 率升高
-- [ ] 检测风格偏好变化
-- [ ] 检测高风险规则与当前行为不一致
-- [ ] 第一版至少覆盖：
+
+注：`phase-11-knowledge-reinforcement-roadmap.md` 中该项编号为 `11.6.3`；本清单因将“审计”和“回滚”拆得更细，保留为 `11.6.4`。
+
+- [x] 检测长期不命中规则
+- [x] 检测 override 率升高
+- [x] 检测风格偏好变化
+- [x] 检测高风险规则与当前行为不一致
+- [x] 第一版至少覆盖：
   - `30` 天未命中
   - 最近 `10` 次相关任务里 override 超过 `50%`
   - 最近 `3` 次明确被老师驳回
@@ -570,9 +573,11 @@
 **输出物**
 - `core/learning/PreferenceDriftMonitor.swift`
 - `core/learning/preference-drift-monitor-v0.md`
+- `docs/adr/ADR-0019-preference-drift-monitoring.md`
+- `apps/macos/Sources/OpenStaffPreferenceProfileCLI/OpenStaffPreferenceProfileCLI.swift`
 
 **验收标准**
-- [ ] 系统能提醒“该规则可能过时或不再适用”
+- [x] 系统能提醒“该规则可能过时或不再适用”
 
 ### TODO 11.6.5 实现 learning bundle 导出、校验与恢复
 - [ ] 导出 turns / evidence / signals / rules / profiles / audit
@@ -636,5 +641,5 @@
 - [ ] assist / skill / repair / review 至少 3 个模块接入偏好装配
 - [ ] student planner 仍处于 feature flag 后
 - [ ] `Personal Preference Benchmark` 已建立并可稳定运行
-- [ ] 偏好治理、审计、回滚与漂移监控已接入
+- [x] 偏好治理、审计、回滚与漂移监控已接入
 - [ ] learning bundle 与 hook / gateway 边界已接入

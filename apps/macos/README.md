@@ -115,9 +115,13 @@ make preference-profile ARGS="--preferences-root data/preferences --rebuild --pe
 
 # Only inspect the latest stored snapshot
 make preference-profile ARGS="--preferences-root data/preferences --json"
+
+# Run drift monitoring on the latest active profile
+make preference-profile ARGS="--preferences-root data/preferences --drift-monitor --json"
 ```
 
 默认会读取 `data/preferences/rules/*.json` 中的 active 规则，并按 `assist / skill / repair / review / planner` 五个模块聚合当前快照。
+若传入 `--drift-monitor`，CLI 会额外结合 `data/preferences/audit` 与 `data/preferences/assembly` 产出 stale / override / teacher reject / style drift 等漂移 finding。
 
 ## Student CLI
 

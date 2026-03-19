@@ -14,12 +14,14 @@ struct OpenStaffPreferenceProfileCLI {
             let store = PreferenceMemoryStore(preferencesRootDirectory: options.preferencesRootURL)
             let builder = PreferenceProfileBuilder()
             let rollbackService = PreferenceRollbackService(profileBuilder: builder)
+            let driftMonitor = PreferenceDriftMonitor()
 
             let output = try run(
                 options: options,
                 store: store,
                 builder: builder,
-                rollbackService: rollbackService
+                rollbackService: rollbackService,
+                driftMonitor: driftMonitor
             )
 
             if options.printJSON {
@@ -42,7 +44,8 @@ struct OpenStaffPreferenceProfileCLI {
         options: PreferenceProfileCLIOptions,
         store: PreferenceMemoryStore,
         builder: PreferenceProfileBuilder,
-        rollbackService: PreferenceRollbackService
+        rollbackService: PreferenceRollbackService,
+        driftMonitor: PreferenceDriftMonitor
     ) throws -> PreferenceProfileCLIOutput {
         switch options.command {
         case .loadLatest:
@@ -97,6 +100,25 @@ struct OpenStaffPreferenceProfileCLI {
                 mode: .auditLoaded,
                 preferencesRootPath: options.preferencesRootURL.path,
                 auditEntries: entries
+            )
+        case .driftMonitor:
+            let report = try driftMonitor.analyze(
+                using: store,
+                profileVersion: options.driftProfileVersion,
+                generatedAt: options.timestamp
+            )
+            let snapshot: PreferenceProfileSnapshot?
+            if let driftProfileVersion = options.driftProfileVersion {
+                snapshot = try store.loadProfileSnapshot(profileVersion: driftProfileVersion)
+            } else {
+                snapshot = try store.loadLatestProfileSnapshot()
+            }
+            return PreferenceProfileCLIOutput(
+                mode: .driftMonitorLoaded,
+                preferencesRootPath: options.preferencesRootURL.path,
+                snapshot: snapshot,
+                moduleSummaries: snapshot.map { builder.summaries(for: $0.profile) },
+                driftReport: report
             )
         case .rollbackRule:
             guard let ruleId = options.rollbackRuleId else {
@@ -185,6 +207,7 @@ struct OpenStaffPreferenceProfileCLI {
           make preference-profile ARGS="--preferences-root data/preferences --json"
           make preference-profile ARGS="--preferences-root data/preferences --rebuild --persist --json"
           make preference-profile ARGS="--preferences-root data/preferences --audit --audit-rule-id rule-123 --json"
+          make preference-profile ARGS="--preferences-root data/preferences --drift-monitor --json"
           make preference-profile ARGS="--preferences-root data/preferences --rollback-profile-version profile-2026-03-19-001 --dry-run --json"
           make preference-profile ARGS="--preferences-root data/preferences --rollback-rule rule-123 --persist --json"
 
@@ -201,6 +224,8 @@ struct OpenStaffPreferenceProfileCLI {
           --audit-date <yyyy-mm-dd>        Restrict audit log loading to a single date file.
           --audit-rule-id <id>             Filter audit entries by rule id.
           --audit-profile-version <id>     Filter audit entries by profile version.
+          --drift-monitor                  Run preference drift monitoring on the latest profile snapshot.
+          --drift-profile-version <id>     Optional explicit profile snapshot version for drift monitoring.
           --rollback-rule <id>             Preview or revoke a single rule.
           --rollback-profile-version <id>  Preview or rollback to a stored profile snapshot.
           --dry-run                        Force rollback modes to preview without writing.
@@ -253,6 +278,27 @@ struct OpenStaffPreferenceProfileCLI {
             }
         }
 
+        if let driftReport = output.driftReport {
+            print(
+                "drift monitor loaded. " +
+                "profileVersion=\(driftReport.profileVersion ?? "__none__") " +
+                "activeRules=\(driftReport.activeRuleIds.count) " +
+                "findings=\(driftReport.findings.count) " +
+                "assemblyDecisions=\(driftReport.dataAvailability.totalAssemblyDecisionCount)"
+            )
+            if !driftReport.dataAvailability.usageMetricsEvaluated {
+                print("usageMetricsEvaluated=false")
+            }
+            for finding in driftReport.findings {
+                print(
+                    "  \(finding.severity.rawValue) " +
+                    "rule=\(finding.ruleId) " +
+                    "kind=\(finding.kind.rawValue) " +
+                    "summary=\(finding.summary)"
+                )
+            }
+        }
+
         if let snapshot = output.snapshot {
             print(
                 "profile \(output.mode.rawValue). " +
@@ -282,6 +328,7 @@ private enum PreferenceProfileCLIMode: String, Codable {
     case rebuiltEphemeral = "rebuilt_ephemeral"
     case rebuiltAndPersisted = "rebuilt_and_persisted"
     case auditLoaded = "audit_loaded"
+    case driftMonitorLoaded = "drift_monitor_loaded"
     case rollbackPreview = "rollback_preview"
     case rollbackApplied = "rollback_applied"
 }
@@ -292,6 +339,7 @@ private struct PreferenceProfileCLIOutput: Codable {
     let snapshot: PreferenceProfileSnapshot?
     let moduleSummaries: [PreferenceProfileModuleSummary]?
     let auditEntries: [PreferenceAuditLogEntry]?
+    let driftReport: PreferenceDriftMonitorReport?
     let rollbackPlan: PreferenceRollbackPlan?
     let rollbackResult: PreferenceRollbackResult?
 
@@ -301,6 +349,7 @@ private struct PreferenceProfileCLIOutput: Codable {
         snapshot: PreferenceProfileSnapshot? = nil,
         moduleSummaries: [PreferenceProfileModuleSummary]? = nil,
         auditEntries: [PreferenceAuditLogEntry]? = nil,
+        driftReport: PreferenceDriftMonitorReport? = nil,
         rollbackPlan: PreferenceRollbackPlan? = nil,
         rollbackResult: PreferenceRollbackResult? = nil
     ) {
@@ -309,6 +358,7 @@ private struct PreferenceProfileCLIOutput: Codable {
         self.snapshot = snapshot
         self.moduleSummaries = moduleSummaries
         self.auditEntries = auditEntries
+        self.driftReport = driftReport
         self.rollbackPlan = rollbackPlan
         self.rollbackResult = rollbackResult
     }
@@ -318,6 +368,7 @@ private enum PreferenceProfileCLICommand {
     case loadLatest
     case rebuild
     case audit
+    case driftMonitor
     case rollbackRule
     case rollbackProfile
 }
@@ -334,6 +385,8 @@ private struct PreferenceProfileCLIOptions {
     let auditDate: String?
     let auditRuleId: String?
     let auditProfileVersion: String?
+    let driftMonitor: Bool
+    let driftProfileVersion: String?
     let rollbackRuleId: String?
     let rollbackProfileVersion: String?
     let dryRun: Bool
@@ -347,6 +400,9 @@ private struct PreferenceProfileCLIOptions {
     var command: PreferenceProfileCLICommand {
         if audit {
             return .audit
+        }
+        if driftMonitor {
+            return .driftMonitor
         }
         if rollbackRuleId != nil {
             return .rollbackRule
@@ -376,6 +432,8 @@ private struct PreferenceProfileCLIOptions {
         var auditDate: String?
         var auditRuleId: String?
         var auditProfileVersion: String?
+        var driftMonitor = false
+        var driftProfileVersion: String?
         var rollbackRuleId: String?
         var rollbackProfileVersion: String?
         var dryRun = false
@@ -441,6 +499,14 @@ private struct PreferenceProfileCLIOptions {
                     throw PreferenceProfileCLIError.missingValue("--audit-profile-version")
                 }
                 auditProfileVersion = arguments[index]
+            case "--drift-monitor":
+                driftMonitor = true
+            case "--drift-profile-version":
+                index += 1
+                guard index < arguments.count else {
+                    throw PreferenceProfileCLIError.missingValue("--drift-profile-version")
+                }
+                driftProfileVersion = arguments[index]
             case "--rollback-rule":
                 index += 1
                 guard index < arguments.count else {
@@ -473,6 +539,10 @@ private struct PreferenceProfileCLIOptions {
             if let profileVersion, profileVersion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 throw PreferenceProfileCLIError.invalidValue("--profile-version", profileVersion)
             }
+            if let driftProfileVersion,
+               driftProfileVersion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                throw PreferenceProfileCLIError.invalidValue("--drift-profile-version", driftProfileVersion)
+            }
             if actor.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 throw PreferenceProfileCLIError.invalidValue("--actor", actor)
             }
@@ -483,6 +553,7 @@ private struct PreferenceProfileCLIOptions {
             let primaryCommands = [
                 rebuild ? "--rebuild" : nil,
                 audit ? "--audit" : nil,
+                driftMonitor ? "--drift-monitor" : nil,
                 rollbackRuleId != nil ? "--rollback-rule" : nil,
                 rollbackProfileVersion != nil ? "--rollback-profile-version" : nil
             ].compactMap { $0 }
@@ -490,10 +561,16 @@ private struct PreferenceProfileCLIOptions {
             if primaryCommands.count > 1 {
                 throw PreferenceProfileCLIError.conflictingCommands(primaryCommands)
             }
-            if persist && audit {
+            if driftProfileVersion != nil && !driftMonitor {
+                throw PreferenceProfileCLIError.invalidValue(
+                    "--drift-profile-version",
+                    driftProfileVersion ?? ""
+                )
+            }
+            if persist && (audit || driftMonitor) {
                 throw PreferenceProfileCLIError.persistRequiresMutationCommand
             }
-            if dryRun && !audit && rollbackRuleId == nil && rollbackProfileVersion == nil {
+            if dryRun && (audit || driftMonitor || (rollbackRuleId == nil && rollbackProfileVersion == nil)) {
                 throw PreferenceProfileCLIError.dryRunRequiresRollback
             }
             if persist && !rebuild && rollbackRuleId == nil && rollbackProfileVersion == nil {
@@ -513,6 +590,8 @@ private struct PreferenceProfileCLIOptions {
             auditDate: auditDate,
             auditRuleId: auditRuleId,
             auditProfileVersion: auditProfileVersion,
+            driftMonitor: driftMonitor,
+            driftProfileVersion: driftProfileVersion,
             rollbackRuleId: rollbackRuleId,
             rollbackProfileVersion: rollbackProfileVersion,
             dryRun: dryRun,

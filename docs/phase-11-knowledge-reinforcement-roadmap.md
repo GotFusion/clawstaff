@@ -1322,6 +1322,8 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 
 #### TODO 11.6.3 落地偏好漂移监控
 
+状态：已完成（2026-03-19，基于 rules + audit + policy assembly decisions 的 v0 监控）
+
 - 第一版先做 3 条简单规则：
   - `30` 天未命中
   - 最近 `10` 次相关任务里 override 比例超过 `50%`
@@ -1330,9 +1332,17 @@ Phase 11 第一版，老师真正会看到并直接使用的表面，只先做 5
 **输出物**
 - `core/learning/PreferenceDriftMonitor.swift`
 - `docs/adr/ADR-0019-preference-drift-monitoring.md`
+- `core/learning/preference-drift-monitor-v0.md`
+- `apps/macos/Sources/OpenStaffPreferenceProfileCLI/OpenStaffPreferenceProfileCLI.swift`
 
 **验收标准**
-- [ ] 系统能提醒“这条偏好可能已过时”并给出触发原因。
+- [x] 系统能提醒“这条偏好可能已过时”并给出触发原因。
+
+本次落地说明：
+- 新增 `core/learning/PreferenceDriftMonitor.swift`，固定输出 `PreferenceDriftMonitorReport`，并把 drift finding 统一收敛为 `longTimeNoHit / overrideRateElevated / stylePreferenceChanged / teacherRejectedRepeatedly / highRiskBehaviorMismatch` 五类。
+- 监控输入第一版只依赖已有文件事实源：`rules / profiles / audit / assembly`；其中 usage-based finding 会复用 `PolicyAssemblyDecisionStore` 的 `appliedRuleIds / suppressedRuleIds`，而老师明确驳回则从 `PreferenceAuditLogStore` 的 lifecycle 与 `teacherAction` 语义中抽取。
+- 为避免误报，当仓库中还没有任何 `data/preferences/assembly/**/*.json` 时，监控会自动跳过 stale / override 这类 usage-based finding，只保留 teacher reject / style drift 等 audit-based 提醒。
+- `OpenStaffPreferenceProfileCLI` 已扩展 `--drift-monitor` 与 `--drift-profile-version`，现在可以直接对 latest 或指定 snapshot 运行漂移检查，并以 `JSON` 或 summary 形式输出 findings。
 
 #### TODO 11.6.4 落地 learning bundle 导出、校验与恢复
 
