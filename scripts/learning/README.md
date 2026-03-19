@@ -1,6 +1,6 @@
 # scripts/learning/
 
-学习层脚本负责把历史工件回填成可复用的 `turn / evidence / preference extraction` 产物。
+学习层脚本负责把历史工件回填成可复用的 `turn / evidence / preference extraction` 产物，并把学习闭环导出为可迁移的 `learning bundle`。
 
 ## 当前脚本
 
@@ -14,6 +14,14 @@
   - 用 `3-vote` 提炼结构化偏好 JSON
   - 做 schema 校验、hint 句数校验、可执行性校验、低置信度降级
   - 输出 `accepted` 或 `needs_review` 报告
+- `export_learning_bundle.py`
+  - 导出 `turns / evidence / signals / rules / profiles / audit`
+  - 生成 `manifest.json` 与 `verification.json`
+  - 支持按 `session / task / turn` 过滤，同时自动补齐依赖闭环
+- `verify_learning_bundle.py`
+  - 校验 bundle manifest、payload checksum 与对象引用
+  - 支持恢复前 dry-run 预览
+  - 支持恢复到新的 workspace root，并可选 `--overwrite`
 
 ## LLM 提炼器 v1
 
@@ -40,3 +48,47 @@ python3 scripts/learning/extract_preference_signals.py \
   --provider heuristic \
   --output-root data/preferences
 ```
+
+## Learning Bundle v0
+
+导出示例：
+
+```bash
+python3 scripts/learning/export_learning_bundle.py \
+  --learning-root data/learning \
+  --preferences-root data/preferences \
+  --output /tmp/openstaff-learning-bundle \
+  --session-id session-001 \
+  --json
+```
+
+校验示例：
+
+```bash
+python3 scripts/learning/verify_learning_bundle.py \
+  --bundle /tmp/openstaff-learning-bundle \
+  --json
+```
+
+恢复前 dry-run：
+
+```bash
+python3 scripts/learning/verify_learning_bundle.py \
+  --bundle /tmp/openstaff-learning-bundle \
+  --restore-workspace-root /tmp/openstaff-restored \
+  --json
+```
+
+执行恢复：
+
+```bash
+python3 scripts/learning/verify_learning_bundle.py \
+  --bundle /tmp/openstaff-learning-bundle \
+  --restore-workspace-root /tmp/openstaff-restored \
+  --apply \
+  --json
+```
+
+更多字段与结构约定见：
+
+- `docs/learning-bundle-spec.md`

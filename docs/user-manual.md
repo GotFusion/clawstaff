@@ -180,6 +180,47 @@ make openclaw ARGS="--skill-dir scripts/skills/examples/generated/openstaff-task
 - 执行日志会写入 `data/logs/{yyyy-mm-dd}/{sessionId}-openclaw.log`。
 - 若执行失败，会返回结构化 `errorCode/stdout/stderr/exitCode/preflight` 结果，便于审阅与排障。
 
+### 4.5 Learning Bundle 导出、校验与恢复
+适用场景：
+- 迁移 `turn / evidence / signal / rule / profile / audit`
+- 交付给外部 worker 做离线分析
+- 在新工作区恢复学习事实源并重新构建 profile
+
+导出：
+
+```bash
+make learning-bundle-export ARGS="--learning-root data/learning --preferences-root data/preferences --output /tmp/openstaff-learning-bundle --session-id session-001 --json"
+```
+
+校验：
+
+```bash
+make learning-bundle-verify ARGS="--bundle /tmp/openstaff-learning-bundle --json"
+```
+
+恢复前预览：
+
+```bash
+make learning-bundle-restore ARGS="--bundle /tmp/openstaff-learning-bundle --restore-workspace-root /tmp/openstaff-restored --json"
+```
+
+执行恢复：
+
+```bash
+make learning-bundle-restore ARGS="--bundle /tmp/openstaff-learning-bundle --restore-workspace-root /tmp/openstaff-restored --apply --json"
+```
+
+说明：
+- `make learning-bundle-restore` 默认只做 dry-run 预览，不会直接写盘。
+- 若目标路径已有同名文件，默认会报 `conflict`；只有显式加 `--overwrite` 才允许覆盖。
+- 恢复完成后，可继续执行：
+
+```bash
+make preference-profile ARGS="--preferences-root /tmp/openstaff-restored/data/preferences --rebuild --json"
+```
+
+用来验证恢复后的 rule ids 与 profile rebuild 仍然一致。
+
 ## 5. 发布前检查
 
 ### 5.1 执行发布回归

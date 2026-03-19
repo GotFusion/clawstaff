@@ -580,10 +580,10 @@
 - [x] 系统能提醒“该规则可能过时或不再适用”
 
 ### TODO 11.6.5 实现 learning bundle 导出、校验与恢复
-- [ ] 导出 turns / evidence / signals / rules / profiles / audit
-- [ ] 生成 `manifest.json` 与 schema version
-- [ ] 提供 payload 校验脚本
-- [ ] 恢复前支持 dry-run 预览
+- [x] 导出 turns / evidence / signals / rules / profiles / audit
+- [x] 生成 `manifest.json` 与 schema version
+- [x] 提供 payload 校验脚本
+- [x] 恢复前支持 dry-run 预览
 
 **输出物**
 - `scripts/learning/export_learning_bundle.py`
@@ -591,8 +591,8 @@
 - `docs/learning-bundle-spec.md`
 
 **验收标准**
-- [ ] 同一 bundle 可完成导出、校验、恢复三步闭环
-- [ ] 恢复后可重新构建 profile 并对齐 rule ids
+- [x] 同一 bundle 可完成导出、校验、恢复三步闭环
+- [x] 恢复后可重新构建 profile 并对齐 rule ids
 
 ### TODO 11.6.6 固化 hook / gateway 集成边界
 - [ ] 定义事件：
