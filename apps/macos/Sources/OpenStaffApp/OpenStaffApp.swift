@@ -61,6 +61,12 @@ struct OpenStaffRootView: View {
                 .tabItem {
                     Label("状态工作台", systemImage: "gauge.with.dots.needle.67percent")
                 }
+
+            OpenStaffDebugModeView(dashboardViewModel: viewModel)
+                .tag(OpenStaffRootTab.debugMode)
+                .tabItem {
+                    Label("调试模式", systemImage: "ladybug.fill")
+                }
         }
         .background(ConsoleWindowConfigurator(windowIdentifier: OpenStaffSceneID.console))
         .task {
@@ -104,6 +110,7 @@ struct OpenStaffRootView: View {
 private enum OpenStaffRootTab: Hashable {
     case home
     case statusWorkbench
+    case debugMode
 }
 
 private struct ConsoleWindowConfigurator: NSViewRepresentable {
@@ -1626,6 +1633,48 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         }
         let sessionLabel = activeObservationSessionId ?? sessionId
         return "采集会话：\(sessionLabel) · 原始事件：\(capturedEventCount)"
+    }
+
+    var orchestratorLogEntries: [OrchestratorLogEntry] {
+        Array(logger.entries.reversed())
+    }
+
+    var debugDiagnosticsInput: DashboardDebugDiagnosticsInput {
+        DashboardDebugDiagnosticsInput(
+            selectedMode: selectedMode,
+            currentMode: currentMode,
+            runningMode: runningMode,
+            modeStatusSummary: modeStatusSummary,
+            currentStatusCode: currentStatusCode,
+            transitionMessage: transitionMessage,
+            transitionAccepted: lastDecision?.accepted,
+            unmetRequirements: lastDecision?.unmetRequirements ?? [],
+            permissionSnapshot: permissionSnapshot,
+            captureStatusText: captureStatusText,
+            activeObservationSessionId: activeObservationSessionId,
+            capturedEventCount: capturedEventCount,
+            learningSessionState: learningSessionState,
+            quickFeedbackStatusMessage: quickFeedbackStatusMessage,
+            quickFeedbackSucceeded: quickFeedbackWriteSucceeded,
+            teachingSkillStatusMessage: teachingSkillStatusMessage,
+            teachingSkillStatusSucceeded: teachingSkillStatusSucceeded,
+            teachingSkillProcessing: teachingSkillProcessing,
+            skillActionStatusMessage: skillActionStatusMessage,
+            skillActionSucceeded: skillActionSucceeded,
+            skillActionProcessing: skillActionProcessing,
+            learningPrivacyStatusMessage: learningPrivacyStatusMessage,
+            learningPrivacyStatusSucceeded: learningPrivacyStatusSucceeded,
+            executorBackendDescription: executorBackendDescription,
+            usesHelperExecutorBackend: usesHelperExecutorBackend,
+            executorHelperPath: executorHelperPath,
+            isObservationCaptureRunning: modeObservationCapture.isRunning,
+            currentCapabilities: currentCapabilities,
+            selectedExecutionLog: selectedExecutionLog,
+            selectedExecutionReviewDetail: selectedExecutionReviewDetail,
+            selectedLearnedSkill: selectedLearnedSkill,
+            selectedSkillDriftReport: selectedSkillDriftReport,
+            selectedSkillRepairPlan: selectedSkillRepairPlan
+        )
     }
 
     func toggleLearningPauseResume() {
