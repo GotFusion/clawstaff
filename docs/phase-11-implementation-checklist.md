@@ -130,8 +130,8 @@
 
 ### TODO 11.1.4 实现 `InteractionTurnBuilder`
 - [x] 从执行完成后的主链路生成 `InteractionTurn`
-- [ ] 汇总 execution log、review report、repair request、benchmark linkage
-- [ ] 记录 build diagnostics，标明哪些字段缺失
+- [x] 汇总 execution log、review report、repair request、benchmark linkage
+- [x] 记录 build diagnostics，标明哪些字段缺失
 - [x] 支持离线回填旧样本
 - [x] 优先复用现有 `raw-events`、窗口签名、`SemanticTarget`，补 sidecar 引用而不是复制原始大对象
 - [ ] 首批回填至少覆盖 teaching / assist / student 三类历史任务
@@ -144,7 +144,7 @@
 
 **验收标准**
 - [x] 对至少 20 条历史样本批量构建成功
-- [ ] 缺失字段时不会崩溃，而是给出结构化 diagnostics
+- [x] 缺失字段时不会崩溃，而是给出结构化 diagnostics
 
 ### TODO 11.1.3 主线 / 支线学习资格判断
 - [x] 定义 `TurnLearningEligibility`
@@ -158,7 +158,7 @@
 - `docs/adr/ADR-0011-mainline-vs-side-turns.md`
 
 **验收标准**
-- [ ] 纯展示、纯日志、无操作推进价值的记录片段不进入偏好学习
+- [x] 纯展示、纯日志、无操作推进价值的记录片段不进入偏好学习
 - [x] 排除行为可解释，不是黑盒过滤
 
 ---
@@ -240,16 +240,16 @@
 注：`80%` 结构化成功率指标需要在真实 `OpenAI` 联机环境补跑，本次提交已先完成脚本、schema、投票/降级链路与离线回归。
 
 ### TODO 11.2.4 合并规则与 LLM 提炼结果
-- [ ] 同一 turn 的多来源信号去重
-- [ ] 合并相同 scope + type + polarity 的候选
-- [ ] 为冲突信号附加冲突标签
-- [ ] 记录合并置信度
+- [x] 同一 turn 的多来源信号去重
+- [x] 合并相同 scope + type + polarity 的候选
+- [x] 为冲突信号附加冲突标签
+- [x] 记录合并置信度
 
 **输出物**
 - `core/learning/PreferenceSignalMerger.swift`
 
 **验收标准**
-- [ ] 同一 turn 最终信号集合可解释、无明显重复
+- [x] 同一 turn 最终信号集合可解释、无明显重复
 
 ### TODO 11.2.5 生成 directive hint（对应 roadmap 里的 TODO 11.2.4）
 - [x] 从 procedure / locator / repair / style / risk signal 生成一句或几句可执行 hint
@@ -634,13 +634,13 @@
 
 ## 阶段完成检查
 
-- [ ] learning 状态、暂停 / 排除和 quick feedback 已落地
-- [ ] `InteractionTurn` 已在真实主线数据上落盘
-- [ ] `NextStateEvidence` 已覆盖主要反馈源
-- [ ] `PreferenceSignalExtractor` 已能批量提炼真实样本
-- [ ] `PreferenceMemoryStore` 已支持规则晋升、查询、撤销
-- [ ] assist / skill / repair / review 至少 3 个模块接入偏好装配
-- [ ] student planner 仍处于 feature flag 后
-- [ ] `Personal Preference Benchmark` 已建立并可稳定运行
+- [x] learning 状态、暂停 / 排除和 quick feedback 已落地
+- [x] `InteractionTurn` 已在真实主线数据上落盘
+- [x] `NextStateEvidence` 已覆盖主要反馈源
+- [x] `PreferenceSignalExtractor` 已能批量提炼真实样本
+- [x] `PreferenceMemoryStore` 已支持规则晋升、查询、撤销
+- [x] assist / skill / repair / review 至少 3 个模块接入偏好装配
+- [x] student planner 仍处于 feature flag 后
+- [x] `Personal Preference Benchmark` 已建立并可稳定运行
 - [x] 偏好治理、审计、回滚与漂移监控已接入
 - [x] learning bundle 与 hook / gateway 边界已接入

@@ -138,4 +138,48 @@ final class DirectiveHintBuilderTests: XCTestCase {
             [.assistRerank, .skillMapper, .reviewSuggestion]
         )
     }
+
+    func testBuilderMergesDuplicateSignalsBeforeGeneratingHints() {
+        let first = PreferenceSignal(
+            signalId: "signal-style-duplicate-001",
+            turnId: "turn-duplicate-001",
+            traceId: "trace-duplicate-001",
+            sessionId: "session-duplicate-001",
+            taskId: "task-duplicate-001",
+            stepId: "step-001",
+            type: .style,
+            evaluativeDecision: .pass,
+            polarity: .reinforce,
+            scope: .global(),
+            hint: "Keep review text concise and conclusion-first.",
+            confidence: 0.80,
+            evidenceIds: ["evidence-style-duplicate-001"],
+            proposedAction: "shorten_review_copy",
+            promotionStatus: .candidate,
+            timestamp: "2026-03-18T10:25:00Z"
+        )
+        let second = PreferenceSignal(
+            signalId: "signal-style-duplicate-002",
+            turnId: "turn-duplicate-001",
+            traceId: "trace-duplicate-001",
+            sessionId: "session-duplicate-001",
+            taskId: "task-duplicate-001",
+            stepId: "step-001",
+            type: .style,
+            evaluativeDecision: .pass,
+            polarity: .reinforce,
+            scope: .global(),
+            hint: "Keep review text concise and conclusion-first.",
+            confidence: 0.96,
+            evidenceIds: ["evidence-style-duplicate-002"],
+            proposedAction: "shorten_review_copy",
+            promotionStatus: .confirmed,
+            timestamp: "2026-03-18T10:26:00Z"
+        )
+
+        let hints = DirectiveHintBuilder.build(from: [first, second])
+
+        XCTAssertEqual(hints.count, 3)
+        XCTAssertEqual(Set(hints.map(\.signalId)), ["signal-style-duplicate-002"])
+    }
 }

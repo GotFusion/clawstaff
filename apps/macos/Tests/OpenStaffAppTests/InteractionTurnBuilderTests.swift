@@ -70,6 +70,7 @@ final class InteractionTurnBuilderTests: XCTestCase {
         XCTAssertEqual(turn.learningState, .linked)
         XCTAssertEqual(turn.riskLevel, .high)
         XCTAssertEqual(turn.semanticTargetSetRef?.candidateCount, 1)
+        XCTAssertNil(turn.buildDiagnostics)
     }
 
     func testBuilderElevatesReviewAndDangerSignals() {
@@ -126,5 +127,53 @@ final class InteractionTurnBuilderTests: XCTestCase {
         XCTAssertEqual(turn.status, .failed)
         XCTAssertEqual(turn.learningState, .reviewed)
         XCTAssertEqual(turn.riskLevel, .critical)
+        XCTAssertEqual(
+            Set(turn.buildDiagnostics?.map(\.code) ?? []),
+            Set([
+                .missingExecutionArtifacts,
+                .missingKnowledgeItemLink,
+                .missingObservationRawEventLog,
+                .missingObservationSourceRecord,
+                .missingObservationTaskChunk,
+                .missingReviewRawReference
+            ])
+        )
+    }
+
+    func testBuildResultRecordsStructuredDiagnosticsWithoutFailingTurnCreation() {
+        let appContext = InteractionTurnAppContext(
+            appName: "Safari",
+            appBundleId: "com.apple.Safari"
+        )
+        let result = InteractionTurnBuilder.buildResult(
+            InteractionTurnBuildInput(
+                sessionId: "session-003",
+                taskId: "task-003",
+                stepId: "step-001",
+                mode: .assist,
+                turnKind: .taskProgression,
+                stepIndex: 1,
+                intentSummary: "辅助模式预测下一步。",
+                actionSummary: "建议点击 Merge 按钮。",
+                actionKind: .guiAction,
+                appContext: appContext,
+                observationRef: InteractionTurnObservationReference(
+                    appContext: appContext
+                ),
+                stepReference: InteractionTurnStepReference(
+                    stepId: "step-001",
+                    stepIndex: 1,
+                    instruction: "点击 Merge。"
+                ),
+                sourceRefs: [],
+                startedAt: "2026-03-18T10:10:00Z",
+                endedAt: "2026-03-18T10:10:01Z"
+            )
+        )
+
+        XCTAssertEqual(result.turn.turnId, "turn-assist-taskProgression-task-003-step-001")
+        XCTAssertEqual(result.turn.buildDiagnostics?.count, result.diagnostics.count)
+        XCTAssertTrue(result.diagnostics.contains(where: { $0.code == .missingSemanticTargetSet }))
+        XCTAssertTrue(result.diagnostics.contains(where: { $0.code == .missingObservationEvidence }))
     }
 }

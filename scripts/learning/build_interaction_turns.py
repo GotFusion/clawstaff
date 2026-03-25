@@ -67,6 +67,15 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     )
 
 
+def build_diagnostic(code: str, severity: str, field: str, message: str) -> dict[str, str]:
+    return {
+        "code": code,
+        "severity": severity,
+        "field": field,
+        "message": message,
+    }
+
+
 def action_kind_from_step(action_type: str | None) -> str:
     if action_type in {"click", "input", "shortcut"}:
         return "guiAction"
@@ -207,6 +216,147 @@ def build_source_refs(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return refs
 
 
+def normalize_artifact_kind(value: str | None) -> str:
+    return (value or "").strip().lower()
+
+
+def build_turn_diagnostics(turn: dict[str, Any]) -> list[dict[str, str]]:
+    observation = turn.get("observationRef") or {}
+    execution = turn.get("execution") or {}
+    review = turn.get("review") or {}
+    source_refs = turn.get("sourceRefs") or []
+    source_ref_kinds = {normalize_artifact_kind(ref.get("artifactKind")) for ref in source_refs}
+    diagnostics: list[dict[str, str]] = []
+
+    if not observation.get("sourceRecordPath"):
+        diagnostics.append(
+            build_diagnostic(
+                "missing_observation_source_record",
+                "info",
+                "observationRef.sourceRecordPath",
+                "source record 缺失，当前 turn 只能回链到 raw event / task chunk 侧证据。",
+            )
+        )
+
+    if not observation.get("rawEventLogPath"):
+        diagnostics.append(
+            build_diagnostic(
+                "missing_observation_raw_event_log",
+                "warning",
+                "observationRef.rawEventLogPath",
+                "raw event log 路径缺失，无法直接回放原始事件日志。",
+            )
+        )
+
+    if not observation.get("taskChunkPath"):
+        diagnostics.append(
+            build_diagnostic(
+                "missing_observation_task_chunk",
+                "info",
+                "observationRef.taskChunkPath",
+                "task chunk 路径缺失，turn 只能依赖 step reference 追溯任务切片。",
+            )
+        )
+
+    if (
+        not observation.get("sourceRecordPath")
+        and not observation.get("rawEventLogPath")
+        and not observation.get("taskChunkPath")
+        and not observation.get("eventIds")
+    ):
+        diagnostics.append(
+            build_diagnostic(
+                "missing_observation_evidence",
+                "error",
+                "observationRef",
+                "缺少 source record、raw event、task chunk 和 eventIds，观察证据不足。",
+            )
+        )
+
+    if turn.get("actionKind") == "guiAction" and not turn.get("semanticTargetSetRef"):
+        diagnostics.append(
+            build_diagnostic(
+                "missing_semantic_target_set",
+                "warning",
+                "semanticTargetSetRef",
+                "GUI turn 缺少 semantic target 候选，后续 replay / repair 只能依赖弱上下文。",
+            )
+        )
+
+    step_reference = turn.get("stepReference") or {}
+    if not step_reference.get("knowledgeItemId"):
+        diagnostics.append(
+            build_diagnostic(
+                "missing_knowledge_item_link",
+                "warning",
+                "stepReference.knowledgeItemId",
+                "knowledgeItemId 缺失，无法从 turn 直接回链知识条目。",
+            )
+        )
+
+    if execution and not execution.get("executionLogPath") and not execution.get("executionResultPath"):
+        diagnostics.append(
+            build_diagnostic(
+                "missing_execution_artifacts",
+                "warning",
+                "execution",
+                "execution 已存在，但 executionLogPath / executionResultPath 均缺失。",
+            )
+        )
+
+    if review and not review.get("rawRef"):
+        diagnostics.append(
+            build_diagnostic(
+                "missing_review_raw_reference",
+                "info",
+                "review.rawRef",
+                "review 已存在，但 rawRef 缺失，无法直接回链原始审阅工件。",
+            )
+        )
+
+    if review.get("source") == "benchmarkResult" and "benchmarkreview" not in source_ref_kinds:
+        diagnostics.append(
+            build_diagnostic(
+                "missing_benchmark_link",
+                "warning",
+                "sourceRefs",
+                "turn 来源于 benchmark，但 sourceRefs 中缺少 benchmarkReview 关联。",
+            )
+        )
+
+    if review.get("decision") in {"fixLocator", "reteach"} and not (
+        {"repairrequest", "skillrepairrequest"} & source_ref_kinds
+    ):
+        diagnostics.append(
+            build_diagnostic(
+                "missing_repair_request_link",
+                "info",
+                "sourceRefs",
+                "老师要求修复，但当前 turn 尚未关联 repair request 工件。",
+            )
+        )
+
+    seen: set[tuple[str, str, str, str]] = set()
+    deduped: list[dict[str, str]] = []
+    for diagnostic in diagnostics:
+        key = (
+            diagnostic["code"],
+            diagnostic["severity"],
+            diagnostic["field"],
+            diagnostic["message"],
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(diagnostic)
+    return deduped
+
+
+def attach_build_diagnostics(turn: dict[str, Any]) -> dict[str, Any]:
+    turn["buildDiagnostics"] = build_turn_diagnostics(turn)
+    return turn
+
+
 def build_review_link_from_benchmark(review_result: dict[str, Any], review_result_path: str) -> dict[str, Any]:
     notes = review_result.get("notes") or []
     note = "\n".join(notes) if notes else None
@@ -241,6 +391,47 @@ def build_execution_link_from_benchmark(
         "executionResultPath": execution_result_path,
         "reviewId": review_payload.get("reviewId"),
     }
+
+
+def load_repair_requests_by_skill() -> dict[str, list[dict[str, Any]]]:
+    indexed: dict[str, list[dict[str, Any]]] = {}
+    repairs_root = REPO_ROOT / "data/skills/repairs"
+    for path in repairs_root.glob("*/*.jsonl"):
+        for entry in read_jsonl(path):
+            indexed.setdefault(entry.get("skillDirectoryPath", ""), []).append(
+                {
+                    "artifactKind": "repairRequest",
+                    "path": repo_relative(path),
+                    "identifier": entry.get("requestId"),
+                    "payload": entry,
+                }
+            )
+    return indexed
+
+
+def matching_repair_refs(
+    repair_requests_by_skill: dict[str, list[dict[str, Any]]],
+    skill_directory_path: str | None,
+    step_ids: list[str],
+) -> list[dict[str, Any]]:
+    if not skill_directory_path:
+        return []
+
+    matched: list[dict[str, Any]] = []
+    requested_step_ids = {step_id for step_id in step_ids if step_id}
+    for entry in repair_requests_by_skill.get(skill_directory_path, []):
+        payload = entry.get("payload") or {}
+        affected_step_ids = set(payload.get("affectedStepIds") or [])
+        if requested_step_ids and affected_step_ids and requested_step_ids.isdisjoint(affected_step_ids):
+            continue
+        matched.append(
+            {
+                "artifactKind": entry["artifactKind"],
+                "path": entry["path"],
+                "identifier": entry.get("identifier"),
+            }
+        )
+    return matched
 
 
 def load_case_bundle(case_dir: Path) -> dict[str, Any]:
@@ -293,6 +484,12 @@ def benchmark_turns(case_dir: Path) -> list[dict[str, Any]]:
     execution_steps = {step["stepId"]: step for step in execution_result.get("stepResults", [])}
     mapped_context = bundle["skillPayload"].get("mappedOutput", {}).get("context", {})
     review_link = build_review_link_from_benchmark(review_result, bundle["reviewResultPath"])
+    repair_requests_by_skill = load_repair_requests_by_skill()
+    benchmark_execution_log = (
+        execution_result.get("review", {}).get("logFilePath")
+        or execution_result.get("review", {}).get("logFile")
+    )
+    skill_directory_path = execution_result.get("skillDirectoryPath") or bundle["skillPayload"].get("skillDirectoryPath")
 
     artifacts = build_source_refs(
         [
@@ -335,6 +532,11 @@ def benchmark_turns(case_dir: Path) -> list[dict[str, Any]]:
                 "identifier": execution_result.get("traceId"),
             },
             {
+                "artifactKind": "executionLog",
+                "path": benchmark_execution_log,
+                "identifier": execution_result.get("traceId"),
+            },
+            {
                 "artifactKind": "benchmarkReview",
                 "path": bundle["reviewResultPath"],
                 "identifier": review_result.get("caseId"),
@@ -354,6 +556,11 @@ def benchmark_turns(case_dir: Path) -> list[dict[str, Any]]:
             }
             for path in source_record.get("legacyArtifacts", {}).get("teacherFeedbackPaths", [])
         ]
+        + matching_repair_refs(
+            repair_requests_by_skill=repair_requests_by_skill,
+            skill_directory_path=skill_directory_path,
+            step_ids=[mapping.get("skillStepId") for mapping in step_mappings if mapping.get("skillStepId")],
+        )
     )
 
     turns: list[dict[str, Any]] = []
@@ -392,47 +599,49 @@ def benchmark_turns(case_dir: Path) -> list[dict[str, Any]]:
         )
         action_kind = action_kind_from_step(step_result.get("actionType") if step_result else None)
         turns.append(
-            {
-                "schemaVersion": SCHEMA_VERSION,
-                "turnId": build_turn_id("teaching", "taskProgression", knowledge["taskId"], step["stepId"]),
-                "traceId": build_trace_id("teaching", knowledge["taskId"], step["stepId"]),
-                "sessionId": knowledge["sessionId"],
-                "taskId": knowledge["taskId"],
-                "stepId": step["stepId"],
-                "mode": "teaching",
-                "turnKind": "taskProgression",
-                "stepIndex": index,
-                "intentSummary": knowledge["goal"],
-                "actionSummary": step["instruction"],
-                "actionKind": action_kind,
-                "status": "captured",
-                "learningState": learning_state(review_link, []),
-                "privacyTags": [],
-                "riskLevel": risk_level(
-                    action_kind=action_kind,
-                    review_decision=review_link.get("decision"),
-                    preferred_locator_type=(semantic_ref or {}).get("preferredLocatorType"),
-                    error_code=(execution_link or {}).get("errorCode"),
-                ),
-                "appContext": app_context,
-                "observationRef": observation_ref,
-                "semanticTargetSetRef": semantic_ref,
-                "stepReference": {
+            attach_build_diagnostics(
+                {
+                    "schemaVersion": SCHEMA_VERSION,
+                    "turnId": build_turn_id("teaching", "taskProgression", knowledge["taskId"], step["stepId"]),
+                    "traceId": build_trace_id("teaching", knowledge["taskId"], step["stepId"]),
+                    "sessionId": knowledge["sessionId"],
+                    "taskId": knowledge["taskId"],
                     "stepId": step["stepId"],
+                    "mode": "teaching",
+                    "turnKind": "taskProgression",
                     "stepIndex": index,
-                    "instruction": step["instruction"],
-                    "knowledgeItemId": knowledge["knowledgeItemId"],
-                    "knowledgeStepId": step["stepId"],
-                    "skillStepId": skill_step_id,
-                    "planStepId": None,
-                    "sourceEventIds": event_ids,
-                },
-                "execution": execution_link,
-                "review": review_link,
-                "sourceRefs": artifacts,
-                "startedAt": (first_event or {}).get("timestamp", knowledge["source"]["startTimestamp"]),
-                "endedAt": (last_event or {}).get("timestamp", knowledge["source"]["endTimestamp"]),
-            }
+                    "intentSummary": knowledge["goal"],
+                    "actionSummary": step["instruction"],
+                    "actionKind": action_kind,
+                    "status": "captured",
+                    "learningState": learning_state(review_link, []),
+                    "privacyTags": [],
+                    "riskLevel": risk_level(
+                        action_kind=action_kind,
+                        review_decision=review_link.get("decision"),
+                        preferred_locator_type=(semantic_ref or {}).get("preferredLocatorType"),
+                        error_code=(execution_link or {}).get("errorCode"),
+                    ),
+                    "appContext": app_context,
+                    "observationRef": observation_ref,
+                    "semanticTargetSetRef": semantic_ref,
+                    "stepReference": {
+                        "stepId": step["stepId"],
+                        "stepIndex": index,
+                        "instruction": step["instruction"],
+                        "knowledgeItemId": knowledge["knowledgeItemId"],
+                        "knowledgeStepId": step["stepId"],
+                        "skillStepId": skill_step_id,
+                        "planStepId": None,
+                        "sourceEventIds": event_ids,
+                    },
+                    "execution": execution_link,
+                    "review": review_link,
+                    "sourceRefs": artifacts,
+                    "startedAt": (first_event or {}).get("timestamp", knowledge["source"]["startTimestamp"]),
+                    "endedAt": (last_event or {}).get("timestamp", knowledge["source"]["endTimestamp"]),
+                }
+            )
         )
 
     for index, step_result in enumerate(execution_result.get("stepResults", []), start=1):
@@ -457,52 +666,54 @@ def benchmark_turns(case_dir: Path) -> list[dict[str, Any]]:
         semantic_ref = build_semantic_target_set_ref(mapping, bundle["skillPath"])
         action_kind = action_kind_from_step(step_result.get("actionType"))
         turns.append(
-            {
-                "schemaVersion": SCHEMA_VERSION,
-                "turnId": build_turn_id("student", "skillExecution", knowledge["taskId"], knowledge_step_id),
-                "traceId": execution_result["traceId"],
-                "sessionId": execution_result["sessionId"],
-                "taskId": execution_result["taskId"],
-                "stepId": knowledge_step_id,
-                "mode": "student",
-                "turnKind": "skillExecution",
-                "stepIndex": index,
-                "intentSummary": bundle["skillPayload"].get("mappedOutput", {}).get("objective", knowledge["goal"]),
-                "actionSummary": (mapping or {}).get("instruction") or step_result.get("output", ""),
-                "actionKind": action_kind,
-                "status": status_from_execution(step_result.get("status"), default="captured"),
-                "learningState": learning_state(review_link, []),
-                "privacyTags": [],
-                "riskLevel": risk_level(
-                    action_kind=action_kind,
-                    review_decision=review_link.get("decision"),
-                    preferred_locator_type=(semantic_ref or {}).get("preferredLocatorType"),
-                    error_code=step_result.get("errorCode"),
-                ),
-                "appContext": app_context,
-                "observationRef": observation_ref,
-                "semanticTargetSetRef": semantic_ref,
-                "stepReference": {
+            attach_build_diagnostics(
+                {
+                    "schemaVersion": SCHEMA_VERSION,
+                    "turnId": build_turn_id("student", "skillExecution", knowledge["taskId"], knowledge_step_id),
+                    "traceId": execution_result["traceId"],
+                    "sessionId": execution_result["sessionId"],
+                    "taskId": execution_result["taskId"],
                     "stepId": knowledge_step_id,
+                    "mode": "student",
+                    "turnKind": "skillExecution",
                     "stepIndex": index,
-                    "instruction": (mapping or {}).get("instruction") or step_result.get("output", ""),
-                    "knowledgeItemId": knowledge["knowledgeItemId"],
-                    "knowledgeStepId": knowledge_step_id,
-                    "skillStepId": step_result["stepId"],
-                    "planStepId": None,
-                    "sourceEventIds": event_ids,
-                },
-                "execution": build_execution_link_from_benchmark(
-                    execution_result=execution_result,
-                    review=review_result,
-                    step_result=step_result,
-                    execution_result_path=bundle["executionResultPath"],
-                ),
-                "review": review_link,
-                "sourceRefs": artifacts,
-                "startedAt": step_result.get("startedAt", execution_result["startedAt"]),
-                "endedAt": step_result.get("finishedAt", execution_result["finishedAt"]),
-            }
+                    "intentSummary": bundle["skillPayload"].get("mappedOutput", {}).get("objective", knowledge["goal"]),
+                    "actionSummary": (mapping or {}).get("instruction") or step_result.get("output", ""),
+                    "actionKind": action_kind,
+                    "status": status_from_execution(step_result.get("status"), default="captured"),
+                    "learningState": learning_state(review_link, []),
+                    "privacyTags": [],
+                    "riskLevel": risk_level(
+                        action_kind=action_kind,
+                        review_decision=review_link.get("decision"),
+                        preferred_locator_type=(semantic_ref or {}).get("preferredLocatorType"),
+                        error_code=step_result.get("errorCode"),
+                    ),
+                    "appContext": app_context,
+                    "observationRef": observation_ref,
+                    "semanticTargetSetRef": semantic_ref,
+                    "stepReference": {
+                        "stepId": knowledge_step_id,
+                        "stepIndex": index,
+                        "instruction": (mapping or {}).get("instruction") or step_result.get("output", ""),
+                        "knowledgeItemId": knowledge["knowledgeItemId"],
+                        "knowledgeStepId": knowledge_step_id,
+                        "skillStepId": step_result["stepId"],
+                        "planStepId": None,
+                        "sourceEventIds": event_ids,
+                    },
+                    "execution": build_execution_link_from_benchmark(
+                        execution_result=execution_result,
+                        review=review_result,
+                        step_result=step_result,
+                        execution_result_path=bundle["executionResultPath"],
+                    ),
+                    "review": review_link,
+                    "sourceRefs": artifacts,
+                    "startedAt": step_result.get("startedAt", execution_result["startedAt"]),
+                    "endedAt": step_result.get("finishedAt", execution_result["finishedAt"]),
+                }
+            )
         )
 
     return turns
@@ -638,6 +849,7 @@ def live_student_turns() -> list[dict[str, Any]]:
     benchmark_skill_index = build_benchmark_skill_index()
     log_path_by_session, feedback_log_index, log_entries_by_session = load_student_logs()
     feedback_by_log_ref, feedback_path_by_log_ref = load_feedback_by_log_ref()
+    repair_requests_by_skill = load_repair_requests_by_skill()
 
     turns: list[dict[str, Any]] = []
     for report_path in (REPO_ROOT / "data/reports").glob("*/*.json"):
@@ -714,6 +926,16 @@ def live_student_turns() -> list[dict[str, Any]]:
                         "identifier": (feedback or {}).get("feedbackId"),
                     },
                 ]
+                + matching_repair_refs(
+                    repair_requests_by_skill=repair_requests_by_skill,
+                    skill_directory_path=((skill_info or {}).get("payload") or {}).get("skillDirectoryPath")
+                    or (
+                        str(Path((skill_info or {}).get("path", "")).parent.as_posix())
+                        if (skill_info or {}).get("path")
+                        else None
+                    ),
+                    step_ids=[step_result.get("planStepId"), (step_mapping or {}).get("skillStepId"), knowledge_step_id],
+                )
             )
             action_kind = action_kind_from_step("click")
             semantic_ref = build_semantic_target_set_ref(step_mapping, (skill_info or {}).get("path"))
@@ -733,59 +955,61 @@ def live_student_turns() -> list[dict[str, Any]]:
                 "reviewId": report.get("reportId"),
             }
             turns.append(
-                {
-                    "schemaVersion": SCHEMA_VERSION,
-                    "turnId": build_turn_id("student", "skillExecution", report["taskId"], knowledge_step_id),
-                    "traceId": report["traceId"],
-                    "sessionId": report["sessionId"],
-                    "taskId": report["taskId"],
-                    "stepId": knowledge_step_id,
-                    "mode": "student",
-                    "turnKind": "skillExecution",
-                    "stepIndex": index,
-                    "intentSummary": report["goal"],
-                    "actionSummary": plan_step.get("instruction") or step_result.get("output", ""),
-                    "actionKind": action_kind,
-                    "status": status_from_execution(step_result.get("status"), default="captured"),
-                    "learningState": learning_state(review_link, []),
-                    "privacyTags": [],
-                    "riskLevel": risk_level(
-                        action_kind=action_kind,
-                        review_decision=(review_link or {}).get("decision"),
-                        preferred_locator_type=(semantic_ref or {}).get("preferredLocatorType"),
-                        error_code=step_result.get("errorCode"),
-                    ),
-                    "appContext": app_context,
-                    "observationRef": build_observation_ref(
-                        app_context=app_context,
-                        source_record_path=None,
-                        raw_event_log_path=raw_event_info.get("path"),
-                        task_chunk_path=(task_chunk_info or {}).get("path"),
-                        event_ids=event_ids,
-                    ),
-                    "semanticTargetSetRef": semantic_ref,
-                    "stepReference": {
+                attach_build_diagnostics(
+                    {
+                        "schemaVersion": SCHEMA_VERSION,
+                        "turnId": build_turn_id("student", "skillExecution", report["taskId"], knowledge_step_id),
+                        "traceId": report["traceId"],
+                        "sessionId": report["sessionId"],
+                        "taskId": report["taskId"],
                         "stepId": knowledge_step_id,
+                        "mode": "student",
+                        "turnKind": "skillExecution",
                         "stepIndex": index,
-                        "instruction": plan_step.get("instruction") or step_result.get("output", ""),
-                        "knowledgeItemId": plan_step.get("sourceKnowledgeItemId") or knowledge.get("knowledgeItemId"),
-                        "knowledgeStepId": knowledge_step_id,
-                        "skillStepId": (step_mapping or {}).get("skillStepId"),
-                        "planStepId": step_result["planStepId"],
-                        "sourceEventIds": event_ids,
-                    },
-                    "execution": execution_link,
-                    "review": review_link,
-                    "sourceRefs": source_refs,
-                    "startedAt": step_result.get("startedAt", report["startedAt"]),
-                    "endedAt": step_result.get("finishedAt", report["finishedAt"]),
-                }
+                        "intentSummary": report["goal"],
+                        "actionSummary": plan_step.get("instruction") or step_result.get("output", ""),
+                        "actionKind": action_kind,
+                        "status": status_from_execution(step_result.get("status"), default="captured"),
+                        "learningState": learning_state(review_link, []),
+                        "privacyTags": [],
+                        "riskLevel": risk_level(
+                            action_kind=action_kind,
+                            review_decision=(review_link or {}).get("decision"),
+                            preferred_locator_type=(semantic_ref or {}).get("preferredLocatorType"),
+                            error_code=step_result.get("errorCode"),
+                        ),
+                        "appContext": app_context,
+                        "observationRef": build_observation_ref(
+                            app_context=app_context,
+                            source_record_path=None,
+                            raw_event_log_path=raw_event_info.get("path"),
+                            task_chunk_path=(task_chunk_info or {}).get("path"),
+                            event_ids=event_ids,
+                        ),
+                        "semanticTargetSetRef": semantic_ref,
+                        "stepReference": {
+                            "stepId": knowledge_step_id,
+                            "stepIndex": index,
+                            "instruction": plan_step.get("instruction") or step_result.get("output", ""),
+                            "knowledgeItemId": plan_step.get("sourceKnowledgeItemId") or knowledge.get("knowledgeItemId"),
+                            "knowledgeStepId": knowledge_step_id,
+                            "skillStepId": (step_mapping or {}).get("skillStepId"),
+                            "planStepId": step_result["planStepId"],
+                            "sourceEventIds": event_ids,
+                        },
+                        "execution": execution_link,
+                        "review": review_link,
+                        "sourceRefs": source_refs,
+                        "startedAt": step_result.get("startedAt", report["startedAt"]),
+                        "endedAt": step_result.get("finishedAt", report["finishedAt"]),
+                    }
+                )
             )
     return turns
 
 
 def assist_example_turn() -> dict[str, Any]:
-    return {
+    return attach_build_diagnostics({
         "schemaVersion": SCHEMA_VERSION,
         "turnId": "turn-assist-taskProgression-task-assist-example-001-step-001",
         "traceId": "trace-learning-assist-task-assist-example-001-step-001",
@@ -897,7 +1121,7 @@ def assist_example_turn() -> dict[str, Any]:
         ],
         "startedAt": "2026-03-18T09:00:01+08:00",
         "endedAt": "2026-03-18T09:00:07+08:00"
-    }
+    })
 
 
 def dedupe_turns(turns: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -984,9 +1208,16 @@ def main() -> int:
     write_examples(turns, examples_root)
 
     mode_counter = Counter(turn["mode"] for turn in turns)
+    diagnostic_counter = Counter(
+        diagnostic["code"]
+        for turn in turns
+        for diagnostic in turn.get("buildDiagnostics", [])
+    )
     summary = {
         "writtenTurnCount": len(turns),
         "modeCounts": dict(sorted(mode_counter.items())),
+        "buildDiagnosticCount": sum(diagnostic_counter.values()),
+        "buildDiagnosticCounts": dict(sorted(diagnostic_counter.items())),
         "outputRoot": repo_relative(output_root),
         "examplesRoot": repo_relative(examples_root),
     }

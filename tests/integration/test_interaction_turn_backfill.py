@@ -42,6 +42,8 @@ class InteractionTurnBackfillIntegrationTests(unittest.TestCase):
             self.assertGreaterEqual(summary["writtenTurnCount"], 20)
             self.assertIn("teaching", summary["modeCounts"])
             self.assertIn("student", summary["modeCounts"])
+            self.assertGreater(summary["buildDiagnosticCount"], 0)
+            self.assertIn("missing_observation_source_record", summary["buildDiagnosticCounts"])
 
             turn_files = sorted(output_root.glob("*/*/*.json"))
             self.assertGreaterEqual(len(turn_files), 20)
@@ -51,6 +53,7 @@ class InteractionTurnBackfillIntegrationTests(unittest.TestCase):
             self.assertIn(sample_turn["mode"], {"teaching", "student"})
             self.assertIn("observationRef", sample_turn)
             self.assertIn("sourceRefs", sample_turn)
+            self.assertIn("buildDiagnostics", sample_turn)
             self.assertGreaterEqual(len(sample_turn["sourceRefs"]), 3)
 
             assist_example = json.loads(
@@ -58,6 +61,7 @@ class InteractionTurnBackfillIntegrationTests(unittest.TestCase):
             )
             self.assertEqual(assist_example["mode"], "assist")
             self.assertEqual(assist_example["turnKind"], "taskProgression")
+            self.assertIn("buildDiagnostics", assist_example)
 
 
 if __name__ == "__main__":

@@ -32,6 +32,44 @@ public enum InteractionTurnRiskLevel: String, Codable, Sendable {
     case critical
 }
 
+public enum InteractionTurnBuildDiagnosticSeverity: String, Codable, Sendable {
+    case info
+    case warning
+    case error
+}
+
+public enum InteractionTurnBuildDiagnosticCode: String, Codable, Sendable {
+    case missingObservationSourceRecord = "missing_observation_source_record"
+    case missingObservationRawEventLog = "missing_observation_raw_event_log"
+    case missingObservationTaskChunk = "missing_observation_task_chunk"
+    case missingObservationEvidence = "missing_observation_evidence"
+    case missingSemanticTargetSet = "missing_semantic_target_set"
+    case missingKnowledgeItemLink = "missing_knowledge_item_link"
+    case missingExecutionArtifacts = "missing_execution_artifacts"
+    case missingReviewRawReference = "missing_review_raw_reference"
+    case missingBenchmarkLink = "missing_benchmark_link"
+    case missingRepairRequestLink = "missing_repair_request_link"
+}
+
+public struct InteractionTurnBuildDiagnostic: Codable, Equatable, Sendable {
+    public let code: InteractionTurnBuildDiagnosticCode
+    public let severity: InteractionTurnBuildDiagnosticSeverity
+    public let field: String
+    public let message: String
+
+    public init(
+        code: InteractionTurnBuildDiagnosticCode,
+        severity: InteractionTurnBuildDiagnosticSeverity,
+        field: String,
+        message: String
+    ) {
+        self.code = code
+        self.severity = severity
+        self.field = field
+        self.message = message
+    }
+}
+
 public struct InteractionTurnAppContext: Codable, Equatable {
     public let appName: String
     public let appBundleId: String
@@ -251,6 +289,7 @@ public struct InteractionTurn: Codable, Equatable {
     public let execution: InteractionTurnExecutionLink?
     public let review: InteractionTurnReviewLink?
     public let sourceRefs: [InteractionTurnSourceReference]
+    public let buildDiagnostics: [InteractionTurnBuildDiagnostic]?
     public let startedAt: String
     public let endedAt: String
 
@@ -278,6 +317,7 @@ public struct InteractionTurn: Codable, Equatable {
         execution: InteractionTurnExecutionLink? = nil,
         review: InteractionTurnReviewLink? = nil,
         sourceRefs: [InteractionTurnSourceReference],
+        buildDiagnostics: [InteractionTurnBuildDiagnostic]? = nil,
         startedAt: String,
         endedAt: String
     ) {
@@ -304,6 +344,7 @@ public struct InteractionTurn: Codable, Equatable {
         self.execution = execution
         self.review = review
         self.sourceRefs = sourceRefs
+        self.buildDiagnostics = buildDiagnostics
         self.startedAt = startedAt
         self.endedAt = endedAt
     }

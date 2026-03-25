@@ -324,8 +324,50 @@ final class PreferenceRulePromoterTests: XCTestCase {
         XCTAssertEqual(result.rule?.governance?.autoExecutionPolicy, .disabled)
     }
 
+    func testLowRiskPromotionDoesNotDoubleCountDuplicateSignalsFromSameTurn() throws {
+        let promoter = PreferenceRulePromoter()
+        let signals = [
+            makeSignal(
+                signalId: "signal-duplicate-001",
+                turnId: "turn-duplicate-001",
+                sessionId: "session-duplicate-001",
+                timestamp: "2026-03-18T16:00:00Z",
+                confidence: 0.90
+            ),
+            makeSignal(
+                signalId: "signal-duplicate-002",
+                turnId: "turn-duplicate-001",
+                sessionId: "session-duplicate-001",
+                timestamp: "2026-03-18T16:00:10Z",
+                confidence: 0.91
+            ),
+            makeSignal(
+                signalId: "signal-duplicate-003",
+                turnId: "turn-duplicate-003",
+                sessionId: "session-duplicate-002",
+                timestamp: "2026-03-18T16:05:00Z",
+                confidence: 0.92
+            )
+        ]
+
+        let result = try promoter.promote(
+            PreferenceRulePromotionDraft(
+                ruleId: "rule-duplicate-001",
+                statement: "Browser navigation should prefer tabs before windows.",
+                signals: signals,
+                riskLevel: .low,
+                teacherConfirmed: false
+            )
+        )
+
+        XCTAssertEqual(result.outcome, .candidate)
+        XCTAssertTrue(result.evaluation.reasonCodes.contains(.insufficientSignals))
+        XCTAssertEqual(result.evaluation.distinctSessionCount, 2)
+    }
+
     private func makeSignal(
         signalId: String,
+        turnId: String? = nil,
         sessionId: String,
         timestamp: String,
         scope: PreferenceSignalScopeReference = .taskFamily("browser.navigation"),
@@ -337,8 +379,8 @@ final class PreferenceRulePromoterTests: XCTestCase {
     ) -> PreferenceSignal {
         PreferenceSignal(
             signalId: signalId,
-            turnId: "turn-\(signalId)",
-            traceId: "trace-\(signalId)",
+            turnId: turnId ?? "turn-\(signalId)",
+            traceId: "trace-\(turnId ?? signalId)",
             sessionId: sessionId,
             taskId: "task-\(signalId)",
             stepId: "step-\(signalId)",

@@ -26,6 +26,7 @@ Phase 11 v0 先覆盖：
 - `observationRef`：回链 raw event log、task chunk、窗口上下文，以及后续补上的 screenshot / AX / OCR refs
 - `semanticTargetSetRef`：GUI turn 的 locator 候选摘要与来源路径
 - `execution / review / sourceRefs`：把 skill、执行日志、benchmark review、teacher feedback 串起来
+- `buildDiagnostics`：记录回填或构建时缺失了哪些关键链接，例如 `sourceRecord / rawEvent / taskChunk / semanticTarget / execution artifact`
 
 ## ObservationBundle 过渡策略
 
@@ -50,6 +51,7 @@ Phase 11 v0 先覆盖：
 
 - benchmark case 让 turn 能一次性回链 capture、knowledge、skill、execution、benchmark review。
 - student log/report/teacher feedback 让 turn 能承接真实老师审阅样本。
+- 脚本现在还会为每条 turn 写出 `buildDiagnostics`，并在缺少 repair request、benchmark review 或 execution log 等工件时给出结构化 diagnostics，而不是静默跳过。
 - assist 的真实历史日志在当前仓库中尚未冻结，因此 v0 先把 builder 与 schema 设计成可兼容 assist，等真实 assist log 样本入库后直接补跑脚本即可。
 
 ## 风险分级

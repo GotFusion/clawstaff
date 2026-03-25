@@ -138,6 +138,12 @@
         "$ref": "#/$defs/sourceRef"
       }
     },
+    "buildDiagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/buildDiagnostic"
+      }
+    },
     "startedAt": {
       "type": "string",
       "minLength": 1
@@ -277,6 +283,40 @@
         "path": { "type": "string" },
         "identifier": { "type": ["string", "null"] },
         "sha256": { "type": ["string", "null"] }
+      }
+    },
+    "buildDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "field", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "missing_observation_source_record",
+            "missing_observation_raw_event_log",
+            "missing_observation_task_chunk",
+            "missing_observation_evidence",
+            "missing_semantic_target_set",
+            "missing_knowledge_item_link",
+            "missing_execution_artifacts",
+            "missing_review_raw_reference",
+            "missing_benchmark_link",
+            "missing_repair_request_link"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warning", "error"]
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   }

@@ -6,6 +6,8 @@
 
 - `build_interaction_turns.py`
   - 回填 `InteractionTurn`
+  - 同步补 execution log / benchmark review / repair request 侧 source refs
+  - 为缺失关键回链的 turn 写出结构化 `buildDiagnostics`
 - `build_next_state_evidence.py`
   - 回填 `NextStateEvidence`
 - `extract_preference_signals.py`

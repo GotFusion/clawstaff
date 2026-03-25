@@ -19,6 +19,7 @@ public struct InteractionTurnBuildInput: Equatable {
     public let execution: InteractionTurnExecutionLink?
     public let review: InteractionTurnReviewLink?
     public let sourceRefs: [InteractionTurnSourceReference]
+    public let buildDiagnostics: [InteractionTurnBuildDiagnostic]?
     public let privacyTags: [String]
     public let learningState: InteractionTurnLearningState?
     public let riskLevel: InteractionTurnRiskLevel?
@@ -45,6 +46,7 @@ public struct InteractionTurnBuildInput: Equatable {
         execution: InteractionTurnExecutionLink? = nil,
         review: InteractionTurnReviewLink? = nil,
         sourceRefs: [InteractionTurnSourceReference],
+        buildDiagnostics: [InteractionTurnBuildDiagnostic]? = nil,
         privacyTags: [String] = [],
         learningState: InteractionTurnLearningState? = nil,
         riskLevel: InteractionTurnRiskLevel? = nil,
@@ -70,6 +72,7 @@ public struct InteractionTurnBuildInput: Equatable {
         self.execution = execution
         self.review = review
         self.sourceRefs = sourceRefs
+        self.buildDiagnostics = buildDiagnostics
         self.privacyTags = privacyTags
         self.learningState = learningState
         self.riskLevel = riskLevel
@@ -79,15 +82,33 @@ public struct InteractionTurnBuildInput: Equatable {
     }
 }
 
+public struct InteractionTurnBuildResult: Equatable {
+    public let turn: InteractionTurn
+    public let diagnostics: [InteractionTurnBuildDiagnostic]
+
+    public init(
+        turn: InteractionTurn,
+        diagnostics: [InteractionTurnBuildDiagnostic]
+    ) {
+        self.turn = turn
+        self.diagnostics = diagnostics
+    }
+}
+
 public enum InteractionTurnBuilder {
     public static func build(_ input: InteractionTurnBuildInput) -> InteractionTurn {
+        buildResult(input).turn
+    }
+
+    public static func buildResult(_ input: InteractionTurnBuildInput) -> InteractionTurnBuildResult {
         let traceId = input.traceId ?? derivedTraceId(for: input)
         let turnId = input.turnId ?? derivedTurnId(for: input)
         let status = input.status ?? deriveStatus(for: input)
         let learningState = input.learningState ?? deriveLearningState(for: input)
         let riskLevel = input.riskLevel ?? deriveRiskLevel(for: input)
+        let diagnostics = derivedDiagnostics(for: input)
 
-        return InteractionTurn(
+        let turn = InteractionTurn(
             turnId: turnId,
             traceId: traceId,
             sessionId: input.sessionId,
@@ -110,8 +131,14 @@ public enum InteractionTurnBuilder {
             execution: input.execution,
             review: input.review,
             sourceRefs: input.sourceRefs,
+            buildDiagnostics: diagnostics.isEmpty ? input.buildDiagnostics : diagnostics,
             startedAt: input.startedAt,
             endedAt: input.endedAt
+        )
+
+        return InteractionTurnBuildResult(
+            turn: turn,
+            diagnostics: diagnostics
         )
     }
 
@@ -192,5 +219,163 @@ public enum InteractionTurnBuilder {
         let scalars = raw.unicodeScalars.map { allowed.contains($0) ? Character($0) : "-" }
         let token = String(scalars)
         return token.isEmpty ? "turn" : token
+    }
+
+    private static func derivedDiagnostics(
+        for input: InteractionTurnBuildInput
+    ) -> [InteractionTurnBuildDiagnostic] {
+        var diagnostics = input.buildDiagnostics ?? []
+
+        let sourceRefKinds = Set(
+            input.sourceRefs.map { $0.artifactKind.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+        )
+
+        if input.observationRef.sourceRecordPath == nil {
+            diagnostics.append(
+                InteractionTurnBuildDiagnostic(
+                    code: .missingObservationSourceRecord,
+                    severity: .info,
+                    field: "observationRef.sourceRecordPath",
+                    message: "source record 缺失，当前 turn 只能回链到 raw event / task chunk 侧证据。"
+                )
+            )
+        }
+
+        if input.observationRef.rawEventLogPath == nil {
+            diagnostics.append(
+                InteractionTurnBuildDiagnostic(
+                    code: .missingObservationRawEventLog,
+                    severity: .warning,
+                    field: "observationRef.rawEventLogPath",
+                    message: "raw event log 路径缺失，无法直接回放原始事件日志。"
+                )
+            )
+        }
+
+        if input.observationRef.taskChunkPath == nil {
+            diagnostics.append(
+                InteractionTurnBuildDiagnostic(
+                    code: .missingObservationTaskChunk,
+                    severity: .info,
+                    field: "observationRef.taskChunkPath",
+                    message: "task chunk 路径缺失，turn 只能依赖 step reference 追溯任务切片。"
+                )
+            )
+        }
+
+        if input.observationRef.rawEventLogPath == nil
+            && input.observationRef.taskChunkPath == nil
+            && input.observationRef.sourceRecordPath == nil
+            && input.observationRef.eventIds.isEmpty
+        {
+            diagnostics.append(
+                InteractionTurnBuildDiagnostic(
+                    code: .missingObservationEvidence,
+                    severity: .error,
+                    field: "observationRef",
+                    message: "缺少 source record、raw event、task chunk 和 eventIds，观察证据不足。"
+                )
+            )
+        }
+
+        if input.actionKind == .guiAction, input.semanticTargetSetRef == nil {
+            diagnostics.append(
+                InteractionTurnBuildDiagnostic(
+                    code: .missingSemanticTargetSet,
+                    severity: .warning,
+                    field: "semanticTargetSetRef",
+                    message: "GUI turn 缺少 semantic target 候选，后续 replay / repair 只能依赖弱上下文。"
+                )
+            )
+        }
+
+        if input.stepReference.knowledgeItemId == nil {
+            diagnostics.append(
+                InteractionTurnBuildDiagnostic(
+                    code: .missingKnowledgeItemLink,
+                    severity: .warning,
+                    field: "stepReference.knowledgeItemId",
+                    message: "knowledgeItemId 缺失，无法从 turn 直接回链知识条目。"
+                )
+            )
+        }
+
+        if let execution = input.execution,
+           execution.executionLogPath == nil,
+           execution.executionResultPath == nil
+        {
+            diagnostics.append(
+                InteractionTurnBuildDiagnostic(
+                    code: .missingExecutionArtifacts,
+                    severity: .warning,
+                    field: "execution",
+                    message: "execution 已存在，但 executionLogPath / executionResultPath 均缺失。"
+                )
+            )
+        }
+
+        if let review = input.review, review.rawRef == nil {
+            diagnostics.append(
+                InteractionTurnBuildDiagnostic(
+                    code: .missingReviewRawReference,
+                    severity: .info,
+                    field: "review.rawRef",
+                    message: "review 已存在，但 rawRef 缺失，无法直接回链原始审阅工件。"
+                )
+            )
+        }
+
+        if input.review?.source == "benchmarkResult",
+           !sourceRefKinds.contains("benchmarkreview") {
+            diagnostics.append(
+                InteractionTurnBuildDiagnostic(
+                    code: .missingBenchmarkLink,
+                    severity: .warning,
+                    field: "sourceRefs",
+                    message: "turn 来源于 benchmark，但 sourceRefs 中缺少 benchmarkReview 关联。"
+                )
+            )
+        }
+
+        if let reviewDecision = input.review?.decision,
+           [TeacherQuickFeedbackAction.fixLocator.rawValue, TeacherQuickFeedbackAction.reteach.rawValue].contains(reviewDecision),
+           !sourceRefKinds.contains("repairrequest"),
+           !sourceRefKinds.contains("skillrepairrequest")
+        {
+            diagnostics.append(
+                InteractionTurnBuildDiagnostic(
+                    code: .missingRepairRequestLink,
+                    severity: .info,
+                    field: "sourceRefs",
+                    message: "老师要求修复，但当前 turn 尚未关联 repair request 工件。"
+                )
+            )
+        }
+
+        return dedupedDiagnostics(diagnostics)
+    }
+
+    private static func dedupedDiagnostics(
+        _ diagnostics: [InteractionTurnBuildDiagnostic]
+    ) -> [InteractionTurnBuildDiagnostic] {
+        var seen = Set<String>()
+        var deduped: [InteractionTurnBuildDiagnostic] = []
+
+        for diagnostic in diagnostics {
+            let key = [
+                diagnostic.code.rawValue,
+                diagnostic.severity.rawValue,
+                diagnostic.field,
+                diagnostic.message
+            ].joined(separator: "|")
+            guard seen.insert(key).inserted else {
+                continue
+            }
+            deduped.append(diagnostic)
+        }
+
+        return deduped.sorted {
+            ($0.severity.rawValue, $0.code.rawValue, $0.field) < ($1.severity.rawValue, $1.code.rawValue, $1.field)
+        }
     }
 }

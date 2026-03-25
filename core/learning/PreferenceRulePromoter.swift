@@ -134,23 +134,24 @@ public struct PreferenceRulePromoter {
         let orderedSignals = signals.sorted {
             ($0.timestamp, $0.signalId) < ($1.timestamp, $1.signalId)
         }
-        let qualifyingSignals = qualifyingSignals(from: orderedSignals)
-        let rejectedSignals = orderedSignals.filter { $0.promotionStatus == .rejected }
+        let mergedEntries = PreferenceSignalMerger.merge(orderedSignals).entries
+        let qualifyingEntries = qualifyingEntries(from: mergedEntries)
+        let rejectedEntries = mergedEntries.filter { $0.signal.promotionStatus == .rejected }
         let threshold = configuration.threshold(for: riskLevel)
-        let distinctSessionCount = Set(qualifyingSignals.map(\.sessionId)).count
+        let distinctSessionCount = Set(qualifyingEntries.map(\.signal.sessionId)).count
         let averageConfidence: Double
-        if qualifyingSignals.isEmpty {
+        if qualifyingEntries.isEmpty {
             averageConfidence = 0
         } else {
-            averageConfidence = qualifyingSignals.map(\.confidence).reduce(0, +) / Double(qualifyingSignals.count)
+            averageConfidence = qualifyingEntries.map(\.mergedConfidence).reduce(0, +) / Double(qualifyingEntries.count)
         }
 
-        let latestAcceptedAt = qualifyingSignals.last?.timestamp
-        let latestRejectedAt = rejectedSignals.last?.timestamp
-        let representativeSignal = qualifyingSignals.last ?? orderedSignals.last
+        let latestAcceptedAt = qualifyingEntries.last?.signal.timestamp
+        let latestRejectedAt = rejectedEntries.last?.signal.timestamp
+        let representativeSignal = qualifyingEntries.last?.signal ?? mergedEntries.last?.signal
         let representativeScope = representativeSignal?.scope
         let representativeScopeLevel = representativeScope?.level
-        let representativeType = representativeSignal?.type ?? orderedSignals.last?.type ?? .procedure
+        let representativeType = representativeSignal?.type ?? mergedEntries.last?.signal.type ?? .procedure
         let governanceDecision = policy.governanceDecision(
             signalType: representativeType,
             riskLevel: riskLevel,
@@ -173,7 +174,7 @@ public struct PreferenceRulePromoter {
             reasonCodes.append(.scopeNotAllowedByGovernance)
         }
 
-        if qualifyingSignals.count < threshold.minimumSignalCount {
+        if qualifyingEntries.count < threshold.minimumSignalCount {
             reasonCodes.append(.insufficientSignals)
         }
 
@@ -201,8 +202,8 @@ public struct PreferenceRulePromoter {
         return PreferenceRulePromotionEvaluation(
             riskLevel: riskLevel,
             threshold: threshold,
-            qualifyingSignalIds: qualifyingSignals.map(\.signalId),
-            rejectedSignalIds: rejectedSignals.map(\.signalId),
+            qualifyingSignalIds: qualifyingEntries.flatMap(\.sourceSignalIds),
+            rejectedSignalIds: rejectedEntries.flatMap(\.sourceSignalIds),
             distinctSessionCount: distinctSessionCount,
             averageConfidence: averageConfidence,
             teacherConfirmed: teacherConfirmed,
@@ -234,9 +235,11 @@ public struct PreferenceRulePromoter {
         let orderedSignals = draft.signals.sorted {
             ($0.timestamp, $0.signalId) < ($1.timestamp, $1.signalId)
         }
+        let mergedEntries = PreferenceSignalMerger.merge(orderedSignals).entries
+        let qualifyingEntries = qualifyingEntries(from: mergedEntries)
         let qualifyingSignals = qualifyingSignals(from: orderedSignals)
 
-        if let compatibilityFailure = compatibilityFailureReason(for: qualifyingSignals) {
+        if let compatibilityFailure = compatibilityFailureReason(for: qualifyingEntries) {
             throw PreferenceRulePromoterError.incompatibleSignalGroup(
                 ruleId: draft.ruleId,
                 reason: compatibilityFailure
@@ -250,7 +253,7 @@ public struct PreferenceRulePromoter {
         )
 
         guard evaluation.isEligible,
-              let representative = qualifyingSignals.last ?? qualifyingSignals.first else {
+              let representative = qualifyingEntries.last?.signal ?? qualifyingEntries.first?.signal else {
             return PreferenceRulePromotionResult(
                 outcome: .candidate,
                 evaluation: evaluation,
@@ -258,22 +261,24 @@ public struct PreferenceRulePromoter {
             )
         }
 
-        let createdAt = draft.createdAt ?? qualifyingSignals.first?.timestamp ?? representative.timestamp
-        let updatedAt = draft.updatedAt ?? qualifyingSignals.last?.timestamp ?? representative.timestamp
-        let hint = qualifyingSignals.reversed().compactMap { normalizedOptionalString($0.hint) }.first
-        let proposedAction = qualifyingSignals.reversed().compactMap { normalizedOptionalString($0.proposedAction) }.first
+        let createdAt = draft.createdAt ?? qualifyingEntries.first?.signal.timestamp ?? representative.timestamp
+        let updatedAt = draft.updatedAt ?? qualifyingEntries.last?.signal.timestamp ?? representative.timestamp
+        let hint = qualifyingEntries.reversed().compactMap { normalizedOptionalString($0.signal.hint) }.first
+        let proposedAction = qualifyingEntries.reversed().compactMap { normalizedOptionalString($0.signal.proposedAction) }.first
         let governance = evaluation.governanceDecision.governance.materialized(at: updatedAt)
+        let sourceSignalIds = Array(Set(qualifyingEntries.flatMap(\.sourceSignalIds))).sorted()
+        let evidenceSignals = uniqueSignalsByID(qualifyingSignals)
 
         let rule = PreferenceRule(
             ruleId: draft.ruleId,
-            sourceSignalIds: qualifyingSignals.map(\.signalId),
+            sourceSignalIds: sourceSignalIds,
             scope: representative.scope,
             type: representative.type,
             polarity: representative.polarity,
             statement: statement,
             hint: hint,
             proposedAction: proposedAction,
-            evidence: qualifyingSignals.map(PreferenceRuleEvidence.init(signal:)),
+            evidence: evidenceSignals.map(PreferenceRuleEvidence.init(signal:)),
             riskLevel: draft.riskLevel,
             governance: governance,
             activationStatus: .active,
@@ -300,6 +305,17 @@ public struct PreferenceRulePromoter {
         }
     }
 
+    private func qualifyingEntries(from entries: [PreferenceSignalMergeEntry]) -> [PreferenceSignalMergeEntry] {
+        entries.filter { entry in
+            switch entry.signal.promotionStatus {
+            case .candidate, .confirmed:
+                return true
+            case .rejected, .superseded:
+                return false
+            }
+        }
+    }
+
     private func hasRecentRejection(
         latestAcceptedAt: String?,
         latestRejectedAt: String?
@@ -313,11 +329,12 @@ public struct PreferenceRulePromoter {
         return latestRejectedAt >= latestAcceptedAt
     }
 
-    private func compatibilityFailureReason(for signals: [PreferenceSignal]) -> String? {
-        guard let first = signals.first else {
+    private func compatibilityFailureReason(for entries: [PreferenceSignalMergeEntry]) -> String? {
+        guard let first = entries.first?.signal else {
             return nil
         }
 
+        let signals = entries.map(\.signal)
         if signals.contains(where: { $0.scope != first.scope }) {
             return "signals span multiple scopes"
         }
@@ -333,6 +350,13 @@ public struct PreferenceRulePromoter {
             return "signals propose multiple actions"
         }
 
+        if entries.contains(where: { $0.conflictTags.contains(.opposingPolarity) }) {
+            return "signals contain opposing polarity"
+        }
+        if entries.contains(where: { $0.conflictTags.contains(.divergentProposedAction) }) {
+            return "signals contain conflicting merged actions"
+        }
+
         return nil
     }
 
@@ -343,5 +367,15 @@ public struct PreferenceRulePromoter {
 
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
+    }
+
+    private func uniqueSignalsByID(_ signals: [PreferenceSignal]) -> [PreferenceSignal] {
+        var signalsByID: [String: PreferenceSignal] = [:]
+        for signal in signals {
+            signalsByID[signal.signalId] = signal
+        }
+        return signalsByID.values.sorted {
+            ($0.timestamp, $0.signalId) < ($1.timestamp, $1.signalId)
+        }
     }
 }

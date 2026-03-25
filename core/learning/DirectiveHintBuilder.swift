@@ -81,14 +81,18 @@ public enum DirectiveHintBuilder {
     }
 
     public static func build(from signals: [PreferenceSignal]) -> [DirectiveHint] {
-        let orderedSignals = signals.sorted {
-            ($0.timestamp, $0.signalId) < ($1.timestamp, $1.signalId)
-        }
+        let mergedEntries = PreferenceSignalMerger.merge(signals).entries
 
         var seenHintKeys = Set<String>()
         var hints: [DirectiveHint] = []
 
-        for signal in orderedSignals {
+        for entry in mergedEntries {
+            guard !entry.conflictTags.contains(.opposingPolarity),
+                  !entry.conflictTags.contains(.divergentProposedAction) else {
+                continue
+            }
+
+            let signal = entry.signal
             guard isAcceptedDirectiveSignal(signal),
                   let hint = normalizedOptionalString(signal.hint),
                   let proposedAction = normalizedOptionalString(signal.proposedAction) else {
@@ -119,8 +123,8 @@ public enum DirectiveHintBuilder {
                         scope: signal.scope,
                         hint: hint,
                         proposedAction: proposedAction,
-                        confidence: signal.confidence,
-                        evidenceIds: signal.evidenceIds,
+                        confidence: entry.mergedConfidence,
+                        evidenceIds: entry.sourceEvidenceIds,
                         createdAt: signal.timestamp
                     )
                 )
