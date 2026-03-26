@@ -38,3 +38,6 @@ data/llm/
 data/runtime/
 
 data/skills/
+
+data/semantic-actions/*
+!data/semantic-actions/.gitkeep

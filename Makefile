@@ -17,7 +17,7 @@ SWIFT_WRAPPER := ./scripts/dev/with_xcode_env.sh
 SWIFT := $(SWIFT_WRAPPER) swift
 ARGS ?=
 
-.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify review preference-profile learning-bundle-export learning-bundle-verify learning-bundle-restore openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample benchmark-personal benchmark-preference benchmark-preference-gates benchmark-preference-preflight test-swift test test-unit test-integration test-e2e release-regression release-preflight
+.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify review preference-profile learning-bundle-export learning-bundle-verify learning-bundle-restore semantic-actions-migrate openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample benchmark-personal benchmark-preference benchmark-preference-gates benchmark-preference-preflight test-swift test test-unit test-integration test-e2e release-regression release-preflight
 
 build:
 	$(SWIFT) build --package-path $(APP_PACKAGE_PATH)
@@ -61,6 +61,9 @@ learning-bundle-verify:
 
 learning-bundle-restore:
 	python3 scripts/learning/verify_learning_bundle.py $(ARGS)
+
+semantic-actions-migrate:
+	python3 scripts/learning/migrate_semantic_actions.py $(ARGS)
 
 openclaw:
 	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(OPENCLAW_TARGET) $(ARGS)

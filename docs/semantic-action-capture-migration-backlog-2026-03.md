@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
 更新时间：2026-03-26  
-状态：进行中（SEM-001 已完成，其余待执行）
+状态：进行中（SEM-001 / SEM-002 已完成，其余待执行）
 
 ## 1. 目标与原则
 
@@ -59,22 +59,29 @@
   - 缓解：提供只读转换预览和人工确认回退流程。
 
 ### SEM-002 语义动作数据模型与迁移脚本
+状态：已完成（2026-03-26）
 - 目标：新增 `semantic_actions` 相关表并可写可查。
 - 任务：
   - 数据库 migration：
-    - `semantic_actions`
-    - `action_targets`
-    - `action_assertions`
-    - `action_execution_logs`
-  - 定义字段：`session_id`、`action_type`、`selector_json`、`args_json`、`context_json`、`confidence`、`source_event_ids`。
-  - 增加 DAO/Repository 层接口。
+    - [x] `semantic_actions`
+    - [x] `action_targets`
+    - [x] `action_assertions`
+    - [x] `action_execution_logs`
+  - [x] 定义字段：`session_id`、`action_type`、`selector_json`、`args_json`、`context_json`、`confidence`、`source_event_ids`。
+  - [x] 增加 DAO/Repository 层接口。
+  - [x] 新增 `scripts/learning/migrate_semantic_actions.py`，把 `InteractionTurn` 回填到独立 SQLite store。
 - DoD：
-  - migration 可前后滚动（up/down）。
-  - 插入/查询 API 测试通过。
-  - 字段支持审计追踪（source_event_ids, frame ids）。
+  - [x] migration 可前后滚动（up/down）。
+  - [x] 插入/查询 API 测试通过。
+  - [x] 字段支持审计追踪（`source_event_ids`, `source_frame_ids`）。
 - 风险：
   - schema 设计过早固化。
   - 缓解：`selector_json/args_json/context_json` 先 JSON 扩展，后续再收敛。
+- 落地产物：
+  - `scripts/learning/migrations/semantic_actions/0001_semantic_actions.{up,down}.sql`
+  - `scripts/learning/semantic_action_store.py`
+  - `scripts/learning/migrate_semantic_actions.py`
+  - `tests/integration/test_semantic_action_migration.py`
 
 ### SEM-003 CI 守门规则（禁止新增坐标执行调用）
 - 目标：防止坐标执行逻辑回流。

@@ -16,6 +16,10 @@
   - 用 `3-vote` 提炼结构化偏好 JSON
   - 做 schema 校验、hint 句数校验、可执行性校验、低置信度降级
   - 输出 `accepted` 或 `needs_review` 报告
+- `migrate_semantic_actions.py`
+  - 创建 / 回滚 `semantic_actions` SQLite schema
+  - 从 `data/learning/turns/**` 回填 `semantic_actions / action_targets / action_assertions / action_execution_logs`
+  - 优先复用 `InteractionTurn.semanticTargetSetRef` 与关联 skill bundle 的 `actionType / locatorStrategyOrder / coordinate legacy ref`
 - `export_learning_bundle.py`
   - 导出 `turns / evidence / signals / rules / profiles / audit`
   - 生成 `manifest.json` 与 `verification.json`
@@ -94,3 +98,26 @@ python3 scripts/learning/verify_learning_bundle.py \
 更多字段与结构约定见：
 
 - `docs/learning-bundle-spec.md`
+- `docs/semantic-action-store-v0.md`
+
+## Semantic Actions SQLite
+
+建库并回填示例：
+
+```bash
+python3 scripts/learning/migrate_semantic_actions.py \
+  --db-path data/semantic-actions/semantic-actions.sqlite \
+  --workspace-root . \
+  --turns-root data/learning/turns \
+  --clean \
+  --json
+```
+
+只做 schema rollback：
+
+```bash
+python3 scripts/learning/migrate_semantic_actions.py \
+  --db-path data/semantic-actions/semantic-actions.sqlite \
+  --direction down \
+  --json
+```

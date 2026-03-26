@@ -21,6 +21,7 @@ make preference-profile
 make learning-bundle-export
 make learning-bundle-verify
 make learning-bundle-restore
+make semantic-actions-migrate
 make student
 make llm-prompts
 make llm-validate
@@ -59,6 +60,7 @@ make release-preflight
 - `make learning-bundle-export`：导出 Phase 11.6 learning bundle（`turn / evidence / signal / rule / profile / audit` + `manifest.json` + `verification.json`）。
 - `make learning-bundle-verify`：校验 learning bundle payload、checksum 与对象引用闭环。
 - `make learning-bundle-restore`：对 learning bundle 做恢复预览或执行恢复（默认 dry-run，需显式传 `--apply` 才写盘）。
+- `make semantic-actions-migrate`：创建或回滚 `semantic_actions` SQLite schema，并把 `InteractionTurn` 回填为 `semantic_actions / action_targets / action_assertions / action_execution_logs`。
 - `make student`：启动 Phase 4.3 学生模式闭环 CLI（输入目标 -> 自动规划 -> 技能执行 -> 结构化审阅报告）。默认仍走 `rule-v0`；仅在显式传入 `--enable-preference-aware-planner --student-planner-benchmark-safe` 时启用偏好装配 student planner。
 - `make llm-prompts`：渲染 Phase 3.1 提示词模板（KnowledgeItem -> system/user prompts）。
 - `make llm-validate`：校验 LLM 结构化输出样例（强制 JSON + 一致性检查）。

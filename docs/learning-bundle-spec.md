@@ -29,12 +29,14 @@ bundle 至少包含以下 6 类对象：
 - `assembly`
 - `extractions`
 - `needs-review`
+- `semantic_actions` SQLite store
 - 原始 screenshot / AX / OCR 二进制资产
 
 原因：
 
 - v0 的目标是优先保证学习闭环与偏好治理闭环可迁移。
 - `assembly` 更偏运行时解释层，后续可在 v1 追加。
+- `semantic_actions` 当前先以独立 SQLite store + migration script 落地，后续 bundle v1 再决定采用逻辑导出还是原库快照。
 - 大体量原始附件会明显放大 bundle 体积，且当前 `InteractionTurn.observationRef` 已保留引用事实。
 
 ## 3. 目录结构
