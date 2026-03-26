@@ -40,15 +40,18 @@ final class SkillPreflightValidatorTests: XCTestCase {
         XCTAssertTrue(report.issues.contains(where: { $0.code == .missingLocator }))
     }
 
-    func testPreflightFailsWhenStepTargetsNonAllowlistedApp() {
+    func testPreflightAllowsExplicitlyDeclaredCrossAppSteps() {
         let report = SkillPreflightValidator().validate(
             payload: makePayload(
+                requiresTeacherConfirmation: true,
+                contextAppBundleId: "com.apple.finder",
+                requiredFrontmostAppBundleId: "com.apple.finder",
                 stepMappings: [
                     makeStepMapping(
                         semanticTargets: [
                             SkillBundleSemanticTarget(
                                 locatorType: .roleAndTitle,
-                                appBundleId: "com.apple.Terminal",
+                                appBundleId: "com.apple.Safari",
                                 windowTitlePattern: "^Main$",
                                 elementRole: "AXButton",
                                 elementTitle: "Open",
@@ -61,13 +64,16 @@ final class SkillPreflightValidatorTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(report.status, .failed)
-        XCTAssertTrue(report.issues.contains(where: { $0.code == .targetAppNotAllowed }))
+        XCTAssertEqual(report.status, .needsTeacherConfirmation)
+        XCTAssertEqual(report.allowedAppBundleIds, ["com.apple.finder", "com.apple.Safari"])
+        XCTAssertFalse(report.issues.contains(where: { $0.code == .targetAppNotAllowed }))
     }
 
     private func makePayload(
         requiresTeacherConfirmation: Bool = false,
         confidence: Double = 0.86,
+        contextAppBundleId: String = "com.apple.Safari",
+        requiredFrontmostAppBundleId: String = "com.apple.Safari",
         stepMappings: [SkillBundleStepMapping]
     ) -> SkillBundlePayload {
         SkillBundlePayload(
@@ -81,8 +87,8 @@ final class SkillPreflightValidatorTests: XCTestCase {
             mappedOutput: SkillBundleMappedOutput(
                 objective: "点击按钮",
                 context: SkillBundleContext(
-                    appName: "Safari",
-                    appBundleId: "com.apple.Safari",
+                    appName: contextAppBundleId == "com.apple.finder" ? "Finder" : "Safari",
+                    appBundleId: contextAppBundleId,
                     windowTitle: "Main"
                 ),
                 executionPlan: SkillBundleExecutionPlan(
@@ -98,7 +104,7 @@ final class SkillPreflightValidatorTests: XCTestCase {
                     ],
                     completionCriteria: SkillBundleCompletionCriteria(
                         expectedStepCount: 1,
-                        requiredFrontmostAppBundleId: "com.apple.Safari"
+                        requiredFrontmostAppBundleId: requiredFrontmostAppBundleId
                     )
                 ),
                 safetyNotes: ["执行前确认前台应用。"],

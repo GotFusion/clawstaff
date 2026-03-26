@@ -165,6 +165,7 @@ python3 scripts/validation/validate_skill_bundle.py \
 说明：
 - `validate_openclaw_skill.py` 负责 bundle/frontmatter/schema 一致性校验。
 - `validate_skill_bundle.py` 负责执行前预检：locator 可解析性、高风险动作、低置信步骤、低复现度、敏感窗口识别、目标 App 白名单。
+- 目标 App 白名单默认从 skill 自身声明的 app 集合推导：顶层 context、completionCriteria，以及步骤里显式声明的 bundle / semantic target app。
 - 统一安全策略位于 `config/safety-rules.yaml`；如需做项目级放行，请优先在其中配置 `App / task / skill` 白名单，而不是直接改代码。
 - App 技能列表会直接展示预检状态；`需老师确认` 的技能不会进入学生模式自动执行。
 

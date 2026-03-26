@@ -231,7 +231,33 @@ def derived_allowed_app_bundle_ids(mapping: dict[str, Any], extra_allowed: list[
         .get("completionCriteria", {})
         .get("requiredFrontmostAppBundleId")
     )
-    values = [context_bundle_id, frontmost_bundle_id, *extra_allowed]
+    execution_plan = mapping.get("mappedOutput", {}).get("executionPlan", {})
+    plan_steps = execution_plan.get("steps", []) if isinstance(execution_plan, dict) else []
+    provenance = mapping.get("provenance", {})
+    ordered_step_mappings = provenance.get("stepMappings", []) if isinstance(provenance, dict) else []
+
+    values = [context_bundle_id, frontmost_bundle_id]
+    for step in plan_steps:
+        if not isinstance(step, dict):
+            continue
+        target_bundle_id = parse_bundle_target(normalize(step.get("target")))
+        if target_bundle_id:
+            values.append(target_bundle_id)
+
+    for step_mapping in ordered_step_mappings:
+        if not isinstance(step_mapping, dict):
+            continue
+        semantic_targets = step_mapping.get("semanticTargets", [])
+        if not isinstance(semantic_targets, list):
+            continue
+        for semantic_target in semantic_targets:
+            if not isinstance(semantic_target, dict):
+                continue
+            app_bundle_id = normalize(semantic_target.get("appBundleId"))
+            if app_bundle_id:
+                values.append(app_bundle_id)
+
+    values.extend(extra_allowed)
     ordered: list[str] = []
     seen: set[str] = set()
     for value in values:

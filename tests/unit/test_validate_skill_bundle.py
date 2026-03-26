@@ -150,6 +150,24 @@ class ValidateSkillBundleTests(unittest.TestCase):
                 },
             )
 
+    def test_build_report_keeps_declared_cross_app_skill_confirmation_gated(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = Path(tmpdir) / "skill"
+            shutil.copytree(SAMPLE_SKILL_DIR, skill_dir)
+
+            payload_path = skill_dir / "openstaff-skill.json"
+            payload = json.loads(payload_path.read_text(encoding="utf-8"))
+            payload["mappedOutput"]["context"]["appBundleId"] = "com.apple.finder"
+            payload["mappedOutput"]["context"]["appName"] = "Finder"
+            payload["mappedOutput"]["executionPlan"]["completionCriteria"]["requiredFrontmostAppBundleId"] = "com.apple.finder"
+            payload_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+            report = self.validator.build_report(skill_dir, [])
+
+            self.assertEqual(report["status"], "needs_teacher_confirmation")
+            self.assertEqual(report["allowedAppBundleIds"], ["com.apple.finder", "com.apple.Safari"])
+            self.assertFalse(any(item["code"] == "SPF-TARGET-APP-NOT-ALLOWED" for item in report["issues"]))
+
     def test_cli_require_auto_runnable_fails_confirmation_required_skill(self):
         completed = subprocess.run(
             [

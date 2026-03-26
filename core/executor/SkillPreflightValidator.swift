@@ -600,10 +600,10 @@ public struct SkillPreflightValidator {
 
         let plan = payload.mappedOutput.executionPlan
         let contextAppBundleId = normalized(payload.mappedOutput.context.appBundleId)
-        let requiredFrontmostAppBundleId = normalized(plan.completionCriteria.requiredFrontmostAppBundleId)
+        let orderedStepMappings = payload.provenance?.stepMappings ?? []
         let allowedAppBundleIds = derivedAllowedAppBundleIds(
-            contextAppBundleId: contextAppBundleId,
-            requiredFrontmostAppBundleId: requiredFrontmostAppBundleId,
+            payload: payload,
+            orderedStepMappings: orderedStepMappings,
             options: options
         )
 
@@ -657,7 +657,6 @@ public struct SkillPreflightValidator {
             )
         }
 
-        let orderedStepMappings = payload.provenance?.stepMappings ?? []
         var stepMappingsById: [String: SkillBundleStepMapping] = [:]
         for stepMapping in orderedStepMappings {
             stepMappingsById[stepMapping.skillStepId] = stepMapping
@@ -923,11 +922,21 @@ public struct SkillPreflightValidator {
     }
 
     private func derivedAllowedAppBundleIds(
-        contextAppBundleId: String,
-        requiredFrontmostAppBundleId: String,
+        payload: SkillBundlePayload,
+        orderedStepMappings: [SkillBundleStepMapping],
         options: SkillPreflightOptions
     ) -> [String] {
+        let contextAppBundleId = normalized(payload.mappedOutput.context.appBundleId)
+        let requiredFrontmostAppBundleId = normalized(
+            payload.mappedOutput.executionPlan.completionCriteria.requiredFrontmostAppBundleId
+        )
         var values = [contextAppBundleId, requiredFrontmostAppBundleId]
+        values.append(contentsOf: payload.mappedOutput.executionPlan.steps.compactMap { step in
+            parseBundleTarget(step.target)
+        })
+        values.append(contentsOf: orderedStepMappings.flatMap { stepMapping in
+            stepMapping.semanticTargets.compactMap(\.appBundleId)
+        })
         values.append(contentsOf: options.extraAllowedAppBundleIds)
 
         var ordered: [String] = []

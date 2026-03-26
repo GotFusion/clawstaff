@@ -48,6 +48,14 @@ class ValidateKnowledgeParseOutputTests(unittest.TestCase):
 
         self.assertEqual(data["schemaVersion"], "llm.knowledge-parse.v0")
 
+    def test_extract_json_normalizes_smart_quotes(self):
+        text = '{“schemaVersion”:“llm.knowledge-parse.v0”,“knowledgeItemId”:“k”,“taskId”:“task-a-001”,“sessionId”:“s-1”,“objective”:“o”,“context”:{“appName”:“a”,“appBundleId”:“b”,“windowTitle”:null},“executionPlan”:{“requiresTeacherConfirmation”:false,“steps”:[{“stepId”:“step-001”,“actionType”:“click”,“instruction”:“click”,“target”:“coordinate:1,2”,“sourceEventIds”:[“e-1”]}],“completionCriteria”:{“expectedStepCount”:1,“requiredFrontmostAppBundleId”:“b”},“failurePolicy”:{“onContextMismatch”:“stopAndAskTeacher”,“onStepError”:“stopAndAskTeacher”,“onUnknownAction”:“stopAndAskTeacher”}},“safetyNotes”:[“n”],“confidence”:0.8}'
+
+        data = self.mod.extract_json_from_text(text)
+
+        self.assertEqual(data["schemaVersion"], "llm.knowledge-parse.v0")
+        self.assertEqual(data["executionPlan"]["steps"][0]["stepId"], "step-001")
+
     def test_validate_with_knowledge_item_detects_mismatch(self):
         invalid = copy.deepcopy(self.sample_output)
         invalid["objective"] = "different"

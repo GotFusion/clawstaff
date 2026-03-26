@@ -34,6 +34,18 @@ STEP_KEYS = {"stepId", "actionType", "instruction", "target", "sourceEventIds"}
 COMPLETION_KEYS = {"expectedStepCount", "requiredFrontmostAppBundleId"}
 FAILURE_KEYS = {"onContextMismatch", "onStepError", "onUnknownAction"}
 ACTION_TYPES = {"openApp", "click", "input", "shortcut", "wait", "unknown"}
+SMART_QUOTE_TRANSLATION = str.maketrans(
+    {
+        "“": '"',
+        "”": '"',
+        "„": '"',
+        "‟": '"',
+        "’": "'",
+        "‘": "'",
+        "‚": "'",
+        "‛": "'",
+    }
+)
 
 
 def is_number(value: Any) -> bool:
@@ -50,8 +62,13 @@ def load_json(path: Path) -> Any:
         return json.load(f)
 
 
+def normalize_jsonish_text(text: str) -> str:
+    return text.translate(SMART_QUOTE_TRANSLATION)
+
+
 def extract_json_from_text(text: str) -> Any:
-    stripped = text.strip()
+    normalized_text = normalize_jsonish_text(text)
+    stripped = normalized_text.strip()
 
     try:
         return json.loads(stripped)
@@ -59,7 +76,7 @@ def extract_json_from_text(text: str) -> Any:
         pass
 
     fenced_blocks = re.findall(
-        r"```(?:json)?\s*([\s\S]*?)\s*```", text, flags=re.IGNORECASE
+        r"```(?:json)?\s*([\s\S]*?)\s*```", normalized_text, flags=re.IGNORECASE
     )
     for block in fenced_blocks:
         candidate = block.strip()
@@ -71,7 +88,7 @@ def extract_json_from_text(text: str) -> Any:
             continue
 
     parsed_candidates: list[Any] = []
-    for candidate in extract_balanced_objects(text):
+    for candidate in extract_balanced_objects(normalized_text):
         try:
             parsed = json.loads(candidate)
         except json.JSONDecodeError:

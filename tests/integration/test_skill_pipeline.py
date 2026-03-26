@@ -82,6 +82,39 @@ class SkillPipelineIntegrationTests(unittest.TestCase):
             validator = self.run_cmd([sys.executable, str(VALIDATOR), "--skill-dir", str(skill_dir)])
             self.assertEqual(validator.returncode, 0, msg=validator.stderr or validator.stdout)
 
+    def test_pipeline_accepts_llm_output_with_smart_quotes(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            skills_root = tmp_path / "skills"
+            llm_output_path = tmp_path / "smart-quotes-output.txt"
+            sample_output = (
+                REPO_ROOT / "scripts/llm/examples/knowledge-parse-output.sample.json"
+            ).read_text(encoding="utf-8")
+            llm_output_path.write_text(
+                sample_output.replace('"', "“").replace("“llm.knowledge-parse.v0“", "“llm.knowledge-parse.v0”"),
+                encoding="utf-8",
+            )
+
+            mapper = self.run_cmd(
+                [
+                    sys.executable,
+                    str(MAPPER),
+                    "--knowledge-item",
+                    "core/knowledge/examples/knowledge-item.sample.json",
+                    "--llm-output",
+                    str(llm_output_path),
+                    "--skills-root",
+                    str(skills_root),
+                    "--overwrite",
+                ]
+            )
+            self.assertEqual(mapper.returncode, 0, msg=mapper.stderr or mapper.stdout)
+
+            skill_dir = skills_root / "openstaff-task-session-20260307-a1-001"
+            mapping = json.loads((skill_dir / "openstaff-skill.json").read_text(encoding="utf-8"))
+            self.assertTrue(mapping["llmOutputAccepted"])
+            self.assertEqual(mapping["schemaVersion"], "openstaff.openclaw-skill.v1")
+
     def test_pipeline_with_preference_profile_records_rule_traceability(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)

@@ -712,7 +712,7 @@ struct OpenStaffDashboardView: View {
                     .padding(.top, 4)
                 }
 
-                GroupBox("已学技能（运行 / 删除 / 审核）") {
+                GroupBox("已学技能（回放 / 删除 / 审核）") {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("当前执行后端：\(viewModel.executorBackendDescription)")
                             .font(.caption2)
@@ -771,14 +771,19 @@ struct OpenStaffDashboardView: View {
                                 }
                                 TableColumn("操作") { skill in
                                     HStack(spacing: 6) {
-                                        Button("运行") {
+                                        Button("回放") {
                                             viewModel.runLearnedSkill(skill.id)
                                         }
                                         .buttonStyle(.borderedProminent)
                                         .disabled(
-                                            viewModel.runningMode != .student
-                                            || viewModel.skillActionProcessing
+                                            viewModel.skillActionProcessing
                                             || viewModel.emergencyStopActive
+                                            || viewModel.isBlockingManualSkillReplay
+                                        )
+                                        .help(
+                                            viewModel.isBlockingManualSkillReplay
+                                            ? "请先停止当前辅助/学生模式，再回放该技能"
+                                            : "回放该技能"
                                         )
 
                                         Button("删除") {
@@ -801,7 +806,7 @@ struct OpenStaffDashboardView: View {
                             }
                             .frame(minHeight: 260)
 
-                            Text("运行说明：仅在学生模式运行中可执行“运行”。")
+                            Text("回放说明：无需进入任何模式；`审核 -> 通过` 只会解锁手动回放，不会自动开始。若辅助模式或学生模式正在运行，请先停止后再回放。")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
 
@@ -811,6 +816,17 @@ struct OpenStaffDashboardView: View {
                                         .font(.caption)
                                         .foregroundStyle(preflightColor(for: selectedSkill.preflight.status))
                                         .textSelection(.enabled)
+
+                                    if selectedSkill.requiresApprovedTeacherConfirmation {
+                                        Text(
+                                            selectedSkill.review?.decision == .approved
+                                            ? "老师已通过：这一步只会放行手动回放。现在可直接点击技能列表里的“回放”，不需要切换模式。"
+                                            : "该技能命中安全门。请先在“审核”里点“通过”，之后可直接点击“回放”，不需要切换模式。"
+                                        )
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                        .textSelection(.enabled)
+                                    }
 
                                     if !selectedSkill.preflightIssueSummary.isEmpty {
                                         Text(selectedSkill.preflightIssueSummary)
@@ -1569,6 +1585,10 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         runningMode != nil
     }
 
+    var isBlockingManualSkillReplay: Bool {
+        runningMode == .assist || runningMode == .student
+    }
+
     var learningPauseResumeActionTitle: String {
         learningSessionState.isUserPauseActive ? "恢复学习" : "暂停学习"
     }
@@ -2176,14 +2196,14 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     }
 
     func runLearnedSkill(_ skillId: String) {
-        guard runningMode == .student else {
+        if isBlockingManualSkillReplay {
             skillActionSucceeded = false
-            skillActionStatusMessage = "请先启动学生模式，再运行技能。"
+            skillActionStatusMessage = "当前\(modeStatusSummary)正在占用执行链路，请先停止辅助模式或学生模式，再手动回放技能。"
             return
         }
         guard let skill = learnedSkillSnapshot.skillsById[skillId] else {
             skillActionSucceeded = false
-            skillActionStatusMessage = "未找到技能，无法运行。"
+            skillActionStatusMessage = "未找到技能，无法回放。"
             return
         }
         if skill.preflight.status == .failed {
@@ -2211,9 +2231,19 @@ final class OpenStaffDashboardViewModel: ObservableObject {
             return
         }
 
+        let pausedObservationCaptureForReplay = modeObservationCapture.isRunning
+            && runningMode.map(shouldObserveTeacherActions(for:)) == true
+        if pausedObservationCaptureForReplay {
+            stopObservationCapture(clearSessionContext: false, resetCapturedEventCount: false)
+        }
+
         skillActionProcessing = true
         skillActionSucceeded = true
-        skillActionStatusMessage = "正在运行技能：\(skill.skillName)..."
+        if pausedObservationCaptureForReplay {
+            skillActionStatusMessage = "正在回放技能：\(skill.skillName)... 已临时暂停教学采集，回放结束后会自动恢复。"
+        } else {
+            skillActionStatusMessage = "正在回放技能：\(skill.skillName)..."
+        }
         let emergencyStopActive = self.emergencyStopActive
 
         Task.detached(priority: .userInitiated) {
@@ -2230,18 +2260,34 @@ final class OpenStaffDashboardViewModel: ObservableObject {
                     self?.skillActionProcessing = false
                     self?.skillActionSucceeded = !hasQualityWarnings
                     if hasQualityWarnings {
-                        self?.skillActionStatusMessage = "技能执行完成（部分）：总步骤 \(result.totalSteps)，成功 \(result.succeededSteps)，失败 \(result.failedSteps)，阻塞 \(result.blockedSteps)。质量提示：\(warningText)。日志：\(result.logFilePath)"
+                        self?.skillActionStatusMessage = "技能回放完成（部分）：总步骤 \(result.totalSteps)，成功 \(result.succeededSteps)，失败 \(result.failedSteps)，阻塞 \(result.blockedSteps)。质量提示：\(warningText)。日志：\(result.logFilePath)"
                     } else {
-                        self?.skillActionStatusMessage = "技能运行完成：总步骤 \(result.totalSteps)，成功 \(result.succeededSteps)，失败 \(result.failedSteps)，阻塞 \(result.blockedSteps)。日志：\(result.logFilePath)"
+                        self?.skillActionStatusMessage = "技能回放完成：总步骤 \(result.totalSteps)，成功 \(result.succeededSteps)，失败 \(result.failedSteps)，阻塞 \(result.blockedSteps)。日志：\(result.logFilePath)"
                     }
                     self?.refreshDashboard(promptAccessibilityPermission: false)
+                    if pausedObservationCaptureForReplay {
+                        self?.refreshLearningStatusSurface(
+                            forceTeacherPaused: false,
+                            updatePermissionSnapshot: false,
+                            refreshContext: false,
+                            syncObservationCapture: true
+                        )
+                    }
                 }
             } catch {
                 await MainActor.run { [weak self] in
                     self?.skillActionProcessing = false
                     self?.skillActionSucceeded = false
-                    self?.skillActionStatusMessage = "运行技能失败：\(error.localizedDescription)"
+                    self?.skillActionStatusMessage = "回放技能失败：\(error.localizedDescription)"
                     self?.refreshExecutorHelperPath()
+                    if pausedObservationCaptureForReplay {
+                        self?.refreshLearningStatusSurface(
+                            forceTeacherPaused: false,
+                            updatePermissionSnapshot: false,
+                            refreshContext: false,
+                            syncObservationCapture: true
+                        )
+                    }
                 }
             }
         }
@@ -2284,7 +2330,11 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         do {
             try LearnedSkillReviewWriter.append(entry)
             skillActionSucceeded = true
-            skillActionStatusMessage = "已审核技能：\(skill.skillName)（\(decision.displayName)）"
+            if decision == .approved, skill.preflight.requiresTeacherConfirmation {
+                skillActionStatusMessage = "已审核技能：\(skill.skillName)（\(decision.displayName)）。下一步：直接点击该行“回放”；审核通过不会自动开始执行。"
+            } else {
+                skillActionStatusMessage = "已审核技能：\(skill.skillName)（\(decision.displayName)）"
+            }
             refreshLearnedSkills()
         } catch {
             skillActionSucceeded = false
@@ -4223,6 +4273,11 @@ enum LearnedSkillRunner {
         )
         let eventCoordinateIndex = loadEventCoordinateIndex(sessionId: payload.sessionId)
         let logWriter = StudentLoopLogWriter(logsRootDirectory: OpenStaffWorkspacePaths.logsDirectory)
+        let orderedStepMappings = payload.provenance?.stepMappings ?? []
+        var stepMappingsById: [String: SkillBundleStepMapping] = [:]
+        for stepMapping in orderedStepMappings {
+            stepMappingsById[stepMapping.skillStepId] = stepMapping
+        }
         var latestLogURL = try logWriter.write(
             StudentLoopLogEntry(
                 timestamp: OpenStaffDateFormatter.iso8601String(from: Date()),
@@ -4258,10 +4313,16 @@ enum LearnedSkillRunner {
                 stepIndex: index,
                 context: context
             )
+            let stepMapping = stepMappingsById[step.stepId]
+                ?? (index < orderedStepMappings.count ? orderedStepMappings[index] : nil)
             let finalized = finalizeStepExecution(
                 base: executionResult,
                 step: step,
-                contextBundleId: payload.mappedOutput.context.appBundleId,
+                contextBundleId: resolvedContextBundleId(
+                    for: step,
+                    mapping: stepMapping,
+                    fallbackContextBundleId: payload.mappedOutput.context.appBundleId
+                ),
                 eventCoordinateIndex: eventCoordinateIndex
             )
 
@@ -4420,6 +4481,40 @@ enum LearnedSkillRunner {
             }
         }
         return nil
+    }
+
+    private static func resolvedContextBundleId(
+        for step: SkillBundleExecutionStep,
+        mapping: SkillBundleStepMapping?,
+        fallbackContextBundleId: String
+    ) -> String {
+        if let bundleId = parseBundleTarget(step.target) {
+            return bundleId
+        }
+
+        if let mapping {
+            for semanticTarget in mapping.semanticTargets {
+                let bundleId = semanticTarget.appBundleId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                if !bundleId.isEmpty, bundleId != "unknown" {
+                    return bundleId
+                }
+            }
+        }
+
+        return fallbackContextBundleId.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func parseBundleTarget(_ target: String) -> String? {
+        let normalizedTarget = target.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalizedTarget.hasPrefix("bundle:") else {
+            return nil
+        }
+        let bundleId = String(normalizedTarget.dropFirst("bundle:".count))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !bundleId.isEmpty else {
+            return nil
+        }
+        return bundleId
     }
 
     private static func loadEventCoordinateIndex(sessionId: String) -> [String: CGPoint] {
