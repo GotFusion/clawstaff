@@ -8,6 +8,8 @@ public enum OpenClawExecutionStatus: String, Codable, Sendable {
 
 public enum OpenClawExecutionErrorCode: String, Codable, Sendable {
     case runnerInvalidRequest = "OCW-RUNNER-INVALID-REQUEST"
+    case semanticOnlyRequired = "OCW-SEMANTIC-ONLY-REQUIRED"
+    case coordinateExecutionDisabled = "OCW-COORDINATE-EXECUTION-DISABLED"
     case runtimeExecutableMissing = "OCW-RUNNER-EXECUTABLE-MISSING"
     case processLaunchFailed = "OCW-RUNNER-LAUNCH-FAILED"
     case processTimedOut = "OCW-RUNNER-TIMED-OUT"
@@ -35,6 +37,7 @@ public struct OpenClawExecutionRequest: Codable, Equatable, Sendable {
     public let safetyRulesPath: String?
     public let component: String
     public let timeoutSeconds: Int?
+    public let semanticOnly: Bool
     public let teacherConfirmed: Bool
 
     public init(
@@ -52,6 +55,7 @@ public struct OpenClawExecutionRequest: Codable, Equatable, Sendable {
         safetyRulesPath: String? = nil,
         component: String = "student.openclaw.runner",
         timeoutSeconds: Int? = 30,
+        semanticOnly: Bool = true,
         teacherConfirmed: Bool = false
     ) {
         self.schemaVersion = schemaVersion
@@ -68,6 +72,7 @@ public struct OpenClawExecutionRequest: Codable, Equatable, Sendable {
         self.safetyRulesPath = safetyRulesPath
         self.component = component
         self.timeoutSeconds = timeoutSeconds
+        self.semanticOnly = semanticOnly
         self.teacherConfirmed = teacherConfirmed
     }
 }

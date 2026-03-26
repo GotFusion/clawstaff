@@ -29,6 +29,23 @@ def make_policy_risky_skill(skill_dir: Path) -> None:
     step_mapping = payload["provenance"]["stepMappings"][0]
     step_mapping["semanticTargets"] = [
         {
+            "locatorType": "roleAndTitle",
+            "appBundleId": "com.apple.Safari",
+            "windowTitlePattern": "Checkout - 支付中心",
+            "elementRole": "AXButton",
+            "elementTitle": "确认支付",
+            "elementIdentifier": "checkout.confirm",
+            "boundingRect": {
+                "x": 640,
+                "y": 360,
+                "width": 120,
+                "height": 44,
+                "coordinateSpace": "screen",
+            },
+            "confidence": 0.42,
+            "source": "teaching.capture",
+        },
+        {
             "locatorType": "coordinateFallback",
             "appBundleId": "com.apple.Safari",
             "windowTitlePattern": "Checkout - 支付中心",
@@ -52,7 +69,58 @@ def make_policy_risky_skill(skill_dir: Path) -> None:
     payload_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def make_coordinate_only_skill(skill_dir: Path) -> None:
+    payload_path = skill_dir / "openstaff-skill.json"
+    payload = json.loads(payload_path.read_text(encoding="utf-8"))
+
+    step = payload["mappedOutput"]["executionPlan"]["steps"][0]
+    step["target"] = "coordinate:700,382"
+
+    step_mapping = payload["provenance"]["stepMappings"][0]
+    step_mapping["preferredLocatorType"] = "coordinateFallback"
+    step_mapping["semanticTargets"] = [
+        {
+            "locatorType": "coordinateFallback",
+            "appBundleId": "com.apple.Safari",
+            "windowTitlePattern": "^OpenStaff\\ - GitHub$",
+            "boundingRect": {
+                "x": 700,
+                "y": 382,
+                "width": 1,
+                "height": 1,
+                "coordinateSpace": "screen",
+            },
+            "confidence": 0.24,
+            "source": "teaching.capture",
+        }
+    ]
+    step_mapping["coordinate"] = {
+        "x": 700,
+        "y": 382,
+        "coordinateSpace": "screen",
+    }
+
+    payload_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 class OpenClawRunnerCLITests(unittest.TestCase):
+    def test_gateway_requires_semantic_only_flag(self):
+        result = run_swift_target(
+            "OpenStaffOpenClawCLI",
+            [
+                "--gateway-mode",
+                "--skill-dir",
+                str(SKILL_SAMPLE_DIRECTORIES[0]),
+                "--json-result",
+            ],
+        )
+
+        self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
+        payload = extract_last_json_object(result.stdout)
+        self.assertEqual(payload["status"], "failed")
+        self.assertEqual(payload["errorCode"], "OCW-SEMANTIC-ONLY-REQUIRED")
+        self.assertIn("Coordinate execution is disabled by SEM-001", payload["summary"])
+
     def test_runner_executes_three_sample_skills_via_subprocess(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             logs_root = Path(tmpdir) / "logs"
@@ -156,6 +224,34 @@ class OpenClawRunnerCLITests(unittest.TestCase):
             self.assertEqual(payload["errorCode"], "OCW-SKILL-PREFLIGHT-FAILED")
             self.assertEqual(payload["preflight"]["status"], "failed")
             self.assertTrue(any(item["code"] == "SPF-MISSING-CONTEXT-APP" for item in payload["preflight"]["issues"]))
+
+    def test_runner_rejects_coordinate_only_skill_under_semantic_freeze(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = Path(tmpdir) / "skill"
+            shutil.copytree(SKILL_SAMPLE_DIRECTORIES[0], skill_dir)
+            make_coordinate_only_skill(skill_dir)
+
+            logs_root = Path(tmpdir) / "logs"
+            result = run_swift_target(
+                "OpenStaffOpenClawCLI",
+                [
+                    "--skill-dir",
+                    str(skill_dir),
+                    "--logs-root",
+                    str(logs_root),
+                    "--teacher-confirmed",
+                    "--json-result",
+                ],
+            )
+
+            self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
+            payload = extract_last_json_object(result.stdout)
+            self.assertEqual(payload["status"], "failed")
+            self.assertEqual(payload["errorCode"], "OCW-COORDINATE-EXECUTION-DISABLED")
+            self.assertEqual(payload["preflight"]["status"], "failed")
+            self.assertTrue(
+                any(item["code"] == "SPF-COORDINATE-EXECUTION-DISABLED" for item in payload["preflight"]["issues"])
+            )
 
     def test_runner_blocks_sensitive_window_skill_by_default(self):
         with tempfile.TemporaryDirectory() as tmpdir:

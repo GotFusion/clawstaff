@@ -40,6 +40,57 @@ final class SkillPreflightValidatorTests: XCTestCase {
         XCTAssertTrue(report.issues.contains(where: { $0.code == .missingLocator }))
     }
 
+    func testPreflightFailsCoordinateOnlyStepWhenSemanticOnlyEnabled() {
+        let report = SkillPreflightValidator().validate(
+            payload: makePayload(
+                stepMappings: [
+                    SkillBundleStepMapping(
+                        skillStepId: "step-001",
+                        knowledgeStepId: "knowledge-step-001",
+                        instruction: "点击 Open",
+                        sourceEventIds: ["evt-1"],
+                        preferredLocatorType: .coordinateFallback,
+                        coordinate: SkillBundleCoordinate(x: 320, y: 240, coordinateSpace: "screen"),
+                        semanticTargets: [
+                            SkillBundleSemanticTarget(
+                                locatorType: .coordinateFallback,
+                                appBundleId: "com.apple.Safari",
+                                windowTitlePattern: "^Main$",
+                                boundingRect: SkillBundleBoundingRect(
+                                    x: 320,
+                                    y: 240,
+                                    width: 1,
+                                    height: 1,
+                                    coordinateSpace: "screen"
+                                ),
+                                confidence: 0.24,
+                                source: "capture"
+                            )
+                        ]
+                    )
+                ]
+            ),
+            options: SkillPreflightOptions(semanticOnly: true)
+        )
+
+        XCTAssertEqual(report.status, .failed)
+        XCTAssertTrue(report.issues.contains(where: { $0.code == .coordinateExecutionDisabled }))
+        XCTAssertTrue(report.summary.contains("错误 1"))
+    }
+
+    func testPreflightFailsLegacyCoordinateTargetWhenSemanticOnlyEnabled() {
+        let report = SkillPreflightValidator().validate(
+            payload: makePayload(
+                stepTarget: "coordinate:320,240",
+                stepMappings: []
+            ),
+            options: SkillPreflightOptions(semanticOnly: true)
+        )
+
+        XCTAssertEqual(report.status, .failed)
+        XCTAssertTrue(report.issues.contains(where: { $0.code == .coordinateExecutionDisabled }))
+    }
+
     func testPreflightAllowsExplicitlyDeclaredCrossAppSteps() {
         let report = SkillPreflightValidator().validate(
             payload: makePayload(
@@ -74,6 +125,7 @@ final class SkillPreflightValidatorTests: XCTestCase {
         confidence: Double = 0.86,
         contextAppBundleId: String = "com.apple.Safari",
         requiredFrontmostAppBundleId: String = "com.apple.Safari",
+        stepTarget: String = "unknown",
         stepMappings: [SkillBundleStepMapping]
     ) -> SkillBundlePayload {
         SkillBundlePayload(
@@ -98,7 +150,7 @@ final class SkillPreflightValidatorTests: XCTestCase {
                             stepId: "step-001",
                             actionType: "click",
                             instruction: "点击 Open",
-                            target: "unknown",
+                            target: stepTarget,
                             sourceEventIds: ["evt-1"]
                         )
                     ],

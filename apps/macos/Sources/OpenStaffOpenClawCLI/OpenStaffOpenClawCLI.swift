@@ -42,6 +42,7 @@ struct OpenStaffOpenClawCLI {
                 logsRootDirectoryPath: options.logsRootDirectoryURL.path,
                 safetyRulesPath: options.safetyRulesPath,
                 timeoutSeconds: options.timeoutSeconds,
+                semanticOnly: true,
                 teacherConfirmed: options.teacherConfirmed
             )
 
@@ -55,20 +56,94 @@ struct OpenStaffOpenClawCLI {
     }
 
     private static func executeGateway(options: OpenClawCLIOptions) throws -> OpenClawGatewayExecutionPayload {
-        let descriptor = try OpenClawSkillDescriptorLoader().load(from: options.skillDirectoryURL)
+        let validator = SkillPreflightValidator()
+        let skillBundle = try validator.loadSkillBundle(from: options.skillDirectoryURL)
         let traceId = options.traceId ?? "trace-openclaw-gateway-\(UUID().uuidString.lowercased())"
-        let sessionId = options.sessionId ?? descriptor.sessionId
-        let taskId = options.taskId ?? descriptor.taskId
+        let sessionId = options.sessionId ?? skillBundle.sessionId
+        let taskId = options.taskId ?? skillBundle.taskId
         let startedAt = currentTimestamp()
+        let skillName = skillBundle.skillName
+        let skillDirectoryPath = options.skillDirectoryURL.path
 
-        guard !descriptor.mappedOutput.executionPlan.steps.isEmpty else {
+        guard options.semanticOnly else {
             let finishedAt = currentTimestamp()
             return OpenClawGatewayExecutionPayload(
                 traceId: traceId,
                 sessionId: sessionId,
                 taskId: taskId,
-                skillName: descriptor.skillName,
-                skillDirectoryPath: options.skillDirectoryURL.path,
+                skillName: skillName,
+                skillDirectoryPath: skillDirectoryPath,
+                status: .failed,
+                errorCode: OpenClawExecutionErrorCode.semanticOnlyRequired.rawValue,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                summary: "Gateway refused legacy execution entry because --semantic-only was not provided. Coordinate execution is disabled by SEM-001.",
+                totalSteps: 0,
+                succeededSteps: 0,
+                failedSteps: 0,
+                blockedSteps: 0,
+                stepResults: []
+            )
+        }
+
+        let preflight = validator.validate(
+            payload: skillBundle,
+            skillDirectoryPath: skillDirectoryPath,
+            options: SkillPreflightOptions(
+                safetyRulesPath: options.safetyRulesPath,
+                semanticOnly: options.semanticOnly
+            )
+        )
+        if preflight.status == .failed {
+            let finishedAt = currentTimestamp()
+            return OpenClawGatewayExecutionPayload(
+                traceId: traceId,
+                sessionId: sessionId,
+                taskId: taskId,
+                skillName: skillName,
+                skillDirectoryPath: skillDirectoryPath,
+                status: gatewayStatus(for: preflight),
+                errorCode: gatewayErrorCode(for: preflight),
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                summary: preflight.summary,
+                totalSteps: 0,
+                succeededSteps: 0,
+                failedSteps: 0,
+                blockedSteps: 0,
+                stepResults: []
+            )
+        }
+
+        if preflight.requiresTeacherConfirmation && !options.teacherConfirmed {
+            let finishedAt = currentTimestamp()
+            return OpenClawGatewayExecutionPayload(
+                traceId: traceId,
+                sessionId: sessionId,
+                taskId: taskId,
+                skillName: skillName,
+                skillDirectoryPath: skillDirectoryPath,
+                status: .blocked,
+                errorCode: OpenClawExecutionErrorCode.skillConfirmationRequired.rawValue,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                summary: preflight.summary,
+                totalSteps: 0,
+                succeededSteps: 0,
+                failedSteps: 0,
+                blockedSteps: 0,
+                stepResults: []
+            )
+        }
+
+        guard !skillBundle.mappedOutput.executionPlan.steps.isEmpty else {
+            let finishedAt = currentTimestamp()
+            return OpenClawGatewayExecutionPayload(
+                traceId: traceId,
+                sessionId: sessionId,
+                taskId: taskId,
+                skillName: skillName,
+                skillDirectoryPath: skillDirectoryPath,
                 status: .failed,
                 errorCode: OpenClawExecutionErrorCode.invalidSkillBundle.rawValue,
                 startedAt: startedAt,
@@ -83,14 +158,14 @@ struct OpenStaffOpenClawCLI {
         }
 
         var stepResults: [OpenClawExecutionStepResult] = []
-        stepResults.reserveCapacity(descriptor.mappedOutput.executionPlan.steps.count)
+        stepResults.reserveCapacity(skillBundle.mappedOutput.executionPlan.steps.count)
 
         var succeededSteps = 0
         var failedSteps = 0
         let blockedSteps = 0
         var gatewayErrorCode: String?
 
-        for (index, step) in descriptor.mappedOutput.executionPlan.steps.enumerated() {
+        for (index, step) in skillBundle.mappedOutput.executionPlan.steps.enumerated() {
             let stepStartedAt = currentTimestamp()
             let stepFinishedAt = currentTimestamp()
 
@@ -147,14 +222,14 @@ struct OpenStaffOpenClawCLI {
         let finishedAt = currentTimestamp()
         let finalStatus: OpenClawExecutionStatus = failedSteps > 0 ? .failed : .succeeded
 
-        let totalSteps = descriptor.mappedOutput.executionPlan.steps.count
-        let summary = "Gateway finished skill \(descriptor.skillName). total=\(totalSteps) succeeded=\(succeededSteps) failed=\(failedSteps) blocked=\(blockedSteps)"
+        let totalSteps = skillBundle.mappedOutput.executionPlan.steps.count
+        let summary = "Gateway finished skill \(skillName). total=\(totalSteps) succeeded=\(succeededSteps) failed=\(failedSteps) blocked=\(blockedSteps)"
         return OpenClawGatewayExecutionPayload(
             traceId: traceId,
             sessionId: sessionId,
             taskId: taskId,
-            skillName: descriptor.skillName,
-            skillDirectoryPath: options.skillDirectoryURL.path,
+            skillName: skillName,
+            skillDirectoryPath: skillDirectoryPath,
             status: finalStatus,
             errorCode: gatewayErrorCode,
             startedAt: startedAt,
@@ -231,7 +306,9 @@ struct OpenStaffOpenClawCLI {
           --working-dir <path>                  Optional subprocess working directory.
           --timeout-seconds <n>                 Subprocess timeout in seconds. Default: 30
           --simulate-runtime-failure-step <n>   Simulate gateway failure on step n (1-based).
+          --semantic-only                       Required in --gateway-mode. Runner forwards it automatically.
           --teacher-confirmed                   Confirm teacher approval for skills gated by preflight.
+          --gateway-mode                        Internal runtime entry. Must be paired with --semantic-only.
           --json-result                         Print structured JSON result.
           --help                                Show this help message.
         """)
@@ -258,6 +335,7 @@ private struct OpenClawCLIOptions {
     let timeoutSeconds: Int
     let simulateRuntimeFailureAtStepIndex: Int?
     let teacherConfirmed: Bool
+    let semanticOnly: Bool
     let jsonResult: Bool
     let showHelp: Bool
     let gatewayMode: Bool
@@ -282,6 +360,7 @@ private struct OpenClawCLIOptions {
         var timeoutSeconds = 30
         var simulateRuntimeFailureAtStepIndex: Int?
         var teacherConfirmed = false
+        var semanticOnly = false
         var jsonResult = false
         var showHelp = false
         var gatewayMode = false
@@ -362,6 +441,8 @@ private struct OpenClawCLIOptions {
                 simulateRuntimeFailureAtStepIndex = parsed
             case "--teacher-confirmed":
                 teacherConfirmed = true
+            case "--semantic-only":
+                semanticOnly = true
             case "--json-result":
                 jsonResult = true
             case "--gateway-mode":
@@ -388,6 +469,7 @@ private struct OpenClawCLIOptions {
                 timeoutSeconds: timeoutSeconds,
                 simulateRuntimeFailureAtStepIndex: simulateRuntimeFailureAtStepIndex,
                 teacherConfirmed: teacherConfirmed,
+                semanticOnly: semanticOnly,
                 jsonResult: jsonResult,
                 showHelp: true,
                 gatewayMode: gatewayMode
@@ -410,6 +492,7 @@ private struct OpenClawCLIOptions {
             timeoutSeconds: timeoutSeconds,
             simulateRuntimeFailureAtStepIndex: simulateRuntimeFailureAtStepIndex,
             teacherConfirmed: teacherConfirmed,
+            semanticOnly: semanticOnly,
             jsonResult: jsonResult,
             showHelp: false,
             gatewayMode: gatewayMode
@@ -424,6 +507,7 @@ private struct OpenClawCLIOptions {
     ) -> [String] {
         var arguments = [
             "--gateway-mode",
+            "--semantic-only",
             "--skill-dir",
             skillDirectoryURL.path,
             "--trace-id",
@@ -434,6 +518,12 @@ private struct OpenClawCLIOptions {
         ]
         if let taskId {
             arguments += ["--task-id", taskId]
+        }
+        if let safetyRulesPath {
+            arguments += ["--safety-rules", safetyRulesPath]
+        }
+        if teacherConfirmed {
+            arguments.append("--teacher-confirmed")
         }
         if let simulateRuntimeFailureAtStepIndex {
             arguments += ["--simulate-runtime-failure-step", String(simulateRuntimeFailureAtStepIndex)]
@@ -467,6 +557,22 @@ private enum OpenClawCLIOptionError: LocalizedError {
         case .unknownFlag(let flag):
             return "Unknown flag \(flag)."
         }
+    }
+}
+
+private extension OpenStaffOpenClawCLI {
+    static func gatewayStatus(for preflight: SkillPreflightReport) -> OpenClawExecutionStatus {
+        if preflight.issues.contains(where: { $0.code == .coordinateExecutionDisabled }) {
+            return .failed
+        }
+        return .blocked
+    }
+
+    static func gatewayErrorCode(for preflight: SkillPreflightReport) -> String {
+        if preflight.issues.contains(where: { $0.code == .coordinateExecutionDisabled }) {
+            return OpenClawExecutionErrorCode.coordinateExecutionDisabled.rawValue
+        }
+        return OpenClawExecutionErrorCode.skillPreflightFailed.rawValue
     }
 }
 

@@ -134,17 +134,20 @@ public struct OpenClawRunner {
                 startedAt: startedAt,
                 finishedAt: timestamp(nowProvider()),
                 status: .failed,
-                summary: validationError,
-                errorCode: OpenClawExecutionErrorCode.runnerInvalidRequest.rawValue,
+                summary: validationError.summary,
+                errorCode: validationError.errorCode,
                 stdout: "",
-                stderr: validationError,
+                stderr: validationError.summary,
                 exitCode: nil
             )
         }
 
         let preflight = preflightValidator.validateSkillDirectory(
             at: URL(fileURLWithPath: request.skillDirectoryPath, isDirectory: true),
-            options: SkillPreflightOptions(safetyRulesPath: request.safetyRulesPath)
+            options: SkillPreflightOptions(
+                safetyRulesPath: request.safetyRulesPath,
+                semanticOnly: request.semanticOnly
+            )
         )
         if preflight.status == .failed {
             return finalizeTerminal(
@@ -153,7 +156,7 @@ public struct OpenClawRunner {
                 finishedAt: timestamp(nowProvider()),
                 status: terminalStatus(for: preflight),
                 summary: preflight.summary,
-                errorCode: OpenClawExecutionErrorCode.skillPreflightFailed.rawValue,
+                errorCode: preflightErrorCode(for: preflight),
                 stdout: "",
                 stderr: preflight.userFacingIssueMessages.joined(separator: "\n"),
                 exitCode: nil,
@@ -559,24 +562,54 @@ public struct OpenClawRunner {
         return try? JSONDecoder().decode(OpenClawGatewayExecutionPayload.self, from: data)
     }
 
-    private func validate(request: OpenClawExecutionRequest) -> String? {
+    private func validate(request: OpenClawExecutionRequest) -> RequestValidationFailure? {
         if request.traceId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "OpenClaw execution request missing traceId."
+            return RequestValidationFailure(
+                summary: "OpenClaw execution request missing traceId.",
+                errorCode: OpenClawExecutionErrorCode.runnerInvalidRequest.rawValue
+            )
         }
         if request.sessionId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "OpenClaw execution request missing sessionId."
+            return RequestValidationFailure(
+                summary: "OpenClaw execution request missing sessionId.",
+                errorCode: OpenClawExecutionErrorCode.runnerInvalidRequest.rawValue
+            )
         }
         if request.skillName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "OpenClaw execution request missing skillName."
+            return RequestValidationFailure(
+                summary: "OpenClaw execution request missing skillName.",
+                errorCode: OpenClawExecutionErrorCode.runnerInvalidRequest.rawValue
+            )
         }
         if request.skillDirectoryPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "OpenClaw execution request missing skillDirectoryPath."
+            return RequestValidationFailure(
+                summary: "OpenClaw execution request missing skillDirectoryPath.",
+                errorCode: OpenClawExecutionErrorCode.runnerInvalidRequest.rawValue
+            )
         }
         if request.runtimeExecutablePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "OpenClaw execution request missing runtimeExecutablePath."
+            return RequestValidationFailure(
+                summary: "OpenClaw execution request missing runtimeExecutablePath.",
+                errorCode: OpenClawExecutionErrorCode.runnerInvalidRequest.rawValue
+            )
         }
         if request.runtimeArguments.isEmpty {
-            return "OpenClaw execution request missing runtimeArguments."
+            return RequestValidationFailure(
+                summary: "OpenClaw execution request missing runtimeArguments.",
+                errorCode: OpenClawExecutionErrorCode.runnerInvalidRequest.rawValue
+            )
+        }
+        if !request.semanticOnly {
+            return RequestValidationFailure(
+                summary: "Coordinate execution has been disabled by SEM-001. Re-run with semantic_only=true and semantic locators.",
+                errorCode: OpenClawExecutionErrorCode.semanticOnlyRequired.rawValue
+            )
+        }
+        if !request.runtimeArguments.contains("--semantic-only") {
+            return RequestValidationFailure(
+                summary: "OpenClaw execution request must forward --semantic-only to the gateway. Legacy coordinate entry has been disabled.",
+                errorCode: OpenClawExecutionErrorCode.semanticOnlyRequired.rawValue
+            )
         }
         return nil
     }
@@ -591,16 +624,29 @@ public struct OpenClawRunner {
             .skillBundleDecodeFailed,
             .unsupportedSchemaVersion,
             .emptyExecutionPlan,
-            .expectedStepCountMismatch
+            .expectedStepCountMismatch,
+            .coordinateExecutionDisabled
         ]
         if preflight.issues.contains(where: { failedCodes.contains($0.code) }) {
             return .failed
         }
         return .blocked
     }
+
+    private func preflightErrorCode(for preflight: SkillPreflightReport) -> String {
+        if preflight.issues.contains(where: { $0.code == .coordinateExecutionDisabled }) {
+            return OpenClawExecutionErrorCode.coordinateExecutionDisabled.rawValue
+        }
+        return OpenClawExecutionErrorCode.skillPreflightFailed.rawValue
+    }
 }
 
 private struct LogWriteResult {
     let path: String?
     let errorDescription: String?
+}
+
+private struct RequestValidationFailure {
+    let summary: String
+    let errorCode: String
 }

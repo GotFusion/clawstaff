@@ -311,6 +311,7 @@ public enum SkillPreflightIssueCode: String, Codable, Equatable, Sendable {
     case invalidLocator = "SPF-INVALID-LOCATOR"
     case missingLocator = "SPF-MISSING-LOCATOR"
     case coordinateOnlyFallback = "SPF-COORDINATE-ONLY-FALLBACK"
+    case coordinateExecutionDisabled = "SPF-COORDINATE-EXECUTION-DISABLED"
     case targetAppNotAllowed = "SPF-TARGET-APP-NOT-ALLOWED"
     case highRiskAction = "SPF-HIGH-RISK-ACTION"
     case lowConfidence = "SPF-LOW-CONFIDENCE"
@@ -438,6 +439,7 @@ public struct SkillPreflightOptions: Equatable, Sendable {
     public let highRiskRegexPatterns: [String]
     public let extraAllowedAppBundleIds: [String]
     public let safetyRulesPath: String?
+    public let semanticOnly: Bool
 
     public init(
         lowConfidenceThreshold: Double = 0.80,
@@ -460,13 +462,15 @@ public struct SkillPreflightOptions: Equatable, Sendable {
             #"(?i)\bdd\s+if="#
         ],
         extraAllowedAppBundleIds: [String] = [],
-        safetyRulesPath: String? = nil
+        safetyRulesPath: String? = nil,
+        semanticOnly: Bool = true
     ) {
         self.lowConfidenceThreshold = lowConfidenceThreshold
         self.highRiskKeywords = highRiskKeywords
         self.highRiskRegexPatterns = highRiskRegexPatterns
         self.extraAllowedAppBundleIds = extraAllowedAppBundleIds
         self.safetyRulesPath = safetyRulesPath
+        self.semanticOnly = semanticOnly
     }
 }
 
@@ -765,7 +769,8 @@ public struct SkillPreflightValidator {
         let locatorOutcome = validateLocator(
             for: step,
             stepId: stepId,
-            mapping: mapping
+            mapping: mapping,
+            options: options
         )
         issues.append(contentsOf: locatorOutcome.issues)
 
@@ -817,7 +822,8 @@ public struct SkillPreflightValidator {
     private func validateLocator(
         for step: SkillBundleExecutionStep,
         stepId: String,
-        mapping: SkillBundleStepMapping?
+        mapping: SkillBundleStepMapping?,
+        options: SkillPreflightOptions
     ) -> (locatorStatus: SkillPreflightLocatorStatus, issues: [SkillPreflightIssue]) {
         let actionType = normalized(step.actionType)
         guard actionType == "click" else {
@@ -826,6 +832,19 @@ public struct SkillPreflightValidator {
 
         guard let mapping else {
             if parseCoordinateTarget(step.target) != nil {
+                if options.semanticOnly {
+                    return (
+                        .missing,
+                        [
+                            SkillPreflightIssue(
+                                severity: .error,
+                                code: .coordinateExecutionDisabled,
+                                message: "步骤 \(stepId) 仍使用 legacy coordinate target；SEM-001 已冻结 semantic_only=true，坐标执行已禁用。",
+                                stepId: stepId
+                            )
+                        ]
+                    )
+                }
                 return (
                     .degraded,
                     [
@@ -878,6 +897,19 @@ public struct SkillPreflightValidator {
         }
 
         if mapping.coordinate != nil || validTargets.contains(where: { $0.locatorType == .coordinateFallback }) {
+            if options.semanticOnly {
+                return (
+                    .degraded,
+                    [
+                        SkillPreflightIssue(
+                            severity: .error,
+                            code: .coordinateExecutionDisabled,
+                            message: "步骤 \(stepId) 仅剩 coordinateFallback；SEM-001 已冻结 semantic_only=true，坐标执行已禁用。",
+                            stepId: stepId
+                        )
+                    ]
+                )
+            }
             return (
                 .degraded,
                 [

@@ -15,12 +15,14 @@
   - 指定步骤失败模拟（用于闭环验证）。
 - `OpenClawRunner.swift`：阶段 8.2 的 OpenClaw 适配层，支持：
   - 通过子进程调用 OpenClaw CLI / gateway。
+  - 强制 `semantic_only=true`，拒绝 legacy coordinate execution entry。
   - 捕获 stdout / stderr / exit code。
   - 写入 `data/logs/{date}/{sessionId}-openclaw.log` 结构化执行日志。
   - 产出 `OpenClawExecutionResult` 与 `OpenClawExecutionReview`。
 - `SkillPreflightValidator.swift`：阶段 8.3 的统一预检器，支持：
   - `openstaff-skill.json` / `SKILL.md` 结构与 schema 一致性检查。
   - click locator 可解析性检查（语义 locator / 坐标回退）。
+  - 在 `semanticOnly=true` 时拒绝 `coordinate:x,y` 与 `coordinateFallback-only` click step。
   - 高风险动作、低置信步骤、目标 App 白名单判断。
   - 产出 `SkillPreflightReport`，供 GUI / CLI / release-preflight 共享。
 - `SafetyPolicyEvaluator.swift`：阶段 10.3 的二次升级安全策略引擎，支持：

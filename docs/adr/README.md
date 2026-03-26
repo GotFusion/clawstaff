@@ -15,3 +15,4 @@
 - [ADR-0019 Preference Drift Monitoring](./ADR-0019-preference-drift-monitoring.md)
 - [ADR-0022 Learning Bundle Export And Restore](./ADR-0022-learning-bundle-export-and-restore.md)
 - [ADR-0023 Learning Hooks And Gateway Contracts](./ADR-0023-learning-hooks-and-gateway-contracts.md)
+- [ADR-0024 Semantic-Only Execution Freeze](./ADR-0024-semantic-only-execution-freeze.md)

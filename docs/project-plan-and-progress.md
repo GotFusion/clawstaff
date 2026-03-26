@@ -1,6 +1,6 @@
 # OpenStaff 项目方案与实现进展
 
-版本：v0.12.1
+版本：v0.12.2
 更新时间：2026-03-26
 
 ## 1. 项目目标
@@ -138,6 +138,7 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成阶段 9.3 审阅台增强：新增 `core/storage/ExecutionReviewStore.swift` 统一装配执行日志/老师反馈/学生审阅报告/skill/knowledge 关联关系；GUI 审阅区现可直接展示“老师原始步骤 / 当前 skill 步骤 / 本次实际执行结果”三栏对照，并把反馈动作升级为“通过 / 驳回 / 修复 locator / 重新示教”，后两者会同步落盘 repair request，形成失败审阅闭环。
 - 完成阶段 8.2 OpenClaw Runner 适配层：新增 `core/contracts/OpenClawExecutionContracts.swift`、`core/executor/OpenClawRunner.swift` 与 `apps/macos/Sources/OpenStaffOpenClawCLI/*`，实现 OpenClaw CLI / gateway 子进程调用、stdout/stderr/exit code 捕获、`data/logs/{date}/{sessionId}-openclaw.log` 结构化日志回写，以及 `OpenClawExecutionReview` 结果产出；3 条 sample skill 已通过真实子进程链路联调。
 - 完成阶段 8.3 Skill 预检与安全门：新增 `core/executor/SkillPreflightValidator.swift`、`scripts/validation/validate_skill_bundle.py` 与 `docs/adr/ADR-0008-skill-preflight-and-repair.md`，统一执行前 schema/locator/高风险/目标 App 白名单检查；GUI 技能列表可直接展示预检摘要与失败原因，学生模式自动执行仅允许 `preflight=passed` 的技能直跑，`needs_teacher_confirmation` 技能必须经老师审核通过后才能手动执行；`OpenStaffOpenClawCLI` 也已接入 `teacherConfirmed` 安全门。
+- 完成 `SEM-001` 决策冻结与坐标执行禁用开关（2026-03-26）：新增 `docs/adr/ADR-0024-semantic-only-execution-freeze.md`，把 OpenClaw runner / gateway 冻结为 `semantic_only=true`；legacy gateway 缺少 `--semantic-only` 会返回 `OCW-SEMANTIC-ONLY-REQUIRED`，仅剩 `coordinateFallback` 或 `coordinate:x,y` 的 click step 会在 preflight 直接以 `SPF-COORDINATE-EXECUTION-DISABLED` / `OCW-COORDINATE-EXECUTION-DISABLED` 拒绝执行，坐标字段仅继续保留在 provenance / 诊断日志中。
 - 完成阶段 10.1 Personal Desktop Benchmark：新增 `data/benchmarks/personal-desktop/` 基线 corpus、`docs/personal-benchmark-spec.md`、`scripts/benchmarks/run_personal_desktop_benchmark.py` 与 `tests/integration/test_personal_desktop_benchmark.py`，冻结 22 条真实个人桌面任务（4 类）并将其期望 `preflight/execution` 结果固化为可回归基线；同时增强 `openclaw_skill_mapper.py`，当旧版 `KnowledgeItem` 仅在 instruction 中保留坐标时，会自动回填 `coordinateFallback`，避免 benchmark 因缺失 provenance 坐标被误判。
 - 完成阶段 10.2 验证脚本与发布门禁：新增 `scripts/validation/validate_raw_event_logs.py`、`scripts/validation/validate_knowledge_items.py`、`scripts/validation/run_replay_verify_check.py` 与 `scripts/validation/README.md`，补齐原始事件/知识条目/replay verify 的标准化校验入口；`scripts/release/run_regression.py` 现已将 `raw-events`、`knowledge`、LLM 样例、skill bundle preflight、replay verify、personal benchmark 与测试套件统一接入发布门禁；`Makefile` 额外提供 `validate-raw-events`、`validate-knowledge`、`validate-replay-sample`，并允许 `release-regression/release-preflight` 透传 `ARGS`。
 - 完成阶段 10.3 安全策略二次升级：新增 `config/safety-rules.yaml` 与 `core/executor/SafetyPolicyEvaluator.swift`，将 `低置信 + 高风险 + 低复现度` 默认自动执行阻断、支付/系统设置/密码管理器/隐私权限弹窗识别，以及 `App / task / skill` 三层自动执行白名单统一收敛到同一套策略；`SkillPreflightValidator`、`OpenClawRunner` 与 `scripts/validation/validate_skill_bundle.py` 已共享该策略，`OpenStaffOpenClawCLI` 也支持通过 `--safety-rules` 注入自定义规则文件。
