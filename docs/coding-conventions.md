@@ -99,16 +99,61 @@
 - `STATUS_EXE_COMPLETED`
 - `STATUS_EXE_FAILED`
 
-## 7. 日志字段规范
+## 7. 日志字段与主链路 ID 规范
 
-每条结构化日志至少包含：
+### 7.1 最小字段
+
+每条结构化编排 / 执行 / 审阅日志至少包含：
 - `timestamp`
 - `traceId`
 - `sessionId`
-- `taskId`（如果已生成任务）
 - `component`
 - `status`
 - `errorCode`（失败时必填）
+
+在已知上下文时继续补齐：
+- `taskId`
+- `stepId`
+- `turnId`
+
+说明：
+- `taskId`、`stepId`、`turnId` 在未知时允许缺省，不要为了凑字段随意伪造。
+- `traceId` 与 `sessionId` 不可混用；前者表示一次可追踪的端到端链路，后者表示一次本地运行 / 文件落盘会话。
+
+### 7.2 主链路 ID 语义
+
+- `traceId`
+  - 表示一次可审计的主链路执行或决策链。
+  - 典型覆盖范围：一次教学态衍生流程、一次 assist 建议与执行、一次 student 规划与执行、一次 skill 运行审阅。
+  - 需要跨组件透传，优先作为“为什么这几条日志属于同一次决策”的主索引。
+
+- `sessionId`
+  - 表示一次本地会话或运行实例。
+  - 典型覆盖范围：一次 capture session、一次 GUI 发起的模式运行、一次 OpenClaw / student / assist CLI 运行。
+  - 是文件命名和目录落盘的主索引，但不代替跨组件 trace。
+
+- `taskId`
+  - 表示一个稳定任务单元。
+  - teaching 链路通常来自 task slicer / knowledge item；assist / student 链路通常来自被命中的 knowledge item 或 selected task。
+  - 若当前时刻尚未识别到任务边界，可以暂缺，待后续工件补回。
+
+- `stepId`
+  - 表示任务或 skill 中的稳定步骤编号。
+  - 仅在日志已明确关联到某个 knowledge / skill step 时填写。
+  - 应优先复用知识条目或 skill 工件里的现有 step id，不在日志层重新发明编号体系。
+
+- `turnId`
+  - 表示学习层 `InteractionTurn` 的稳定回合 ID。
+  - 主要用于 `data/learning/turns`、`data/learning/evidence`、`data/preferences/signals` 等学习工件。
+  - 不要求所有执行日志都立即携带，但 learning / review / preference 工件必须能回链到对应 `turnId`。
+
+### 7.3 透传规则
+
+- capture 原始事件至少要求 `sessionId`，如果尚未进入编排链路，可暂不生成 `traceId`。
+- orchestrator、assist、student、review、repair、policy assembly 一旦进入主链路，必须优先透传既有 `traceId`。
+- 下游模块发现上游已给出 `taskId / stepId / turnId` 时，应复用原值，不再本地重写。
+- 文件路径可以以 `sessionId` 为主索引，但跨模块查询和审计说明应优先使用 `traceId` 串联。
+- 当日志对应的是学习工件而不是执行工件时，允许 `turnId` 成为主展示索引，但仍应保留可回链的 `traceId / sessionId / taskId`。
 
 ## 8. 提交与评审要求
 

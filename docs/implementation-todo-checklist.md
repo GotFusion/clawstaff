@@ -259,16 +259,27 @@
 **验收标准（阶段 6）**
 - [x] 一键执行测试脚本可输出通过/失败摘要（`make test` / `python3 scripts/tests/run_all.py --suite all`）。
 
+## M1 当前状态（2026-03-26）
+
+- [x] `make test-swift` 当前在 `main` 上全绿。
+- [x] `make test` 当前在 `main` 上全绿。
+- [x] 路线图、进展文档与研究文档已经对齐到 `M1 -> M5` 的统一叙事。
+- [x] 主链路日志 ID 语义已在 `docs/coding-conventions.md` 固化。
+- [ ] `make release-preflight` 结果尚未补回本清单。
+- [ ] 各模块日志 writer 尚未全部按统一 ID 语义收口完成。
+
 ---
 
 ## 横向任务（贯穿全程）
 
 ### A. 文档治理
 - [x] 每完成一个阶段更新 `docs/project-plan-and-progress.md`。
+  - 2026-03-26 已同步 `docs/next-phase-technical-roadmap.md`、`docs/project-plan-and-progress.md` 与外部研究文档。
 - [ ] 每个关键决策补 ADR。
 
 ### B. 可观测性
 - [ ] 统一日志格式（traceId/sessionId/taskId）。
+  - 2026-03-26 已先在 `docs/coding-conventions.md` 固化 `traceId / sessionId / taskId / stepId / turnId` 的语义与透传规则；剩余工作是逐模块 writer 收口。
 - [ ] 基础指标：采集速率、解析成功率、执行成功率。
 
 ### C. 数据治理

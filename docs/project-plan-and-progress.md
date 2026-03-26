@@ -1,5 +1,8 @@
 # OpenStaff 项目方案与实现进展
 
+版本：v0.12.1  
+更新时间：2026-03-26
+
 ## 1. 项目目标
 
 OpenStaff 的定位是“老师-学生”式个人助理：
@@ -171,11 +174,15 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成菜单栏+前台部件 v4 的 Phase D（菜单栏原生化）：菜单改为系统原生样式，危险操作仅文字强调，模式切换在部件隐藏时可自动显示并联动生效。
 - 完成菜单栏+前台部件 v4 的 Phase E（回归验收）：新增 `OpenStaffAppTests` 回归套件并完成空态/长文本/多任务/交互动作链路验证，且现有 unit/integration/e2e 与 `OpenStaffApp` 构建均通过。
 - 完成阶段 11.3.2 默认晋升与冲突策略：新增 `PreferenceRulePromoter`、`PreferenceConflictResolver`、`config/preference-promotion.example.yaml` 与 `ADR-0015`，默认只对 `global / app / taskFamily` 自动晋升，固化 `low/medium/high/critical` 风险门槛，并把 `PreferenceMemoryStore` 的规则排序接到统一冲突优先级与结构化解释模型上。
+- 完成 M1 基线核验（2026-03-26）：当前 `main` 已验证 `make test-swift`（`110` 个 Swift 测试）与 `make test`（unit `33`、integration `30`、e2e `4`）全绿，主干不再处于“已知测试回归”状态。
+- 完成 M1 文档与进展对齐（2026-03-26）：`docs/next-phase-technical-roadmap.md` 已升级为市场与研究对齐版路线图；本文件、`docs/implementation-todo-checklist.md` 与研究文档现按同一 M1 -> M5 叙事收敛。
+- 完成 M1 主链路日志 ID 语义固化（2026-03-26）：在 `docs/coding-conventions.md` 固定 `traceId / sessionId / taskId / stepId / turnId` 的最小字段、语义边界与透传规则，后续逐模块 writer 对齐以该文档为准。
 
 ### 下一步建议
-1. API 可用后补充 `provider=openai` 联机验证（模型行为、限流参数、错误码映射）并补充 skill 端到端执行联调。
-2. 在 `scripts/validation` 上继续扩展：对 `data/raw-events/**/*.jsonl`、`data/task-chunks/**/*.json`、`data/knowledge/**/*.json`、`data/skills/**/*.json` 做 schema 快速校验。
-3. 补齐 preflight 失败后的 repair workflow，把 `repairVersion` 真正接进自动修复与老师复核闭环。
+1. 继续完成 M1：跑通 `make release-preflight`，把发布前检查结果与门槛同步回文档。
+2. 继续完成 M1：逐模块收口主链路日志 writer，确保 `traceId / sessionId / taskId / stepId / turnId` 在 orchestrator、assist、student、review、repair、learning 工件中按统一语义透传。
+3. 开始 M2：补齐 `ObservationBundle / Trace Graph` 的事实层设计与真实 app 验收，优先覆盖 Finder / Safari / Terminal。
+4. 开始 M3 准备：对真实 `10` 条历史步骤做 replay dry-run 验收，并补齐 GUI 无终端三模式演示。
 
 ---
 
@@ -184,4 +191,5 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 架构与目录合理性评审请见：`docs/architecture-review.md`。
 - 详细编码 TODO 清单请见：`docs/implementation-todo-checklist.md`。
 - 下一阶段技术路线图请见：`docs/next-phase-technical-roadmap.md`。
+- 外部市场与研究调研请见：`docs/openclaw-market-and-personalization-research-2026-03.md`、`docs/personal-agent-frontier-research-2026-03.md`、`docs/feedback-learning-and-zero-training-research-2026-03.md`。
 - 建议按 TODO 阶段顺序推进，每完成一个阶段回写本文件“当前实现进展”。

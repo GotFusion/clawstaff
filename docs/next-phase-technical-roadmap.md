@@ -153,11 +153,13 @@ OpenStaff 下一版应明确定位为：
 
 #### TODO
 
-- [ ] 修复当前 Swift 测试回归，恢复 `make test-swift` 全绿。
-- [ ] 统一 `docs/project-plan-and-progress.md`、本路线图、`implementation-todo-checklist.md` 的下一步叙事。
+- [x] 修复当前 Swift 测试回归，恢复 `make test-swift` 全绿。
+  - 2026-03-26 已在 `main` 上验证 `make test-swift` 通过，当前为 `110` 个 Swift 测试全绿。
+- [x] 统一 `docs/project-plan-and-progress.md`、本路线图、`implementation-todo-checklist.md` 的下一步叙事。
+- [x] 统一主链路日志 ID 规范：`traceId / sessionId / taskId / stepId / turnId`。
+  - 2026-03-26 已在 `docs/coding-conventions.md` 固化字段语义、最小字段和透传规则；剩余工作是逐模块 writer 的完全收口。
 - [ ] 明确哪些 Phase 11 能力已进入主线，哪些仍为 feature flag 或研究能力。
 - [ ] 补齐关键决策 ADR 缺口，并把旧文档中的过时表述下线。
-- [ ] 统一主链路日志 ID 规范：`traceId / sessionId / taskId / stepId / turnId`。
 - [ ] 把当前发布前检查清单与真实门槛保持一致。
 
 #### 输出物
@@ -169,8 +171,8 @@ OpenStaff 下一版应明确定位为：
 
 #### 退出标准
 
-- [ ] `make test-swift` 通过
-- [ ] `make test` 通过
+- [x] `make test-swift` 通过
+- [x] `make test` 通过
 - [ ] `make release-preflight` 通过
 - [ ] 三份主文档对当前阶段描述一致
 
@@ -447,4 +449,3 @@ OpenStaff 下一版应明确定位为：
 - MemGUI-Bench: <https://arxiv.org/abs/2602.06075>
 - GUIGuard: <https://arxiv.org/abs/2601.18842>
 - A Survey of Personalization: From RAG to Agent: <https://arxiv.org/abs/2504.10147>
-
