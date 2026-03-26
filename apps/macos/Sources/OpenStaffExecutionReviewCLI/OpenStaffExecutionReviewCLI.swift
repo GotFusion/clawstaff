@@ -473,7 +473,8 @@ private struct ReviewScenarioWorkspaceMaterializer {
                     skillName: "skill-\(scenario.scenarioId)",
                     skillDirectoryPath: skillDirectory.path,
                     sourceKnowledgeItemId: knowledgeItemId,
-                    sourceStepId: step.stepId
+                    sourceStepId: step.stepId,
+                    stepId: step.stepId
                 )
             )
         }
@@ -508,7 +509,8 @@ private struct ReviewScenarioWorkspaceMaterializer {
                 skillName: "skill-\(scenario.scenarioId)",
                 skillDirectoryPath: skillDirectory.path,
                 sourceKnowledgeItemId: knowledgeItemId,
-                sourceStepId: failedStep.stepId
+                sourceStepId: failedStep.stepId,
+                stepId: failedStep.stepId
             )
         )
 

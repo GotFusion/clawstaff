@@ -157,7 +157,8 @@ OpenStaff 下一版应明确定位为：
   - 2026-03-26 已在 `main` 上验证 `make test-swift` 通过，当前为 `110` 个 Swift 测试全绿。
 - [x] 统一 `docs/project-plan-and-progress.md`、本路线图、`implementation-todo-checklist.md` 的下一步叙事。
 - [x] 统一主链路日志 ID 规范：`traceId / sessionId / taskId / stepId / turnId`。
-  - 2026-03-26 已在 `docs/coding-conventions.md` 固化字段语义、最小字段和透传规则；剩余工作是逐模块 writer 的完全收口。
+  - 2026-03-26 已在 `docs/coding-conventions.md` 固化字段语义、最小字段和透传规则。
+  - 2026-03-26 已把 `student / assist / openclaw` 的结构化日志 writer 收口到共享 JSONL append writer，并同步补齐 `stepId` / `turnId` 透传位。
 - [ ] 明确哪些 Phase 11 能力已进入主线，哪些仍为 feature flag 或研究能力。
 - [ ] 补齐关键决策 ADR 缺口，并把旧文档中的过时表述下线。
 - [ ] 把当前发布前检查清单与真实门槛保持一致。

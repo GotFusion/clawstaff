@@ -309,6 +309,7 @@ public struct OpenClawExecutionLogEntry: Codable, Equatable, Sendable {
     public let stepId: String?
     public let actionType: String?
     public let exitCode: Int32?
+    public let turnId: String?
 
     public init(
         timestamp: String,
@@ -323,7 +324,8 @@ public struct OpenClawExecutionLogEntry: Codable, Equatable, Sendable {
         skillDirectoryPath: String,
         stepId: String? = nil,
         actionType: String? = nil,
-        exitCode: Int32? = nil
+        exitCode: Int32? = nil,
+        turnId: String? = nil
     ) {
         self.timestamp = timestamp
         self.traceId = traceId
@@ -338,5 +340,6 @@ public struct OpenClawExecutionLogEntry: Codable, Equatable, Sendable {
         self.stepId = stepId
         self.actionType = actionType
         self.exitCode = exitCode
+        self.turnId = turnId
     }
 }

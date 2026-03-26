@@ -177,10 +177,11 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成 M1 基线核验（2026-03-26）：当前 `main` 已验证 `make test-swift`（`110` 个 Swift 测试）与 `make test`（unit `33`、integration `30`、e2e `4`）全绿，主干不再处于“已知测试回归”状态。
 - 完成 M1 文档与进展对齐（2026-03-26）：`docs/next-phase-technical-roadmap.md` 已升级为市场与研究对齐版路线图；本文件、`docs/implementation-todo-checklist.md` 与研究文档现按同一 M1 -> M5 叙事收敛。
 - 完成 M1 主链路日志 ID 语义固化（2026-03-26）：在 `docs/coding-conventions.md` 固定 `traceId / sessionId / taskId / stepId / turnId` 的最小字段、语义边界与透传规则，后续逐模块 writer 对齐以该文档为准。
+- 完成 M1 第一轮跨模块日志 writer 收口（2026-03-26）：新增共享 `StructuredLogFileWriter`，把 `student / assist / openclaw` 三类 JSONL 追加逻辑统一到同一 writer，并让 `ExecutionReviewStore` 可直接读取补齐后的 `stepId / turnId` 字段。
 
 ### 下一步建议
 1. 继续完成 M1：跑通 `make release-preflight`，把发布前检查结果与门槛同步回文档。
-2. 继续完成 M1：逐模块收口主链路日志 writer，确保 `traceId / sessionId / taskId / stepId / turnId` 在 orchestrator、assist、student、review、repair、learning 工件中按统一语义透传。
+2. 继续完成 M1：把统一 ID 语义继续扩到 review / repair / learning 工件，补齐 `turnId` 回链与跨文件关联查询。
 3. 开始 M2：补齐 `ObservationBundle / Trace Graph` 的事实层设计与真实 app 验收，优先覆盖 Finder / Safari / Terminal。
 4. 开始 M3 准备：对真实 `10` 条历史步骤做 replay dry-run 验收，并补齐 GUI 无终端三模式演示。
 

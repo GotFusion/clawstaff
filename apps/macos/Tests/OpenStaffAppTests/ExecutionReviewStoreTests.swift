@@ -159,7 +159,8 @@ final class ExecutionReviewStoreTests: XCTestCase {
                 skillId: "skill-save-doc",
                 skillName: "skill-save-doc",
                 skillDirectoryPath: skillDirectory.path,
-                sourceKnowledgeItemId: knowledgeItem.knowledgeItemId
+                sourceKnowledgeItemId: knowledgeItem.knowledgeItemId,
+                turnId: "turn-student-skillExecution-task-001-step-000"
             ),
             StudentLoopLogEntry(
                 timestamp: "2026-03-14T10:15:02Z",
@@ -174,7 +175,9 @@ final class ExecutionReviewStoreTests: XCTestCase {
                 skillName: "skill-save-doc",
                 skillDirectoryPath: skillDirectory.path,
                 sourceKnowledgeItemId: knowledgeItem.knowledgeItemId,
-                sourceStepId: "skill-step-001"
+                sourceStepId: "skill-step-001",
+                stepId: "skill-step-001",
+                turnId: "turn-student-skillExecution-task-001-step-001"
             ),
             StudentLoopLogEntry(
                 timestamp: "2026-03-14T10:15:04Z",
@@ -190,7 +193,9 @@ final class ExecutionReviewStoreTests: XCTestCase {
                 skillName: "skill-save-doc",
                 skillDirectoryPath: skillDirectory.path,
                 sourceKnowledgeItemId: knowledgeItem.knowledgeItemId,
-                sourceStepId: "skill-step-002"
+                sourceStepId: "skill-step-002",
+                stepId: "skill-step-002",
+                turnId: "turn-student-skillExecution-task-001-step-002"
             )
         ]
         let logContent = try logEntries
@@ -214,6 +219,8 @@ final class ExecutionReviewStoreTests: XCTestCase {
         let failedLog = try XCTUnwrap(snapshot.logs.first(where: { $0.errorCode == StudentLoopErrorCode.executionFailed.rawValue }))
         let detail = store.loadDetail(for: failedLog)
 
+        XCTAssertEqual(failedLog.stepId, "skill-step-002")
+        XCTAssertEqual(failedLog.turnId, "turn-student-skillExecution-task-001-step-002")
         XCTAssertEqual(detail.skillName, "skill-save-doc")
         XCTAssertEqual(detail.currentRepairVersion, 2)
         XCTAssertEqual(detail.comparisonRows.count, 2)
@@ -443,7 +450,8 @@ private func makeManualSkillReviewFixture(
             skillId: "skill-save-doc",
             skillName: "skill-save-doc",
             skillDirectoryPath: skillDirectory.path,
-            sourceKnowledgeItemId: knowledgeItem.knowledgeItemId
+            sourceKnowledgeItemId: knowledgeItem.knowledgeItemId,
+            turnId: "turn-student-skillExecution-task-001-step-000"
         ),
         StudentLoopLogEntry(
             timestamp: "2026-03-14T10:15:02Z",
@@ -458,7 +466,9 @@ private func makeManualSkillReviewFixture(
             skillName: "skill-save-doc",
             skillDirectoryPath: skillDirectory.path,
             sourceKnowledgeItemId: knowledgeItem.knowledgeItemId,
-            sourceStepId: "skill-step-001"
+            sourceStepId: "skill-step-001",
+            stepId: "skill-step-001",
+            turnId: "turn-student-skillExecution-task-001-step-001"
         ),
         StudentLoopLogEntry(
             timestamp: "2026-03-14T10:15:04Z",
@@ -474,7 +484,9 @@ private func makeManualSkillReviewFixture(
             skillName: "skill-save-doc",
             skillDirectoryPath: skillDirectory.path,
             sourceKnowledgeItemId: knowledgeItem.knowledgeItemId,
-            sourceStepId: "skill-step-002"
+            sourceStepId: "skill-step-002",
+            stepId: "skill-step-002",
+            turnId: "turn-student-skillExecution-task-001-step-002"
         )
     ]
     let logContent = try logEntries

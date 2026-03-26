@@ -4293,7 +4293,8 @@ enum LearnedSkillRunner {
                     skillName: payload.skillName,
                     skillDirectoryPath: skill.skillDirectoryPath,
                     sourceKnowledgeItemId: payload.knowledgeItemId,
-                    sourceStepId: step.stepId
+                    sourceStepId: step.stepId,
+                    stepId: step.stepId
                 )
             )
 

@@ -469,7 +469,8 @@ public final class StudentModeLoopOrchestrator {
             skillId: step?.skillId,
             planStepId: step?.planStepId,
             sourceKnowledgeItemId: step?.sourceKnowledgeItemId ?? plan?.selectedKnowledgeItemId,
-            sourceStepId: step?.sourceStepId
+            sourceStepId: step?.sourceStepId,
+            stepId: step?.sourceStepId
         )
 
         let url = try logWriter.write(entry)

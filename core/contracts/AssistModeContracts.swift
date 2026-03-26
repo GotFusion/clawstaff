@@ -175,6 +175,7 @@ public struct AssistLoopLogEntry: Codable, Equatable, Sendable {
     public let suggestionId: String?
     public let knowledgeItemId: String?
     public let stepId: String?
+    public let turnId: String?
 
     public init(
         timestamp: String,
@@ -187,7 +188,8 @@ public struct AssistLoopLogEntry: Codable, Equatable, Sendable {
         message: String,
         suggestionId: String? = nil,
         knowledgeItemId: String? = nil,
-        stepId: String? = nil
+        stepId: String? = nil,
+        turnId: String? = nil
     ) {
         self.timestamp = timestamp
         self.traceId = traceId
@@ -200,5 +202,6 @@ public struct AssistLoopLogEntry: Codable, Equatable, Sendable {
         self.suggestionId = suggestionId
         self.knowledgeItemId = knowledgeItemId
         self.stepId = stepId
+        self.turnId = turnId
     }
 }

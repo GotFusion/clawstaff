@@ -7,6 +7,7 @@ struct ExecutionLogSummary: Identifiable {
     let traceId: String?
     let sessionId: String
     let taskId: String?
+    let turnId: String?
     let status: String
     let message: String
     let component: String?
@@ -336,6 +337,7 @@ struct ExecutionReviewStore {
                         traceId: record.traceId,
                         sessionId: record.sessionId,
                         taskId: record.taskId,
+                        turnId: record.turnId,
                         status: record.status,
                         message: record.message,
                         component: record.component,
@@ -434,6 +436,7 @@ struct ExecutionReviewStore {
                     traceId: record.traceId,
                     sessionId: record.sessionId,
                     taskId: record.taskId,
+                    turnId: record.turnId,
                     status: record.status,
                     message: record.message,
                     component: record.component,
@@ -2211,6 +2214,7 @@ private struct ExecutionLogRecord: Decodable {
     let traceId: String?
     let sessionId: String
     let taskId: String?
+    let turnId: String?
     let status: String
     let message: String
     let component: String?

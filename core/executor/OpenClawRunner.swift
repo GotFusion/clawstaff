@@ -105,10 +105,9 @@ public struct FoundationOpenClawSubprocessRunner: OpenClawSubprocessRunning {
 public struct OpenClawRunner {
     private let subprocessRunner: any OpenClawSubprocessRunning
     private let preflightValidator: SkillPreflightValidator
-    private let fileManager: FileManager
+    private let logFileWriter: StructuredLogFileWriter
     private let nowProvider: () -> Date
     private let formatter: ISO8601DateFormatter
-    private let encoder: JSONEncoder
 
     public init(
         subprocessRunner: any OpenClawSubprocessRunning = FoundationOpenClawSubprocessRunner(),
@@ -118,16 +117,12 @@ public struct OpenClawRunner {
     ) {
         self.subprocessRunner = subprocessRunner
         self.preflightValidator = preflightValidator
-        self.fileManager = fileManager
+        self.logFileWriter = StructuredLogFileWriter(fileManager: fileManager)
         self.nowProvider = nowProvider
 
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         self.formatter = formatter
-
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        self.encoder = encoder
     }
 
     public func execute(request: OpenClawExecutionRequest) -> OpenClawExecutionResult {
@@ -539,61 +534,21 @@ public struct OpenClawRunner {
         entry: OpenClawExecutionLogEntry,
         logsRootDirectoryPath: String
     ) -> LogWriteResult {
-        let dateKey = String(entry.timestamp.prefix(10))
-        let dateDirectory = URL(fileURLWithPath: logsRootDirectoryPath, isDirectory: true)
-            .appendingPathComponent(dateKey, isDirectory: true)
-
         do {
-            try fileManager.createDirectory(at: dateDirectory, withIntermediateDirectories: true)
+            let fileURL = try logFileWriter.append(
+                entry,
+                timestamp: entry.timestamp,
+                logsRootDirectory: URL(fileURLWithPath: logsRootDirectoryPath, isDirectory: true),
+                fileName: "\(entry.sessionId)-openclaw.log",
+                artifactLabel: "OpenClaw"
+            )
+            return LogWriteResult(path: fileURL.path, errorDescription: nil)
         } catch {
             return LogWriteResult(
                 path: nil,
-                errorDescription: "Failed to create OpenClaw log directory \(dateDirectory.path): \(error.localizedDescription)"
+                errorDescription: error.localizedDescription
             )
         }
-
-        let fileURL = dateDirectory.appendingPathComponent("\(entry.sessionId)-openclaw.log", isDirectory: false)
-        let lineData: Data
-        do {
-            lineData = try encoder.encode(entry) + Data([0x0A])
-        } catch {
-            return LogWriteResult(
-                path: nil,
-                errorDescription: "Failed to encode OpenClaw log entry: \(error.localizedDescription)"
-            )
-        }
-
-        if !fileManager.fileExists(atPath: fileURL.path) {
-            let created = fileManager.createFile(atPath: fileURL.path, contents: nil)
-            if !created {
-                return LogWriteResult(
-                    path: nil,
-                    errorDescription: "Failed to create OpenClaw log file \(fileURL.path)."
-                )
-            }
-        }
-
-        guard let handle = try? FileHandle(forWritingTo: fileURL) else {
-            return LogWriteResult(
-                path: nil,
-                errorDescription: "Failed to open OpenClaw log file \(fileURL.path)."
-            )
-        }
-        defer {
-            try? handle.close()
-        }
-
-        do {
-            try handle.seekToEnd()
-            try handle.write(contentsOf: lineData)
-        } catch {
-            return LogWriteResult(
-                path: nil,
-                errorDescription: "Failed to append OpenClaw log file \(fileURL.path): \(error.localizedDescription)"
-            )
-        }
-
-        return LogWriteResult(path: fileURL.path, errorDescription: nil)
     }
 
     private func decodeGatewayPayload(from stdout: String) -> OpenClawGatewayExecutionPayload? {

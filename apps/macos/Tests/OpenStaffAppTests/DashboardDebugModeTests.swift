@@ -59,6 +59,7 @@ final class DashboardDebugModeTests: XCTestCase {
                     traceId: "trace-001",
                     sessionId: "session-001",
                     taskId: "task-001",
+                    turnId: nil,
                     status: "STATUS_ASSIST_FAILED",
                     message: "Assist execution failed at locator resolution.",
                     component: "assist.mode.loop",

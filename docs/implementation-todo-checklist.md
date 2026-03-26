@@ -265,8 +265,9 @@
 - [x] `make test` 当前在 `main` 上全绿。
 - [x] 路线图、进展文档与研究文档已经对齐到 `M1 -> M5` 的统一叙事。
 - [x] 主链路日志 ID 语义已在 `docs/coding-conventions.md` 固化。
+- [x] `student / assist / openclaw` 已收口到共享结构化日志 append writer，并补齐统一 `stepId` / `turnId` 字段位。
 - [ ] `make release-preflight` 结果尚未补回本清单。
-- [ ] 各模块日志 writer 尚未全部按统一 ID 语义收口完成。
+- [ ] 其余 review / repair / learning 工件仍需继续按统一 ID 语义收口。
 
 ---
 
@@ -279,7 +280,7 @@
 
 ### B. 可观测性
 - [ ] 统一日志格式（traceId/sessionId/taskId）。
-  - 2026-03-26 已先在 `docs/coding-conventions.md` 固化 `traceId / sessionId / taskId / stepId / turnId` 的语义与透传规则；剩余工作是逐模块 writer 收口。
+  - 2026-03-26 已在 `docs/coding-conventions.md` 固化 `traceId / sessionId / taskId / stepId / turnId` 的语义与透传规则，并先完成 `student / assist / openclaw` writer 收口；剩余是 review / repair / learning 工件继续对齐。
 - [ ] 基础指标：采集速率、解析成功率、执行成功率。
 
 ### C. 数据治理
