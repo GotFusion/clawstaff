@@ -27,7 +27,7 @@ from semantic_action_store import (
 )
 
 
-BUILDER_VERSION = "sem-101-102-rule-v1"
+BUILDER_VERSION = "sem-101-102-103-rule-v1"
 PRINTABLE_SHORTCUT_EXCLUSIONS = {"\r", "\n", "\t", "\x03", "\x7f", "\x1b"}
 KEY_CODE_NAMES = {
     36: "return",
@@ -42,6 +42,7 @@ KEY_CODE_NAMES = {
 class ActionBuilderConfig:
     type_gap_ms: int = 1200
     shortcut_gap_ms: int = 900
+    drag_gap_ms: int = 1500
 
 
 @dataclass
@@ -204,6 +205,52 @@ def should_merge(cluster: EventCluster, event: dict[str, Any], config: ActionBui
     if cluster.kind == "shortcut":
         return gap_ms <= config.shortcut_gap_ms and shortcut_signature(previous) == shortcut_signature(event)
     return False
+
+
+def is_drag_start_event(event: dict[str, Any]) -> bool:
+    return event.get("action") == "leftClick"
+
+
+def is_drag_move_event(event: dict[str, Any]) -> bool:
+    return event.get("action") == "leftMouseDragged"
+
+
+def is_drag_end_event(event: dict[str, Any]) -> bool:
+    return event.get("action") == "leftMouseUp"
+
+
+def detect_drag_cluster(
+    events: list[dict[str, Any]],
+    start_index: int,
+    config: ActionBuilderConfig,
+) -> tuple[EventCluster, int] | None:
+    if start_index >= len(events):
+        return None
+    start_event = events[start_index]
+    if not is_drag_start_event(start_event):
+        return None
+
+    cursor = start_index + 1
+    cluster_events = [start_event]
+    saw_drag_move = False
+    last_event = start_event
+    while cursor < len(events):
+        current = events[cursor]
+        gap_ms = time_gap_millis(last_event, current)
+        if gap_ms is None or gap_ms > config.drag_gap_ms:
+            break
+        if is_drag_move_event(current):
+            cluster_events.append(current)
+            saw_drag_move = True
+            last_event = current
+            cursor += 1
+            continue
+        if is_drag_end_event(current) and saw_drag_move:
+            cluster_events.append(current)
+            diagnostics = ["merged-drag-gesture-events"]
+            return EventCluster(kind="drag", events=cluster_events, diagnostics=diagnostics), cursor + 1
+        break
+    return None
 
 
 def app_context_selector(context: dict[str, Any]) -> dict[str, Any]:
@@ -434,6 +481,124 @@ def choose_cluster_selectors(cluster: EventCluster) -> list[dict[str, Any]]:
     return [window_context_selector(context)]
 
 
+def pointer_payload(pointer: dict[str, Any] | None) -> dict[str, Any] | None:
+    if pointer is None:
+        return None
+    return {
+        "x": pointer.get("x"),
+        "y": pointer.get("y"),
+        "width": pointer.get("width"),
+        "height": pointer.get("height"),
+        "coordinateSpace": pointer.get("coordinateSpace"),
+    }
+
+
+def drag_intent(start_event: dict[str, Any], end_event: dict[str, Any]) -> str:
+    start_context = event_context(start_event)
+    end_context = event_context(end_event)
+    start_focused = start_context.get("focusedElement")
+    end_focused = end_context.get("focusedElement")
+
+    start_role = start_focused.get("role") if isinstance(start_focused, dict) else None
+    end_role = end_focused.get("role") if isinstance(end_focused, dict) else None
+
+    if any(role == "AXWindow" for role in (start_role, end_role)):
+        return "window_move"
+    if any(role in {"AXList", "AXOutline", "AXTable", "AXCollectionList"} for role in (start_role, end_role)):
+        return "list_reorder"
+    return "drag_and_drop"
+
+
+def drag_path_payload(events: list[dict[str, Any]]) -> dict[str, Any]:
+    points = [event_pointer(event) for event in events]
+    compact_points = [point for point in points if point is not None]
+    return {
+        "pointCount": len(compact_points),
+        "startPoint": pointer_payload(compact_points[0]) if compact_points else None,
+        "endPoint": pointer_payload(compact_points[-1]) if compact_points else None,
+        "intermediatePoints": [pointer_payload(point) for point in compact_points[1:-1]],
+    }
+
+
+def drag_target_role(prefix: str, locator_type: str | None, is_primary: bool) -> str:
+    if is_primary:
+        return prefix
+    if locator_type == "coordinateFallback":
+        return f"{prefix}Fallback"
+    return f"{prefix}Candidate"
+
+
+def build_drag_target_records(
+    action_id: str,
+    source_selectors: list[dict[str, Any]],
+    target_selectors: list[dict[str, Any]],
+    created_at: str,
+) -> list[SemanticActionTargetRecord]:
+    targets: list[SemanticActionTargetRecord] = []
+    ordinal = 1
+    for index, selector in enumerate(source_selectors, start=1):
+        targets.append(
+            SemanticActionTargetRecord(
+                target_id=f"{action_id}:target:source:{index:02d}",
+                target_role=drag_target_role("source", selector.get("locatorType"), index == 1),
+                ordinal=ordinal,
+                locator_type=selector.get("locatorType"),
+                selector=selector,
+                context={"selectorRole": "source"},
+                confidence=float(selector.get("confidence") or 0.0) if selector.get("confidence") is not None else None,
+                is_preferred=(index == 1),
+                created_at=created_at,
+            )
+        )
+        ordinal += 1
+    for index, selector in enumerate(target_selectors, start=1):
+        targets.append(
+            SemanticActionTargetRecord(
+                target_id=f"{action_id}:target:target:{index:02d}",
+                target_role=drag_target_role("target", selector.get("locatorType"), index == 1),
+                ordinal=ordinal,
+                locator_type=selector.get("locatorType"),
+                selector=selector,
+                context={"selectorRole": "target"},
+                confidence=float(selector.get("confidence") or 0.0) if selector.get("confidence") is not None else None,
+                is_preferred=(index == 1),
+                created_at=created_at,
+            )
+        )
+        ordinal += 1
+    return targets
+
+
+def build_drag_assertions(
+    action_id: str,
+    source_selector: dict[str, Any],
+    target_selector: dict[str, Any],
+    target_context: dict[str, Any],
+    created_at: str,
+) -> list[SemanticActionAssertionRecord]:
+    assertions = build_assertions(action_id, source_selector, target_context, created_at)
+    locator_type = target_selector.get("locatorType")
+    if isinstance(locator_type, str) and locator_type not in {"unknown"}:
+        assertions.append(
+            SemanticActionAssertionRecord(
+                assertion_id=f"{action_id}:assertion:target-selector-resolvable",
+                assertion_type="targetSelectorResolvable",
+                assertion={
+                    "locatorType": locator_type,
+                    "selectorKind": target_selector.get("selectorKind"),
+                    "selectorStrategy": target_selector.get("selectorStrategy"),
+                    "elementRole": target_selector.get("elementRole"),
+                    "elementIdentifier": target_selector.get("elementIdentifier"),
+                    "axPath": target_selector.get("axPath"),
+                },
+                created_at=created_at,
+                source="sem103-builder",
+                ordinal=3,
+            )
+        )
+    return assertions
+
+
 def build_cluster_action(
     *,
     action_id: str,
@@ -520,6 +685,117 @@ def build_cluster_action(
         action=action,
         targets=build_target_records(action_id, selectors, created_at),
         assertions=build_assertions(action_id, primary_selector, context, created_at),
+        execution_logs=[],
+        diagnostics=builder_diagnostics,
+    )
+
+
+def build_drag_action(
+    *,
+    action_id: str,
+    step_index: int,
+    task_chunk: dict[str, Any],
+    task_chunk_path: Path,
+    raw_event_log_path: Path,
+    cluster: EventCluster,
+    workspace_root: Path,
+) -> ActionBuildBundle:
+    start_event = cluster.events[0]
+    end_event = cluster.events[-1]
+    source_selectors = build_accessibility_selector_chain(start_event)
+    target_selectors = build_accessibility_selector_chain(end_event)
+    if not source_selectors:
+        source_selectors = [{"locatorType": "unknown", "selectorKind": "unknown", "source": "sem103-builder"}]
+    if not target_selectors:
+        target_selectors = [{"locatorType": "unknown", "selectorKind": "unknown", "source": "sem103-builder"}]
+
+    source_selector = dict(source_selectors[0])
+    target_selector = dict(target_selectors[0])
+    if source_selector.get("confidence") is None:
+        source_selector["confidence"] = selector_strategy_confidence(str(source_selector.get("selectorStrategy") or ""))
+    if target_selector.get("confidence") is None:
+        target_selector["confidence"] = selector_strategy_confidence(str(target_selector.get("selectorStrategy") or ""))
+    source_selectors[0] = dict(source_selector)
+    target_selectors[0] = dict(target_selector)
+
+    source_context = event_context(start_event)
+    target_context = event_context(end_event)
+    created_at = str(start_event.get("timestamp") or "")
+    updated_at = str(end_event.get("timestamp") or "")
+    source_event_ids = [value for value in [event_id(event) for event in cluster.events] if value]
+
+    builder_diagnostics = list(cluster.diagnostics)
+    if selector_manual_review_required(source_selector):
+        builder_diagnostics.append("drag-source-fell-back-to-low-confidence-selector")
+    if selector_manual_review_required(target_selector):
+        builder_diagnostics.append("drag-target-fell-back-to-low-confidence-selector")
+
+    args = {
+        "button": "left",
+        "intent": drag_intent(start_event, end_event),
+        "sourceSelector": source_selector,
+        "targetSelector": target_selector,
+        "dragPath": drag_path_payload(cluster.events),
+    }
+
+    context_payload = action_context_payload(
+        action_type="drag",
+        task_chunk=task_chunk,
+        raw_event_log_path=raw_event_log_path,
+        task_chunk_path=task_chunk_path,
+        workspace_root=workspace_root,
+        cluster=cluster,
+        selector=source_selector,
+        selector_summary=selector_chain_summary(source_selectors),
+        builder_diagnostics=builder_diagnostics,
+    )
+    context_payload["drag"] = {
+        "sourceSelectorSummary": selector_chain_summary(source_selectors),
+        "targetSelectorSummary": selector_chain_summary(target_selectors),
+        "sourceAppContext": {
+            "appName": source_context.get("appName"),
+            "appBundleId": source_context.get("appBundleId"),
+            "windowTitle": source_context.get("windowTitle"),
+            "windowSignature": source_context.get("windowSignature"),
+        },
+        "targetAppContext": {
+            "appName": target_context.get("appName"),
+            "appBundleId": target_context.get("appBundleId"),
+            "windowTitle": target_context.get("windowTitle"),
+            "windowSignature": target_context.get("windowSignature"),
+        },
+    }
+
+    action = SemanticActionRecord(
+        action_id=action_id,
+        schema_version=SCHEMA_VERSION,
+        session_id=str(task_chunk.get("sessionId") or ""),
+        task_id=task_chunk.get("taskId"),
+        turn_id=None,
+        trace_id=f"trace-semantic-builder-{task_chunk.get('taskId')}-{step_index:03d}",
+        step_id=f"step-{step_index:03d}",
+        step_index=step_index,
+        action_type="drag",
+        selector=source_selector,
+        args=args,
+        context=context_payload,
+        confidence=min(float(source_selector.get("confidence") or 0.0), float(target_selector.get("confidence") or 0.0)),
+        source_event_ids=source_event_ids,
+        source_frame_ids=[],
+        source_path=repo_relative_or_abs(task_chunk_path, workspace_root),
+        preferred_locator_type=source_selector.get("locatorType"),
+        manual_review_required=True,
+        legacy_coordinate={
+            "source": event_pointer(start_event),
+            "target": event_pointer(end_event),
+        },
+        created_at=created_at,
+        updated_at=updated_at,
+    )
+    return ActionBuildBundle(
+        action=action,
+        targets=build_drag_target_records(action_id, source_selectors, target_selectors, created_at),
+        assertions=build_drag_assertions(action_id, source_selector, target_selector, target_context, created_at),
         execution_logs=[],
         diagnostics=builder_diagnostics,
     )
@@ -660,11 +936,50 @@ def build_actions_for_task_chunk(
         cluster = None
 
     previous_event: dict[str, Any] | None = None
-    for event in events:
+    cursor = 0
+    while cursor < len(events):
+        event = events[cursor]
+        drag_cluster_result = detect_drag_cluster(events, cursor, config)
+        if drag_cluster_result is not None:
+            drag_cluster, next_cursor = drag_cluster_result
+            if previous_event is not None and not same_context(previous_event, event):
+                flush_cluster()
+                action_id, step_index = next_action_ref()
+                transition_bundle = build_transition_action(
+                    action_id=action_id,
+                    step_index=step_index,
+                    task_chunk=task_chunk,
+                    task_chunk_path=task_chunk_path,
+                    raw_event_log_path=raw_event_log_path,
+                    previous_event=previous_event,
+                    current_event=event,
+                    workspace_root=workspace_root,
+                )
+                if transition_bundle is not None:
+                    bundles.append(transition_bundle)
+
+            flush_cluster()
+            action_id, step_index = next_action_ref()
+            bundles.append(
+                build_drag_action(
+                    action_id=action_id,
+                    step_index=step_index,
+                    task_chunk=task_chunk,
+                    task_chunk_path=task_chunk_path,
+                    raw_event_log_path=raw_event_log_path,
+                    cluster=drag_cluster,
+                    workspace_root=workspace_root,
+                )
+            )
+            previous_event = drag_cluster.events[-1]
+            cursor = next_cursor
+            continue
+
         kind = event_kind(event)
         if kind is None:
             raw_event_id = event_id(event)
             skipped_events.append(raw_event_id or "unknown")
+            cursor += 1
             continue
 
         if previous_event is not None and not same_context(previous_event, event):
@@ -696,6 +1011,7 @@ def build_actions_for_task_chunk(
             cluster = EventCluster(kind=kind, events=[event], diagnostics=[])
 
         previous_event = event
+        cursor += 1
 
     flush_cluster()
 

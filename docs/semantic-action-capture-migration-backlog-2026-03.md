@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
 更新时间：2026-03-27  
-状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 已完成，其余待执行）
+状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 已完成，其余待执行）
 
 ## 1. 目标与原则
 
@@ -152,14 +152,28 @@
   - 缓解：多特征组合 + fallback 链。
 
 ### SEM-103 拖动动作语义化（drag source -> target）
+状态：已完成（2026-03-27）
 - 目标：废除坐标拖动，改成元素对元素。
 - 任务：
-  - 识别拖动起点/终点事件簇。
-  - 生成 `drag(source_selector, target_selector, intent)`。
-  - 支持窗口拖拽与列表重排等常见场景。
+  - [x] 识别拖动起点/终点事件簇。
+  - [x] 生成 `drag(source_selector, target_selector, intent)`。
+  - [x] 支持窗口拖拽与列表重排等常见场景。
+- 落地产物：
+  - `scripts/learning/semantic_action_builder.py`
+  - `scripts/validation/validate_raw_event_logs.py`
+  - `core/contracts/CaptureEventContracts.swift`
+  - `core/capture/schemas/raw-event.schema.json`
+  - `core/capture/event-model-v0.md`
+  - `apps/macos/Sources/OpenStaffCaptureCLI/MouseCaptureEngine.swift`
+  - `apps/macos/Sources/OpenStaffApp/ModeObservationCapture.swift`
+  - `apps/macos/Sources/OpenStaffKnowledgeBuilderCLI/KnowledgeItemBuilder.swift`
+  - `apps/macos/Tests/OpenStaffAppTests/KeyboardKnowledgeBuilderTests.swift`
+  - `tests/unit/test_semantic_action_builder.py`
+  - `tests/integration/test_semantic_action_builder.py`
+  - `tests/unit/test_validate_raw_event_logs.py`
 - DoD：
-  - 拖动场景基准集成功率 >= 90%（v1）。
-  - 无任何 `drag(x1,y1,x2,y2)` 执行落地。
+  - [x] 拖动场景基准集成功率 >= 90%（v1）。
+  - [x] 无任何 `drag(x1,y1,x2,y2)` 执行落地。
 - 风险：
   - source/target 错配。
   - 缓解：加入拖动后状态断言（位置变化/层级变化）。

@@ -8,6 +8,7 @@
   - 校验 `capture.raw.v0` JSONL。
   - `strict` 模式面向样例/新格式。
   - `compat` 模式面向历史存量数据，允许旧键盘事件缺少 `keyboard.isSensitiveInput`，但会输出告警。
+  - 当前 `strict` 也接受 `leftMouseDragged / leftMouseUp`，用于 `SEM-103` 拖动事件簇。
 - `validate_knowledge_items.py`
   - 校验 `knowledge.item.v0` JSON。
   - 对缺失 `target` 的历史知识条目输出告警，避免直接卡死发布门禁。

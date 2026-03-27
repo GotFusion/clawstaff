@@ -44,6 +44,8 @@
         "leftClick",
         "rightClick",
         "doubleClick",
+        "leftMouseDragged",
+        "leftMouseUp",
         "keyDown"
       ]
     },

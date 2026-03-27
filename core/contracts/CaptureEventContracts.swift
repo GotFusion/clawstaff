@@ -48,11 +48,13 @@ public enum RawEventAction: String, Codable {
     case leftClick
     case rightClick
     case doubleClick
+    case leftMouseDragged
+    case leftMouseUp
     case keyDown
 
     public var source: RawEventSource {
         switch self {
-        case .leftClick, .rightClick, .doubleClick:
+        case .leftClick, .rightClick, .doubleClick, .leftMouseDragged, .leftMouseUp:
             return .mouse
         case .keyDown:
             return .keyboard

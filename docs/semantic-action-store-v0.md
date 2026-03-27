@@ -8,7 +8,7 @@
 
 本版优先解决：
 
-1. 给后续 `SEM-101/201/203` 提供统一表结构。
+1. 给后续 `SEM-101/103/201/203` 提供统一表结构。
 2. 让历史 `InteractionTurn` 能回填成结构化语义动作记录。
 3. 在保持现有文件型学习资产不变的前提下，引入可前后滚动的 schema migration。
 
@@ -19,7 +19,7 @@
   - `scripts/learning/migrations/semantic_actions/0001_semantic_actions.up.sql`
   - `scripts/learning/migrations/semantic_actions/0001_semantic_actions.down.sql`
 - repository / DAO：`scripts/learning/semantic_action_store.py`
-- SEM-101 builder：`scripts/learning/semantic_action_builder.py`
+- SEM-101/103 builder：`scripts/learning/semantic_action_builder.py`
 - SEM-102 selector extractor：`scripts/learning/semantic_selector_extractor.py`
 - builder CLI：`scripts/learning/build_semantic_actions.py`
 - 回填脚本：`scripts/learning/migrate_semantic_actions.py`
@@ -112,6 +112,14 @@
 - `focusWindow -> focus_window`
 - `drag* -> drag`
 
+其中 `SEM-103` 生成的 `drag` 记录额外约定：
+
+- `selector_json` 保存 source selector
+- `args_json.sourceSelector / targetSelector` 保存元素对元素拖动的双目标
+- `args_json.dragPath` 保存拖动轨迹摘要（起点、终点、中间点数量）
+- `args_json.intent` 当前支持 `window_move / list_reorder / drag_and_drop`
+- `action_targets` 会同时记录 source/target 的 primary/candidate/fallback selector
+
 若缺少显式 `actionType`，则退回 instruction 关键字推断；再不行则 `guiAction -> click`。
 
 ## 5. 人工审核标记
@@ -130,7 +138,7 @@ v0 暂不做：
 
 - 把 `semantic_actions` 并入 `learning bundle`
 - 真实在线执行器直接消费该库
-- drag source / target 双目标拆分
+- drag intent 的跨 App/跨控件细分策略学习
 - 跨设备 locator repair
 
-这些属于后续 `SEM-101 / 201 / 301` 的接续工作。
+这些属于后续 `SEM-103 / 201 / 301` 的接续工作。

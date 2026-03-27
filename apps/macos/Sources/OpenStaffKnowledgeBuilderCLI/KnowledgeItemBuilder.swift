@@ -215,6 +215,10 @@ struct KnowledgeItemBuilder {
             actionText = "右键点击"
         case .doubleClick:
             actionText = "双击点击"
+        case .leftMouseDragged:
+            actionText = "拖动"
+        case .leftMouseUp:
+            actionText = "释放拖动"
         case .keyDown:
             actionText = "键盘操作"
         }

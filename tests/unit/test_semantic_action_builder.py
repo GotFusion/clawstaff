@@ -31,7 +31,7 @@ def raw_event(
         "eventId": event_id,
         "sessionId": "session-001",
         "timestamp": timestamp,
-        "source": "mouse" if action in {"leftClick", "rightClick", "doubleClick"} else "keyboard",
+        "source": "mouse" if action in {"leftClick", "rightClick", "doubleClick", "leftMouseDragged", "leftMouseUp"} else "keyboard",
         "action": action,
         "pointer": {
             "x": pointer[0],
@@ -299,6 +299,95 @@ class SemanticActionBuilderTests(unittest.TestCase):
         self.assertEqual(bundles[0].action.action_type, "shortcut")
         self.assertEqual(bundles[0].action.args["repeat"], 2)
         self.assertIn("merged-repeated-shortcut-events", bundles[0].diagnostics)
+
+    def test_builder_recognizes_drag_gesture_with_source_and_target_selectors(self):
+        task_chunk = {
+            "taskId": "task-003",
+            "sessionId": "session-001",
+            "boundaryReason": "sessionEnd",
+            "eventIds": ["event-001", "event-002", "event-003"],
+        }
+        window_signature = {
+            "signature": "window-finder-desktop",
+            "signatureVersion": "window-v1",
+            "role": "AXWindow",
+            "subrole": "AXStandardWindow",
+        }
+        list_element = {
+            "role": "AXList",
+            "subrole": "AXCollectionList",
+            "title": "Desktop Items",
+            "identifier": "finder.desktop-items",
+            "descriptionText": "Desktop Items",
+            "helpText": "",
+            "boundingRect": {"x": 120, "y": 90, "width": 980, "height": 720, "coordinateSpace": "screen"},
+            "valueRedacted": False,
+        }
+        target_element = {
+            "role": "AXList",
+            "subrole": "AXCollectionList",
+            "title": "Desktop Items",
+            "identifier": "finder.desktop-items",
+            "descriptionText": "Desktop Items",
+            "helpText": "",
+            "boundingRect": {"x": 120, "y": 90, "width": 980, "height": 720, "coordinateSpace": "screen"},
+            "valueRedacted": False,
+        }
+        events = [
+            raw_event(
+                event_id="event-001",
+                timestamp="2026-04-06T09:20:00Z",
+                action="leftClick",
+                app_bundle_id="com.apple.finder",
+                app_name="Finder",
+                window_title="Desktop",
+                pointer=(200, 200),
+                focused_element=list_element,
+                window_signature=window_signature,
+            ),
+            raw_event(
+                event_id="event-002",
+                timestamp="2026-04-06T09:20:00.250Z",
+                action="leftMouseDragged",
+                app_bundle_id="com.apple.finder",
+                app_name="Finder",
+                window_title="Desktop",
+                pointer=(420, 420),
+                focused_element=list_element,
+                window_signature=window_signature,
+            ),
+            raw_event(
+                event_id="event-003",
+                timestamp="2026-04-06T09:20:00.500Z",
+                action="leftMouseUp",
+                app_bundle_id="com.apple.finder",
+                app_name="Finder",
+                window_title="Desktop",
+                pointer=(620, 620),
+                focused_element=target_element,
+                window_signature=window_signature,
+            ),
+        ]
+
+        bundles, summary = build_actions_for_task_chunk(
+            task_chunk=task_chunk,
+            task_chunk_path=REPO_ROOT / "data/task-chunks/fixture/task-003.json",
+            raw_event_log_path=REPO_ROOT / "data/raw-events/fixture/session-001.jsonl",
+            events=events,
+            workspace_root=REPO_ROOT,
+        )
+
+        self.assertEqual(len(bundles), 1)
+        drag_action = bundles[0].action
+        self.assertEqual(drag_action.action_type, "drag")
+        self.assertEqual(drag_action.args["intent"], "list_reorder")
+        self.assertEqual(drag_action.source_event_ids, ["event-001", "event-002", "event-003"])
+        self.assertTrue(drag_action.manual_review_required)
+        self.assertEqual(drag_action.selector["selectorStrategy"], "automation_id")
+        self.assertEqual(drag_action.args["targetSelector"]["selectorStrategy"], "automation_id")
+        self.assertEqual(drag_action.context["drag"]["targetSelectorSummary"]["candidateCount"], 5)
+        self.assertEqual(summary["semanticizedEventCount"], 3)
+        self.assertIn("merged-drag-gesture-events", bundles[0].diagnostics)
 
 
 if __name__ == "__main__":

@@ -235,6 +235,37 @@ final class KeyboardKnowledgeBuilderTests: XCTestCase {
         XCTAssertNil(event.keyboard?.redactionReason)
     }
 
+    func testRawEventDecodesDragActions() throws {
+        let payload = """
+        {
+          "schemaVersion": "capture.raw.v0",
+          "eventId": "33333333-3333-4333-8333-333333333333",
+          "sessionId": "session-test",
+          "timestamp": "2026-03-10T10:00:00Z",
+          "source": "mouse",
+          "action": "leftMouseDragged",
+          "pointer": {
+            "x": 320,
+            "y": 240,
+            "coordinateSpace": "screen"
+          },
+          "contextSnapshot": {
+            "appName": "TestApp",
+            "appBundleId": "com.test.app",
+            "windowTitle": "Main",
+            "windowId": "1",
+            "isFrontmost": true
+          },
+          "modifiers": []
+        }
+        """
+
+        let event = try JSONDecoder().decode(RawEvent.self, from: Data(payload.utf8))
+
+        XCTAssertEqual(event.action, .leftMouseDragged)
+        XCTAssertEqual(event.source, .mouse)
+    }
+
     private func makeChunk(eventIds: [String], eventCount: Int) -> TaskChunk {
         TaskChunk(
             taskId: "task-session-test-001",

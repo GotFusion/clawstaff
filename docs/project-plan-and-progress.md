@@ -1,7 +1,7 @@
 # OpenStaff 项目方案与实现进展
 
-版本：v0.12.2
-更新时间：2026-03-26
+版本：v0.12.3
+更新时间：2026-03-27
 
 ## 1. 项目目标
 
@@ -142,6 +142,7 @@ OpenStaff 的定位是“老师-学生”式个人助理：
 - 完成 `SEM-002` 语义动作数据模型与迁移脚本（2026-03-26）：新增 `scripts/learning/migrations/semantic_actions/0001_semantic_actions.{up,down}.sql`、`scripts/learning/semantic_action_store.py` 与 `scripts/learning/migrate_semantic_actions.py`，把 `semantic_actions / action_targets / action_assertions / action_execution_logs` 固化为独立 SQLite store，并支持从 `InteractionTurn` 回填 `actionType / selector_json / context_json / source_event_ids / source_frame_ids / execution logs`；新增 `tests/integration/test_semantic_action_migration.py` 已覆盖 migration up/down 与 repository insert/query/backfill 闭环。
 - 完成 `SEM-101` Action Builder v1（2026-03-27）：新增 `scripts/learning/semantic_action_builder.py` 与 `scripts/learning/build_semantic_actions.py`，可从 `task chunk + raw event log` 按“时间邻近 + 上下文一致”聚合事件窗口，输出 `switch_app / focus_window / click / type / shortcut` 五类语义动作并直接写入 `semantic_actions`；builder 会补齐 `selector / args / confidence / source_event_ids / builderDiagnostics`，并输出 `semanticizedEventRatio` 摘要。新增 `tests/unit/test_semantic_action_builder.py` 与 `tests/integration/test_semantic_action_builder.py` 已覆盖事件聚合、上下文切换、快捷键合并与 CLI 写库闭环。
 - 完成 `SEM-102` 选择器抽取器 v1（2026-03-27）：新增 `scripts/learning/semantic_selector_extractor.py`，将 raw event 的焦点元素抽取成 `automation_id -> role + name/text -> role + ancestry_path -> bounds_norm -> absolute coordinate` 的稳定 selector 链，并把 `app/window/url` 绑定、fallback 链路、candidate count 与 selector strategy 一并写入 `semantic_actions`。`semantic_action_builder.py` 已切换为复用该抽取器，新增 `tests/unit/test_semantic_selector_extractor.py` 并扩展 builder 集成测试以覆盖 selector 链落盘与同会话稳定性。
+- 完成 `SEM-103` 拖动动作语义化（2026-03-27）：raw capture 契约与 macOS 采集层已扩展为记录 `leftMouseDragged / leftMouseUp`，`semantic_action_builder.py` 会把 `leftClick -> leftMouseDragged+ -> leftMouseUp` 合并成单个 `drag` 语义动作，输出 `sourceSelector / targetSelector / dragPath / intent`，并为窗口拖拽、列表重排等常见场景补充 source/target selector 链、上下文断言与人工审阅标记。新增 Python/Swift 回归已覆盖 builder 聚合、CLI 写库、raw-event 校验与共享契约解码。
 - 完成阶段 10.1 Personal Desktop Benchmark：新增 `data/benchmarks/personal-desktop/` 基线 corpus、`docs/personal-benchmark-spec.md`、`scripts/benchmarks/run_personal_desktop_benchmark.py` 与 `tests/integration/test_personal_desktop_benchmark.py`，冻结 22 条真实个人桌面任务（4 类）并将其期望 `preflight/execution` 结果固化为可回归基线；同时增强 `openclaw_skill_mapper.py`，当旧版 `KnowledgeItem` 仅在 instruction 中保留坐标时，会自动回填 `coordinateFallback`，避免 benchmark 因缺失 provenance 坐标被误判。
 - 完成阶段 10.2 验证脚本与发布门禁：新增 `scripts/validation/validate_raw_event_logs.py`、`scripts/validation/validate_knowledge_items.py`、`scripts/validation/run_replay_verify_check.py` 与 `scripts/validation/README.md`，补齐原始事件/知识条目/replay verify 的标准化校验入口；`scripts/release/run_regression.py` 现已将 `raw-events`、`knowledge`、LLM 样例、skill bundle preflight、replay verify、personal benchmark 与测试套件统一接入发布门禁；`Makefile` 额外提供 `validate-raw-events`、`validate-knowledge`、`validate-replay-sample`，并允许 `release-regression/release-preflight` 透传 `ARGS`。
 - 完成阶段 10.3 安全策略二次升级：新增 `config/safety-rules.yaml` 与 `core/executor/SafetyPolicyEvaluator.swift`，将 `低置信 + 高风险 + 低复现度` 默认自动执行阻断、支付/系统设置/密码管理器/隐私权限弹窗识别，以及 `App / task / skill` 三层自动执行白名单统一收敛到同一套策略；`SkillPreflightValidator`、`OpenClawRunner` 与 `scripts/validation/validate_skill_bundle.py` 已共享该策略，`OpenStaffOpenClawCLI` 也支持通过 `--safety-rules` 注入自定义规则文件。

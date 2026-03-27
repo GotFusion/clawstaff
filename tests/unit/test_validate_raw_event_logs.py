@@ -72,6 +72,33 @@ class ValidateRawEventLogsTests(unittest.TestCase):
         self.assertFalse(strict["passed"])
         self.assertEqual(strict["errorCount"], 1)
 
+    def test_strict_mode_accepts_drag_actions(self):
+        payload = {
+            "schemaVersion": "capture.raw.v0",
+            "eventId": "22222222-2222-4222-8222-222222222222",
+            "sessionId": "session-drag-a1",
+            "timestamp": "2026-03-10T12:26:17.487Z",
+            "source": "mouse",
+            "action": "leftMouseDragged",
+            "pointer": {"x": 320, "y": 240, "coordinateSpace": "screen"},
+            "contextSnapshot": {
+                "appName": "Finder",
+                "appBundleId": "com.apple.finder",
+                "windowTitle": "Desktop",
+                "isFrontmost": True,
+            },
+            "modifiers": [],
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "drag.jsonl"
+            path.write_text(json.dumps(payload, ensure_ascii=False) + "\n", encoding="utf-8")
+
+            report = self.mod.build_report(path, "strict", 20)
+
+        self.assertTrue(report["passed"])
+        self.assertEqual(report["errorCount"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

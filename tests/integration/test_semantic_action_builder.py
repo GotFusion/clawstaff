@@ -445,6 +445,187 @@ class SemanticActionBuilderIntegrationTests(unittest.TestCase):
             self.assertIn("click", summary["actionTypeCounts"])
             self.assertEqual(summary["missingEventCount"], 0)
 
+    def test_cli_builds_drag_action_from_drag_gesture_events(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace_root = Path(tmpdir)
+            raw_events_root = workspace_root / "data/raw-events/2026-04-08"
+            task_chunks_root = workspace_root / "data/task-chunks/2026-04-08"
+            db_path = workspace_root / "data/semantic-actions/semantic-actions.sqlite"
+
+            raw_events_root.mkdir(parents=True, exist_ok=True)
+            task_chunks_root.mkdir(parents=True, exist_ok=True)
+
+            raw_events_root.joinpath("session-003.jsonl").write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "schemaVersion": "capture.raw.v0",
+                                "eventId": "event-201",
+                                "sessionId": "session-003",
+                                "timestamp": "2026-04-08T11:00:00Z",
+                                "source": "mouse",
+                                "action": "leftClick",
+                                "pointer": {"x": 200, "y": 200, "coordinateSpace": "screen"},
+                                "contextSnapshot": {
+                                    "appBundleId": "com.apple.finder",
+                                    "appName": "Finder",
+                                    "windowTitle": "Desktop",
+                                    "isFrontmost": True,
+                                    "windowSignature": {
+                                        "signature": "window-finder-desktop",
+                                        "signatureVersion": "window-v1",
+                                        "role": "AXWindow",
+                                        "subrole": "AXStandardWindow",
+                                    },
+                                    "focusedElement": {
+                                        "role": "AXList",
+                                        "subrole": "AXCollectionList",
+                                        "title": "Desktop Items",
+                                        "identifier": "finder.desktop-items",
+                                        "boundingRect": {
+                                            "x": 120,
+                                            "y": 90,
+                                            "width": 980,
+                                            "height": 720,
+                                            "coordinateSpace": "screen",
+                                        },
+                                        "valueRedacted": False,
+                                    },
+                                },
+                                "modifiers": [],
+                            },
+                            ensure_ascii=False,
+                        ),
+                        json.dumps(
+                            {
+                                "schemaVersion": "capture.raw.v0",
+                                "eventId": "event-202",
+                                "sessionId": "session-003",
+                                "timestamp": "2026-04-08T11:00:00.250Z",
+                                "source": "mouse",
+                                "action": "leftMouseDragged",
+                                "pointer": {"x": 420, "y": 420, "coordinateSpace": "screen"},
+                                "contextSnapshot": {
+                                    "appBundleId": "com.apple.finder",
+                                    "appName": "Finder",
+                                    "windowTitle": "Desktop",
+                                    "isFrontmost": True,
+                                    "windowSignature": {
+                                        "signature": "window-finder-desktop",
+                                        "signatureVersion": "window-v1",
+                                        "role": "AXWindow",
+                                        "subrole": "AXStandardWindow",
+                                    },
+                                    "focusedElement": {
+                                        "role": "AXList",
+                                        "subrole": "AXCollectionList",
+                                        "title": "Desktop Items",
+                                        "identifier": "finder.desktop-items",
+                                        "boundingRect": {
+                                            "x": 120,
+                                            "y": 90,
+                                            "width": 980,
+                                            "height": 720,
+                                            "coordinateSpace": "screen",
+                                        },
+                                        "valueRedacted": False,
+                                    },
+                                },
+                                "modifiers": [],
+                            },
+                            ensure_ascii=False,
+                        ),
+                        json.dumps(
+                            {
+                                "schemaVersion": "capture.raw.v0",
+                                "eventId": "event-203",
+                                "sessionId": "session-003",
+                                "timestamp": "2026-04-08T11:00:00.500Z",
+                                "source": "mouse",
+                                "action": "leftMouseUp",
+                                "pointer": {"x": 620, "y": 620, "coordinateSpace": "screen"},
+                                "contextSnapshot": {
+                                    "appBundleId": "com.apple.finder",
+                                    "appName": "Finder",
+                                    "windowTitle": "Desktop",
+                                    "isFrontmost": True,
+                                    "windowSignature": {
+                                        "signature": "window-finder-desktop",
+                                        "signatureVersion": "window-v1",
+                                        "role": "AXWindow",
+                                        "subrole": "AXStandardWindow",
+                                    },
+                                    "focusedElement": {
+                                        "role": "AXList",
+                                        "subrole": "AXCollectionList",
+                                        "title": "Desktop Items",
+                                        "identifier": "finder.desktop-items",
+                                        "boundingRect": {
+                                            "x": 120,
+                                            "y": 90,
+                                            "width": 980,
+                                            "height": 720,
+                                            "coordinateSpace": "screen",
+                                        },
+                                        "valueRedacted": False,
+                                    },
+                                },
+                                "modifiers": [],
+                            },
+                            ensure_ascii=False,
+                        ),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            task_chunks_root.joinpath("task-003.json").write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": "knowledge.task-chunk.v0",
+                        "taskId": "task-003",
+                        "sessionId": "session-003",
+                        "boundaryReason": "sessionEnd",
+                        "eventIds": ["event-201", "event-202", "event-203"],
+                        "startTimestamp": "2026-04-08T11:00:00Z",
+                        "endTimestamp": "2026-04-08T11:00:00.500Z",
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = self.run_cmd(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--workspace-root",
+                    str(workspace_root),
+                    "--raw-events-root",
+                    str(workspace_root / "data/raw-events"),
+                    "--task-chunks-root",
+                    str(workspace_root / "data/task-chunks"),
+                    "--db-path",
+                    str(db_path),
+                    "--json",
+                ]
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr or result.stdout)
+            summary = json.loads(result.stdout)
+            self.assertEqual(summary["writtenActions"], 1)
+            self.assertEqual(summary["actionTypeCounts"]["drag"], 1)
+
+            repository = SemanticActionRepository(db_path)
+            actions = repository.list_actions(session_id="session-003")
+            self.assertEqual([action["action_type"] for action in actions], ["drag"])
+            self.assertEqual(actions[0]["args_json"]["intent"], "list_reorder")
+            self.assertTrue(actions[0]["manual_review_required"])
+
 
 if __name__ == "__main__":
     unittest.main()

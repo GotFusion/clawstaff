@@ -42,7 +42,7 @@ final class MouseCaptureEngine {
     }
 
     func start() throws {
-        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown, .keyDown]
+        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .keyDown]
         guard let monitorToken = NSEvent.addGlobalMonitorForEvents(matching: mask, handler: handleEvent(_:)) else {
             throw CaptureEngineError.globalMonitorUnavailable
         }
@@ -136,6 +136,10 @@ final class MouseCaptureEngine {
         switch event.type {
         case .leftMouseDown:
             return event.clickCount >= 2 ? .doubleClick : .leftClick
+        case .leftMouseDragged:
+            return .leftMouseDragged
+        case .leftMouseUp:
+            return .leftMouseUp
         case .rightMouseDown:
             return .rightClick
         case .keyDown:

@@ -4,7 +4,7 @@
 
 ## 1. 设计目标
 
-- 覆盖最小采集能力：鼠标点击、前台应用、时间戳、会话 ID。
+- 覆盖最小采集能力：鼠标点击/拖动、前台应用、时间戳、会话 ID。
 - 原始事件与标准化事件分层，便于后续规则升级和 LLM 消费。
 - 保留 schemaVersion，支持未来版本演进。
 
@@ -29,7 +29,7 @@ NormalizedEvent
 | sessionId | string | 是 | 会话 ID（同一教学过程共享） |
 | timestamp | string | 是 | ISO-8601 时间戳 |
 | source | enum | 是 | `mouse` / `keyboard` |
-| action | enum | 是 | `leftClick` / `rightClick` / `doubleClick` / `keyDown` |
+| action | enum | 是 | `leftClick` / `rightClick` / `doubleClick` / `leftMouseDragged` / `leftMouseUp` / `keyDown` |
 | pointer | object | 是 | 点击坐标（屏幕坐标系） |
 | contextSnapshot | ContextSnapshot | 是 | 前台上下文 |
 | modifiers | string[] | 否 | 点击时按下的修饰键 |
@@ -66,7 +66,8 @@ NormalizedEvent
 
 ## 6. v0 约束
 
-- `RawEvent.action=leftClick` 是 MVP 必须覆盖路径。
+- `RawEvent.action=leftClick` 仍是 MVP 必须覆盖路径。
+- `RawEvent.action=leftMouseDragged` 与 `leftMouseUp` 用于 `SEM-103` 拖动事件簇识别。
 - `sessionId` 在同一会话内不变。
 - `timestamp` 必须带时区偏移。
 - `contextSnapshot.appName` 和 `contextSnapshot.appBundleId` 必须同时存在。

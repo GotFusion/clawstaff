@@ -20,7 +20,7 @@ UUID_RE = re.compile(
 )
 SESSION_ID_RE = re.compile(r"^[a-z0-9-]+$")
 ALLOWED_SOURCES = {"mouse", "keyboard"}
-ALLOWED_ACTIONS = {"leftClick", "rightClick", "doubleClick", "keyDown"}
+ALLOWED_ACTIONS = {"leftClick", "rightClick", "doubleClick", "leftMouseDragged", "leftMouseUp", "keyDown"}
 ALLOWED_MODIFIERS = {"command", "shift", "option", "control"}
 ALLOWED_TOP_LEVEL_KEYS = {
     "schemaVersion",

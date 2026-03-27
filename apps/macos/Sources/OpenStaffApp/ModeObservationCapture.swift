@@ -67,7 +67,7 @@ final class ModeObservationCaptureService: ModeObservationCaptureControlling {
             outputRootDirectory: outputRootDirectory
         )
 
-        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown, .keyDown]
+        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .keyDown]
         guard let monitorToken = NSEvent.addGlobalMonitorForEvents(
             matching: mask,
             handler: { [weak self] event in
@@ -158,6 +158,10 @@ final class ModeObservationCaptureService: ModeObservationCaptureControlling {
         switch event.type {
         case .leftMouseDown:
             return event.clickCount >= 2 ? .doubleClick : .leftClick
+        case .leftMouseDragged:
+            return .leftMouseDragged
+        case .leftMouseUp:
+            return .leftMouseUp
         case .rightMouseDown:
             return .rightClick
         case .keyDown:
