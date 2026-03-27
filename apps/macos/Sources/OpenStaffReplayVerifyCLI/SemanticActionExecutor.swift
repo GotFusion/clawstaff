@@ -9,6 +9,43 @@ enum SemanticActionExecutionStatus: String, Codable {
     case failed
 }
 
+enum SemanticActionContextGuardStatus: String, Codable {
+    case passed
+    case blocked
+    case skipped
+}
+
+struct SemanticActionContextGuardRequirements: Codable {
+    let requiredFrontmostAppBundleId: String?
+    let requiredFrontmostAppName: String?
+    let windowTitlePattern: String?
+    let urlHost: String?
+}
+
+struct SemanticActionContextGuardActualContext: Codable {
+    let appName: String
+    let appBundleId: String
+    let windowTitle: String?
+    let windowSignature: String?
+    let url: String?
+    let urlHost: String?
+}
+
+struct SemanticActionContextGuardMismatch: Codable {
+    let dimension: String
+    let expected: String
+    let actual: String?
+    let message: String
+}
+
+struct SemanticActionContextGuardResult: Codable {
+    let status: SemanticActionContextGuardStatus
+    let failurePolicy: String
+    let requirements: SemanticActionContextGuardRequirements
+    let actual: SemanticActionContextGuardActualContext
+    let mismatches: [SemanticActionContextGuardMismatch]
+}
+
 struct SemanticActionExecutionReport: Codable {
     let schemaVersion: String
     let actionId: String
@@ -19,6 +56,7 @@ struct SemanticActionExecutionReport: Codable {
     let errorCode: String?
     let matchedLocatorType: String?
     let selectorHitPath: [String]
+    let contextGuard: SemanticActionContextGuardResult?
     let durationMs: Int
     let executedAt: String
 }
@@ -72,6 +110,24 @@ final class SemanticActionExecutor {
         dryRun: Bool
     ) -> SemanticActionExecutionReport {
         let started = nowProvider()
+        let contextSnapshot = snapshotProvider.snapshot()
+        let contextGuard = evaluateContextGuard(action: action, snapshot: contextSnapshot)
+        if contextGuard.status == .blocked {
+            let mismatchSummary = contextGuard.mismatches
+                .map(\.message)
+                .joined(separator: "；")
+            return finalize(
+                action: action,
+                dryRun: dryRun,
+                started: started,
+                status: .blocked,
+                summary: "Context guard blocked execution. policy=\(contextGuard.failurePolicy). \(mismatchSummary)",
+                errorCode: "SEM202-CONTEXT-MISMATCH",
+                matchedLocatorType: nil,
+                selectorHitPath: [],
+                contextGuard: contextGuard
+            )
+        }
 
         let outcome: SemanticActionExecutionReport
         switch action.actionType {
@@ -585,6 +641,249 @@ final class SemanticActionExecutor {
         resolution.attempts.map { $0.locatorType.rawValue }
     }
 
+    private func evaluateContextGuard(
+        action: SemanticActionStoreAction,
+        snapshot: ReplayEnvironmentSnapshot
+    ) -> SemanticActionContextGuardResult {
+        let requirements = contextGuardRequirements(for: action)
+        let failurePolicy = contextGuardFailurePolicy(for: action)
+        let actual = SemanticActionContextGuardActualContext(
+            appName: snapshot.appName,
+            appBundleId: snapshot.appBundleId,
+            windowTitle: snapshot.windowTitle,
+            windowSignature: snapshot.windowSignature?.signature,
+            url: snapshot.url,
+            urlHost: normalizedURLHost(snapshot.urlHost) ?? normalizedURLHost(snapshot.url)
+        )
+
+        let enforcedDimensions = [
+            requirements.requiredFrontmostAppBundleId,
+            requirements.windowTitlePattern,
+            requirements.urlHost,
+        ]
+        .compactMap { $0 }
+
+        guard !enforcedDimensions.isEmpty else {
+            return SemanticActionContextGuardResult(
+                status: .skipped,
+                failurePolicy: failurePolicy,
+                requirements: requirements,
+                actual: actual,
+                mismatches: []
+            )
+        }
+
+        var mismatches: [SemanticActionContextGuardMismatch] = []
+
+        if let requiredFrontmostAppBundleId = requirements.requiredFrontmostAppBundleId,
+           normalizedText(requiredFrontmostAppBundleId) != normalizedText(actual.appBundleId) {
+            let expected = formattedExpectedApp(
+                bundleId: requiredFrontmostAppBundleId,
+                appName: requirements.requiredFrontmostAppName
+            )
+            let actualValue = formattedExpectedApp(bundleId: actual.appBundleId, appName: actual.appName)
+            mismatches.append(
+                SemanticActionContextGuardMismatch(
+                    dimension: "requiredFrontmostApp",
+                    expected: expected,
+                    actual: actualValue,
+                    message: "requiredFrontmostApp mismatch. expected=\(expected) actual=\(actualValue)"
+                )
+            )
+            return SemanticActionContextGuardResult(
+                status: .blocked,
+                failurePolicy: failurePolicy,
+                requirements: requirements,
+                actual: actual,
+                mismatches: mismatches
+            )
+        }
+
+        if let windowTitlePattern = requirements.windowTitlePattern,
+           !matchesRegex(windowTitlePattern, actual.windowTitle) {
+            mismatches.append(
+                SemanticActionContextGuardMismatch(
+                    dimension: "windowTitlePattern",
+                    expected: windowTitlePattern,
+                    actual: actual.windowTitle,
+                    message: "windowTitlePattern mismatch. expected=\(windowTitlePattern) actual=\(actual.windowTitle ?? "<nil>")"
+                )
+            )
+        }
+
+        if let urlHost = requirements.urlHost,
+           normalizedText(urlHost) != normalizedText(actual.urlHost) {
+            mismatches.append(
+                SemanticActionContextGuardMismatch(
+                    dimension: "urlHost",
+                    expected: urlHost,
+                    actual: actual.urlHost,
+                    message: "urlHost mismatch. expected=\(urlHost) actual=\(actual.urlHost ?? "<nil>")"
+                )
+            )
+        }
+
+        return SemanticActionContextGuardResult(
+            status: mismatches.isEmpty ? .passed : .blocked,
+            failurePolicy: failurePolicy,
+            requirements: requirements,
+            actual: actual,
+            mismatches: mismatches
+        )
+    }
+
+    private func contextGuardRequirements(for action: SemanticActionStoreAction) -> SemanticActionContextGuardRequirements {
+        let config = selector(action.context["contextGuard"]) ?? [:]
+        let disabledDimensions = Set(
+            stringArray(config["disabledDimensions"])
+                .map { normalizedText($0) ?? "" }
+        )
+        let appContext = selector(action.context["appContext"]) ?? [:]
+
+        func allows(_ dimension: String) -> Bool {
+            !disabledDimensions.contains(normalizedText(dimension) ?? "")
+        }
+
+        let requiredFrontmostAppBundleId: String?
+        let requiredFrontmostAppName: String?
+        let windowTitlePattern: String?
+        let urlHost: String?
+
+        switch action.actionType {
+        case "switch_app":
+            requiredFrontmostAppBundleId = allows("requiredFrontmostApp")
+                ? string(config["requiredFrontmostAppBundleId"]) ?? string(action.args["fromAppBundleId"])
+                : nil
+            requiredFrontmostAppName = string(config["requiredFrontmostAppName"]) ?? string(action.args["fromAppName"])
+            windowTitlePattern = allows("windowTitlePattern")
+                ? string(config["windowTitlePattern"])
+                : nil
+            urlHost = allows("urlHost")
+                ? normalizedURLHost(config["urlHost"]) ?? normalizedURLHost(config["url"])
+                : nil
+        case "focus_window":
+            requiredFrontmostAppBundleId = allows("requiredFrontmostApp")
+                ? string(config["requiredFrontmostAppBundleId"])
+                    ?? string(action.selector["appBundleId"])
+                    ?? assertionValue(action.assertions, type: "requiredFrontmostApp", key: "appBundleId")
+                    ?? string(appContext["appBundleId"])
+                : nil
+            requiredFrontmostAppName = string(config["requiredFrontmostAppName"]) ?? string(action.selector["appName"]) ?? string(appContext["appName"])
+            windowTitlePattern = allows("windowTitlePattern")
+                ? string(config["windowTitlePattern"])
+                    ?? exactWindowTitlePattern(for: string(action.args["fromWindowTitle"]))
+                    ?? string(action.args["fromWindowPattern"])
+                    ?? assertionValue(action.assertions, type: "windowTitlePattern", key: "pattern")
+                : nil
+            urlHost = allows("urlHost")
+                ? normalizedURLHost(config["urlHost"])
+                    ?? normalizedURLHost(config["url"])
+                : nil
+        default:
+            requiredFrontmostAppBundleId = allows("requiredFrontmostApp")
+                ? string(config["requiredFrontmostAppBundleId"])
+                    ?? assertionValue(action.assertions, type: "requiredFrontmostApp", key: "appBundleId")
+                    ?? string(action.selector["appBundleId"])
+                    ?? string(appContext["appBundleId"])
+                : nil
+            requiredFrontmostAppName = string(config["requiredFrontmostAppName"]) ?? string(action.selector["appName"]) ?? string(appContext["appName"])
+            windowTitlePattern = allows("windowTitlePattern")
+                ? string(config["windowTitlePattern"])
+                    ?? assertionValue(action.assertions, type: "windowTitlePattern", key: "pattern")
+                    ?? string(action.selector["windowTitlePattern"])
+                    ?? exactWindowTitlePattern(for: string(appContext["windowTitle"]))
+                : nil
+            urlHost = allows("urlHost")
+                ? normalizedURLHost(config["urlHost"])
+                    ?? normalizedURLHost(config["url"])
+                    ?? normalizedURLHost(action.selector["urlHost"])
+                    ?? normalizedURLHost(action.selector["url"])
+                    ?? normalizedURLHost(appContext["urlHost"])
+                    ?? normalizedURLHost(appContext["url"])
+                : nil
+        }
+
+        return SemanticActionContextGuardRequirements(
+            requiredFrontmostAppBundleId: requiredFrontmostAppBundleId,
+            requiredFrontmostAppName: requiredFrontmostAppName,
+            windowTitlePattern: windowTitlePattern,
+            urlHost: urlHost
+        )
+    }
+
+    private func contextGuardFailurePolicy(for action: SemanticActionStoreAction) -> String {
+        let config = selector(action.context["contextGuard"]) ?? [:]
+        return string(config["onMismatch"]) ?? "stopAndAskTeacher"
+    }
+
+    private func assertionValue(
+        _ assertions: [SemanticActionStoreAssertionRecord],
+        type: String,
+        key: String
+    ) -> String? {
+        guard let payload = assertions.first(where: { $0.assertionType == type })?.payload else {
+            return nil
+        }
+        return string(payload[key])
+    }
+
+    private func stringArray(_ value: Any?) -> [String] {
+        guard let raw = value as? [Any] else {
+            return []
+        }
+        return raw.compactMap(string)
+    }
+
+    private func exactWindowTitlePattern(for title: String?) -> String? {
+        guard let title = string(title) else {
+            return nil
+        }
+        return "^\(NSRegularExpression.escapedPattern(for: title))$"
+    }
+
+    private func matchesRegex(_ pattern: String, _ value: String?) -> Bool {
+        guard let value = string(value),
+              let regex = try? NSRegularExpression(pattern: pattern) else {
+            return false
+        }
+        let range = NSRange(value.startIndex..<value.endIndex, in: value)
+        return regex.firstMatch(in: value, options: [], range: range) != nil
+    }
+
+    private func normalizedURLHost(_ value: Any?) -> String? {
+        if let host = string(value) {
+            if let parsedHost = URL(string: host)?.host,
+               let normalizedParsedHost = normalizedText(parsedHost) {
+                return normalizedParsedHost
+            }
+            return normalizedText(host)
+        }
+        return nil
+    }
+
+    private func formattedExpectedApp(bundleId: String?, appName: String?) -> String {
+        let trimmedBundle = string(bundleId)
+        let trimmedName = string(appName)
+        switch (trimmedName, trimmedBundle) {
+        case let (name?, bundle?):
+            return "\(name) (\(bundle))"
+        case let (name?, nil):
+            return name
+        case let (nil, bundle?):
+            return bundle
+        case (nil, nil):
+            return "<nil>"
+        }
+    }
+
+    private func normalizedText(_ value: String?) -> String? {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !value.isEmpty else {
+            return nil
+        }
+        return value.lowercased()
+    }
+
     private func finalize(
         action: SemanticActionStoreAction,
         dryRun: Bool,
@@ -593,7 +892,8 @@ final class SemanticActionExecutor {
         summary: String,
         errorCode: String?,
         matchedLocatorType: String?,
-        selectorHitPath: [String]
+        selectorHitPath: [String],
+        contextGuard: SemanticActionContextGuardResult? = nil
     ) -> SemanticActionExecutionReport {
         let finished = nowProvider()
         return SemanticActionExecutionReport(
@@ -606,6 +906,7 @@ final class SemanticActionExecutor {
             errorCode: errorCode,
             matchedLocatorType: matchedLocatorType,
             selectorHitPath: selectorHitPath,
+            contextGuard: contextGuard,
             durationMs: max(Int(finished.timeIntervalSince(started) * 1000), 0),
             executedAt: formatter.string(from: finished)
         )

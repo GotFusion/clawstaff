@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
 更新时间：2026-03-27  
-状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 已完成，其余待执行）
+状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 已完成，其余待执行）
 
 ## 1. 目标与原则
 
@@ -202,19 +202,26 @@
   - 缓解：fallback 到最低级时必须二次确认。
 
 ### SEM-202 Context Guard（前置校验）
+状态：已完成（2026-03-27）
 - 目标：执行前强校验上下文，不匹配即停。
 - 任务：
   - 校验维度：
-    - `requiredFrontmostApp`
-    - `windowTitlePattern`
-    - `urlHost`（浏览器场景）
-  - 校验失败策略：`stopAndAskTeacher`。
+    - [x] `requiredFrontmostApp`
+    - [x] `windowTitlePattern`
+    - [x] `urlHost`（浏览器场景）
+  - [x] 校验失败策略：`stopAndAskTeacher`。
+- 落地产物：
+  - `core/executor/SemanticTargetResolver.swift`
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/SemanticActionExecutor.swift`
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/OpenStaffReplayVerifyCLI.swift`
+  - `apps/macos/Tests/OpenStaffAppTests/SemanticActionExecutorTests.swift`
+  - `tests/integration/test_semantic_action_executor_cli.py`
 - DoD：
-  - 错误 app 场景全部被拦截（回归集 100%）。
-  - 失败返回包含结构化原因。
+  - [x] 错误 app 场景全部被拦截（回归集 100%）。
+  - [x] 失败返回包含结构化原因。
 - 风险：
   - 校验过严导致可执行率下降。
-  - 缓解：支持“可放宽规则”但默认严格。
+  - 缓解：支持 `contextGuard.disabledDimensions` 做局部放宽，但默认严格并在 mismatch 时直接 `stopAndAskTeacher`。
 
 ### SEM-203 Post-Assertion Engine（后置断言）
 - 目标：执行后验证动作是否真的成功。

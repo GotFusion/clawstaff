@@ -23,7 +23,7 @@
 - SEM-102 selector extractor：`scripts/learning/semantic_selector_extractor.py`
 - builder CLI：`scripts/learning/build_semantic_actions.py`
 - 回填脚本：`scripts/learning/migrate_semantic_actions.py`
-- SEM-201 executor：`OpenStaffReplayVerifyCLI --semantic-action-db <db> --action-id <id> [--dry-run]`
+- SEM-201/202 executor：`OpenStaffReplayVerifyCLI --semantic-action-db <db> --action-id <id> [--dry-run]`
 
 ## 3. 表结构
 
@@ -97,6 +97,14 @@
 - `selector_hit_path_json`
 - `duration_ms`
 - `result_json.summary / matchedLocatorType / dryRun`
+- `result_json.errorCode / contextGuard`
+
+其中 `SEM-202` 新增的 `contextGuard` 结构默认包含：
+
+- `failurePolicy`
+- `requirements.requiredFrontmostAppBundleId / windowTitlePattern / urlHost`
+- `actual.appBundleId / windowTitle / url / urlHost`
+- `mismatches[*].dimension / expected / actual / message`
 
 ## 4. 回填来源优先级
 
@@ -149,4 +157,8 @@ v0 暂不做：
 - drag intent 的跨 App/跨控件细分策略学习
 - 跨设备 locator repair
 
-这些属于后续 `SEM-202 / 203 / 301` 的接续工作。
+补充说明：
+
+- `SEM-202` 已在 `OpenStaffReplayVerifyCLI` 上接入严格 context guard，但浏览器 `urlHost` 仍属于 best-effort 采集，优先依赖 snapshot 中显式 `url/urlHost`，其次尝试实时读取 `AXDocument / AXURL`。
+
+这些属于后续 `SEM-203 / 301` 的接续工作。

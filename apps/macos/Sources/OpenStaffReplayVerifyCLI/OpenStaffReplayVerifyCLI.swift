@@ -110,13 +110,7 @@ struct OpenStaffReplayVerifyCLI {
                         status: executionLogStatus(for: report),
                         errorCode: report.errorCode,
                         selectorHitPath: report.selectorHitPath,
-                        result: [
-                            "actionType": report.actionType,
-                            "dryRun": report.dryRun,
-                            "matchedLocatorType": report.matchedLocatorType as Any,
-                            "summary": report.summary,
-                            "status": report.status.rawValue,
-                        ],
+                        result: executionResultPayload(for: report),
                         durationMs: report.durationMs,
                         executedAt: report.executedAt
                     )
@@ -246,6 +240,13 @@ struct OpenStaffReplayVerifyCLI {
         if let errorCode = report.errorCode {
             print("errorCode=\(errorCode)")
         }
+        if let contextGuard = report.contextGuard,
+           contextGuard.status == .blocked {
+            print("contextGuard=\(contextGuard.failurePolicy)")
+            for mismatch in contextGuard.mismatches {
+                print("  context[\(mismatch.dimension)] expected=\(mismatch.expected) actual=\(mismatch.actual ?? "-")")
+            }
+        }
     }
 
     static func executionLogStatus(for report: SemanticActionExecutionReport) -> String {
@@ -263,6 +264,35 @@ struct OpenStaffReplayVerifyCLI {
         case (false, .failed):
             return "STATUS_SEMANTIC_ACTION_FAILED"
         }
+    }
+
+    static func executionResultPayload(for report: SemanticActionExecutionReport) -> SemanticJSONObject {
+        var payload: SemanticJSONObject = [
+            "actionType": report.actionType,
+            "dryRun": report.dryRun,
+            "summary": report.summary,
+            "status": report.status.rawValue,
+        ]
+        if let matchedLocatorType = report.matchedLocatorType {
+            payload["matchedLocatorType"] = matchedLocatorType
+        }
+        if let errorCode = report.errorCode {
+            payload["errorCode"] = errorCode
+        }
+        if let contextGuard = report.contextGuard,
+           let encodedContextGuard = codableJSONObject(contextGuard) {
+            payload["contextGuard"] = encodedContextGuard
+        }
+        return payload
+    }
+
+    static func codableJSONObject<T: Encodable>(_ value: T) -> SemanticJSONObject? {
+        let encoder = JSONEncoder()
+        guard let data = try? encoder.encode(value),
+              let object = try? JSONSerialization.jsonObject(with: data) as? SemanticJSONObject else {
+            return nil
+        }
+        return object
     }
 }
 

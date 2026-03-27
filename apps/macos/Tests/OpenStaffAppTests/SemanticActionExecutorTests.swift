@@ -84,6 +84,144 @@ final class SemanticActionExecutorTests: XCTestCase {
         XCTAssertTrue(performer.events.isEmpty)
     }
 
+    func testContextGuardBlocksWrongFrontmostAppBeforeResolution() {
+        let performer = StubSemanticActionPerformer()
+        let executor = SemanticActionExecutor(
+            snapshotProvider: StaticReplayEnvironmentSnapshotProvider(
+                snapshot: makeSnapshot(appName: "OtherApp", appBundleId: "com.other.app")
+            ),
+            resolver: SemanticTargetResolver(fingerprintCapture: StubFingerprintCapture(anchor: nil)),
+            performer: performer,
+            nowProvider: fixedNow
+        )
+
+        let report = executor.execute(action: makeClickAction(), dryRun: true)
+
+        XCTAssertEqual(report.status, SemanticActionExecutionStatus.blocked)
+        XCTAssertEqual(report.errorCode, "SEM202-CONTEXT-MISMATCH")
+        XCTAssertEqual(report.contextGuard?.status, SemanticActionContextGuardStatus.blocked)
+        XCTAssertEqual(report.contextGuard?.mismatches.first?.dimension, "requiredFrontmostApp")
+        XCTAssertEqual(report.contextGuard?.actual.appBundleId, "com.other.app")
+        XCTAssertTrue(performer.events.isEmpty)
+    }
+
+    func testContextGuardBlocksWindowMismatchForFocusWindowUsingFromWindowTitle() {
+        let performer = StubSemanticActionPerformer()
+        let executor = SemanticActionExecutor(
+            snapshotProvider: StaticReplayEnvironmentSnapshotProvider(snapshot: makeSnapshot(windowTitle: "Dashboard")),
+            resolver: SemanticTargetResolver(fingerprintCapture: StubFingerprintCapture(anchor: nil)),
+            performer: performer,
+            nowProvider: fixedNow
+        )
+
+        let report = executor.execute(
+            action: SemanticActionStoreAction(
+                actionId: "action-focus-001",
+                sessionId: "session-001",
+                taskId: "task-001",
+                traceId: "trace-001",
+                stepId: "step-focus-001",
+                actionType: "focus_window",
+                selector: [
+                    "selectorStrategy": "window_context",
+                    "appBundleId": "com.test.app",
+                    "windowTitlePattern": "^Search Results$",
+                ],
+                args: [
+                    "fromWindowTitle": "Inbox",
+                    "toWindowTitle": "Search Results",
+                ],
+                context: [:],
+                preferredLocatorType: nil,
+                manualReviewRequired: false,
+                createdAt: "2026-03-27T13:03:00Z",
+                updatedAt: "2026-03-27T13:03:00Z",
+                targets: [],
+                assertions: []
+            ),
+            dryRun: true
+        )
+
+        XCTAssertEqual(report.status, SemanticActionExecutionStatus.blocked)
+        XCTAssertEqual(report.errorCode, "SEM202-CONTEXT-MISMATCH")
+        XCTAssertEqual(report.contextGuard?.mismatches.first?.dimension, "windowTitlePattern")
+        XCTAssertEqual(report.contextGuard?.actual.windowTitle, "Dashboard")
+        XCTAssertTrue(performer.events.isEmpty)
+    }
+
+    func testContextGuardBlocksURLHostMismatchForBrowserAction() {
+        let performer = StubSemanticActionPerformer()
+        let executor = SemanticActionExecutor(
+            snapshotProvider: StaticReplayEnvironmentSnapshotProvider(
+                snapshot: makeSnapshot(
+                    url: "https://docs.github.com/en",
+                    urlHost: "docs.github.com"
+                )
+            ),
+            resolver: SemanticTargetResolver(fingerprintCapture: StubFingerprintCapture(anchor: nil)),
+            performer: performer,
+            nowProvider: fixedNow
+        )
+
+        let action = SemanticActionStoreAction(
+            actionId: "action-browser-click-001",
+            sessionId: "session-001",
+            taskId: "task-001",
+            traceId: "trace-001",
+            stepId: "step-004",
+            actionType: "click",
+            selector: [
+                "locatorType": "roleAndTitle",
+                "appBundleId": "com.test.app",
+                "windowTitlePattern": "^Main$",
+                "elementRole": "AXButton",
+                "elementTitle": "Open",
+                "elementIdentifier": "open-button",
+                "urlHost": "github.com",
+            ],
+            args: ["button": "left"],
+            context: [
+                "appContext": [
+                    "appBundleId": "com.test.app",
+                    "windowTitle": "Main",
+                    "url": "https://github.com/openstaff",
+                    "urlHost": "github.com",
+                ]
+            ],
+            preferredLocatorType: "roleAndTitle",
+            manualReviewRequired: false,
+            createdAt: "2026-03-27T13:04:00Z",
+            updatedAt: "2026-03-27T13:04:00Z",
+            targets: [
+                SemanticActionStoreTargetRecord(
+                    targetId: "action-browser-click-001:target:01",
+                    targetRole: "primary",
+                    ordinal: 1,
+                    locatorType: "roleAndTitle",
+                    selector: [
+                        "locatorType": "roleAndTitle",
+                        "appBundleId": "com.test.app",
+                        "windowTitlePattern": "^Main$",
+                        "elementRole": "AXButton",
+                        "elementTitle": "Open",
+                        "elementIdentifier": "open-button",
+                        "urlHost": "github.com",
+                    ],
+                    isPreferred: true
+                )
+            ],
+            assertions: []
+        )
+
+        let report = executor.execute(action: action, dryRun: true)
+
+        XCTAssertEqual(report.status, SemanticActionExecutionStatus.blocked)
+        XCTAssertEqual(report.errorCode, "SEM202-CONTEXT-MISMATCH")
+        XCTAssertEqual(report.contextGuard?.mismatches.first?.dimension, "urlHost")
+        XCTAssertEqual(report.contextGuard?.actual.urlHost, "docs.github.com")
+        XCTAssertTrue(performer.events.isEmpty)
+    }
+
     func testLiveShortcutDelegatesToPerformer() {
         let performer = StubSemanticActionPerformer()
         let executor = SemanticActionExecutor(
@@ -285,22 +423,29 @@ final class SemanticActionExecutorTests: XCTestCase {
     }
 
     private func makeSnapshot(
+        appName: String = "TestApp",
+        appBundleId: String = "com.test.app",
+        windowTitle: String = "Main",
+        url: String? = nil,
+        urlHost: String? = nil,
         focusedElement: ReplayElementSnapshot? = nil,
         visibleElements: [ReplayElementSnapshot] = []
     ) -> ReplayEnvironmentSnapshot {
         ReplayEnvironmentSnapshot(
             capturedAt: "2026-03-27T13:05:00Z",
-            appName: "TestApp",
-            appBundleId: "com.test.app",
-            windowTitle: "Main",
+            appName: appName,
+            appBundleId: appBundleId,
+            windowTitle: windowTitle,
             windowId: "1",
             windowSignature: WindowSignature(
                 signature: "window-signature-001",
-                normalizedTitle: "main",
+                normalizedTitle: windowTitle.lowercased(),
                 role: "AXWindow",
                 subrole: "AXStandardWindow",
                 sizeBucket: "12x8"
             ),
+            url: url,
+            urlHost: urlHost,
             focusedElement: focusedElement,
             visibleElements: visibleElements
         )

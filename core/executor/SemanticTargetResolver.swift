@@ -42,6 +42,8 @@ public struct ReplayEnvironmentSnapshot: Codable, Equatable {
     public let windowTitle: String?
     public let windowId: String?
     public let windowSignature: WindowSignature?
+    public let url: String?
+    public let urlHost: String?
     public let focusedElement: ReplayElementSnapshot?
     public let visibleElements: [ReplayElementSnapshot]
     public let screenshotAnchors: [ScreenshotAnchor]
@@ -54,6 +56,8 @@ public struct ReplayEnvironmentSnapshot: Codable, Equatable {
         windowTitle: String? = nil,
         windowId: String? = nil,
         windowSignature: WindowSignature? = nil,
+        url: String? = nil,
+        urlHost: String? = nil,
         focusedElement: ReplayElementSnapshot? = nil,
         visibleElements: [ReplayElementSnapshot] = [],
         screenshotAnchors: [ScreenshotAnchor] = [],
@@ -65,6 +69,8 @@ public struct ReplayEnvironmentSnapshot: Codable, Equatable {
         self.windowTitle = windowTitle
         self.windowId = windowId
         self.windowSignature = windowSignature
+        self.url = url
+        self.urlHost = urlHost
         self.focusedElement = focusedElement
         self.visibleElements = visibleElements
         self.screenshotAnchors = screenshotAnchors
@@ -891,6 +897,7 @@ private struct AXReplaySnapshotBuilder {
                 path: windowElement.flatMap { findPath(to: element, from: $0) }
             )
         }
+        let documentURL = documentURL(windowElement: windowElement, focusedElement: focusedElement)
 
         return ReplayEnvironmentSnapshot(
             capturedAt: capturedAt,
@@ -899,10 +906,41 @@ private struct AXReplaySnapshotBuilder {
             windowTitle: windowTitle,
             windowId: windowId,
             windowSignature: windowSignature,
+            url: documentURL,
+            urlHost: normalizedURLHost(documentURL),
             focusedElement: focusedSnapshot,
             visibleElements: visibleElements,
             captureDiagnostics: diagnostics
         )
+    }
+
+    private func documentURL(
+        windowElement: AXUIElement?,
+        focusedElement: AXUIElement?
+    ) -> String? {
+        for element in [focusedElement, windowElement] {
+            guard let element else {
+                continue
+            }
+
+            for attribute in ["AXDocument" as CFString, "AXURL" as CFString] {
+                if let value = stringAttribute(attribute, from: element) {
+                    return value
+                }
+            }
+        }
+        return nil
+    }
+
+    private func normalizedURLHost(_ urlString: String?) -> String? {
+        guard let urlString = urlString?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !urlString.isEmpty,
+              let host = URL(string: urlString)?.host?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !host.isEmpty else {
+            return nil
+        }
+
+        return host.lowercased()
     }
 
     private func enumerateElements(
@@ -1083,6 +1121,10 @@ private struct AXReplaySnapshotBuilder {
 
         if let number = value as? NSNumber {
             return number.stringValue
+        }
+
+        if let url = value as? URL {
+            return url.absoluteString
         }
 
         return value as? String
