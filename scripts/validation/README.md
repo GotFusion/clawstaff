@@ -14,6 +14,9 @@
 - `validate_skill_bundle.py`
   - 执行前 skill preflight，检查 locator、风险、低复现度、敏感窗口、白名单与自动执行条件。
   - 默认读取 `config/safety-rules.yaml`，也可通过 `--safety-rules` 指定临时规则文件。
+- `guard_coordinate_execution.py`
+  - `SEM-003` 静态守门脚本，阻止新的坐标执行调用回流到主干。
+  - 默认允许当前冻结的 legacy call site 数量不变，并支持通过 `--allow-dir` 白名单跳过测试 fixture 目录。
 - `run_replay_verify_check.py`
   - 包装 `OpenStaffReplayVerifyCLI`，将 replay verify 结果标准化为可供 release preflight 消费的报告。
 
@@ -22,6 +25,7 @@
 ```bash
 make validate-raw-events
 make validate-knowledge
+make validate-semantic-guard
 make validate-replay-sample ARGS="--replay-verify-executable apps/macos/.build/debug/OpenStaffReplayVerifyCLI"
 ```
 

@@ -1,0 +1,22 @@
+name: semantic-coordinate-guard
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  sem003-coordinate-execution-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run SEM-003 coordinate execution guard
+        run: make validate-semantic-guard

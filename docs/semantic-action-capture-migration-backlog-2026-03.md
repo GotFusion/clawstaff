@@ -88,6 +88,11 @@
 - 任务：
   - 新增 lint/grep rule：阻止 `execute_click(x,y)` 等入口被调用。
   - PR 模板新增检查项：语义选择器、上下文校验、断言。
+- 落地产物：
+  - `scripts/validation/guard_coordinate_execution.py`
+  - `tests/unit/test_guard_coordinate_execution.py`
+  - `.github/workflows/semantic-coordinate-guard.yml`
+  - `.github/PULL_REQUEST_TEMPLATE.md`
 - DoD：
   - CI 对违规调用直接失败。
   - 规则在 main 分支生效。

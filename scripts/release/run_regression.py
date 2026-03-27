@@ -233,6 +233,16 @@ def append_skill_pipeline_checks(results: list[CheckResult], skills_root: Path) 
 def append_data_validation_checks(results: list[CheckResult]) -> None:
     results.append(
         run_check(
+            name="sem003-coordinate-execution-guard",
+            command=[
+                sys.executable,
+                str(REPO_ROOT / "scripts/validation/guard_coordinate_execution.py"),
+                "--json",
+            ],
+        )
+    )
+    results.append(
+        run_check(
             name="raw-events-sample-strict",
             command=[
                 sys.executable,
