@@ -7,9 +7,17 @@ import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-import re
 from typing import Any
 
+from semantic_selector_extractor import (
+    build_accessibility_selector_chain,
+    event_context,
+    event_pointer,
+    exact_window_title_pattern,
+    selector_chain_summary,
+    selector_manual_review_required,
+    selector_strategy_confidence,
+)
 from semantic_action_store import (
     SCHEMA_VERSION,
     SemanticActionAssertionRecord,
@@ -19,7 +27,7 @@ from semantic_action_store import (
 )
 
 
-BUILDER_VERSION = "sem-101-rule-v1"
+BUILDER_VERSION = "sem-101-102-rule-v1"
 PRINTABLE_SHORTCUT_EXCLUSIONS = {"\r", "\n", "\t", "\x03", "\x7f", "\x1b"}
 KEY_CODE_NAMES = {
     36: "return",
@@ -92,17 +100,6 @@ def duration_millis(started_at: str | None, ended_at: str | None) -> int | None:
 
 def time_gap_millis(previous: dict[str, Any], current: dict[str, Any]) -> int | None:
     return duration_millis(previous.get("timestamp"), current.get("timestamp"))
-
-
-def exact_window_title_pattern(window_title: str | None) -> str | None:
-    if not isinstance(window_title, str) or not window_title.strip():
-        return None
-    return f"^{re.escape(window_title.strip())}$"
-
-
-def event_context(event: dict[str, Any]) -> dict[str, Any]:
-    context = event.get("contextSnapshot")
-    return context if isinstance(context, dict) else {}
 
 
 def context_key(event: dict[str, Any]) -> tuple[str | None, str | None, str | None]:
@@ -209,69 +206,18 @@ def should_merge(cluster: EventCluster, event: dict[str, Any], config: ActionBui
     return False
 
 
-def event_pointer(event: dict[str, Any]) -> dict[str, Any] | None:
-    pointer = event.get("pointer")
-    if not isinstance(pointer, dict):
-        return None
-    if not isinstance(pointer.get("x"), (int, float)) or not isinstance(pointer.get("y"), (int, float)):
-        return None
-    return {
-        "x": pointer["x"],
-        "y": pointer["y"],
-        "width": 1,
-        "height": 1,
-        "coordinateSpace": pointer.get("coordinateSpace") or "screen",
-    }
-
-
-def focused_element_selector(event: dict[str, Any]) -> dict[str, Any] | None:
-    context = event_context(event)
-    focused = context.get("focusedElement")
-    if not isinstance(focused, dict):
-        return None
-    return {
-        "locatorType": "focusedElement",
-        "selectorKind": "uiElement",
-        "appBundleId": context.get("appBundleId"),
-        "appName": context.get("appName"),
-        "windowTitlePattern": exact_window_title_pattern(context.get("windowTitle")),
-        "windowSignature": context.get("windowSignature"),
-        "elementRole": focused.get("role"),
-        "elementSubrole": focused.get("subrole"),
-        "elementTitle": focused.get("title"),
-        "elementIdentifier": focused.get("identifier"),
-        "descriptionText": focused.get("descriptionText"),
-        "helpText": focused.get("helpText"),
-        "boundingRect": focused.get("boundingRect"),
-        "source": "raw-event-focused-element",
-    }
-
-
-def coordinate_fallback_selector(event: dict[str, Any]) -> dict[str, Any] | None:
-    context = event_context(event)
-    bounding_rect = event_pointer(event)
-    if bounding_rect is None:
-        return None
-    return {
-        "locatorType": "coordinateFallback",
-        "selectorKind": "coordinateFallback",
-        "appBundleId": context.get("appBundleId"),
-        "appName": context.get("appName"),
-        "windowTitlePattern": exact_window_title_pattern(context.get("windowTitle")),
-        "windowSignature": context.get("windowSignature"),
-        "boundingRect": bounding_rect,
-        "source": "raw-event-pointer",
-    }
-
-
 def app_context_selector(context: dict[str, Any]) -> dict[str, Any]:
     return {
         "locatorType": "appContext",
         "selectorKind": "appContext",
+        "selectorStrategy": "app_context",
         "appBundleId": context.get("appBundleId"),
         "appName": context.get("appName"),
         "windowTitlePattern": exact_window_title_pattern(context.get("windowTitle")),
         "windowSignature": context.get("windowSignature"),
+        "url": context.get("url"),
+        "urlHost": context.get("urlHost"),
+        "confidence": selector_strategy_confidence("app_context"),
         "source": "raw-event-context-transition",
     }
 
@@ -280,10 +226,14 @@ def window_context_selector(context: dict[str, Any]) -> dict[str, Any]:
     return {
         "locatorType": "windowContext",
         "selectorKind": "windowContext",
+        "selectorStrategy": "window_context",
         "appBundleId": context.get("appBundleId"),
         "appName": context.get("appName"),
         "windowTitlePattern": exact_window_title_pattern(context.get("windowTitle")),
         "windowSignature": context.get("windowSignature"),
+        "url": context.get("url"),
+        "urlHost": context.get("urlHost"),
+        "confidence": selector_strategy_confidence("window_context"),
         "source": "raw-event-context-transition",
     }
 
@@ -375,8 +325,10 @@ def build_assertions(
                 assertion={
                     "locatorType": locator_type,
                     "selectorKind": selector.get("selectorKind"),
+                    "selectorStrategy": selector.get("selectorStrategy"),
                     "elementRole": selector.get("elementRole"),
                     "elementIdentifier": selector.get("elementIdentifier"),
+                    "axPath": selector.get("axPath"),
                 },
                 created_at=created_at,
                 source="sem101-builder",
@@ -396,6 +348,7 @@ def action_context_payload(
     workspace_root: Path,
     cluster: EventCluster,
     selector: dict[str, Any],
+    selector_summary: dict[str, Any] | None,
     builder_diagnostics: list[str],
 ) -> dict[str, Any]:
     first_event = cluster.events[0]
@@ -416,6 +369,8 @@ def action_context_payload(
             "appBundleId": context.get("appBundleId"),
             "windowTitle": context.get("windowTitle"),
             "windowSignature": context.get("windowSignature"),
+            "url": context.get("url"),
+            "urlHost": context.get("urlHost"),
         },
         "eventWindow": {
             "eventCount": len(cluster.events),
@@ -424,8 +379,13 @@ def action_context_payload(
             "durationMs": duration_millis(first_event.get("timestamp"), last_event.get("timestamp")),
         },
         "selectorSummary": {
+            **(selector_summary or selector_chain_summary([selector])),
             "locatorType": selector.get("locatorType"),
             "selectorKind": selector.get("selectorKind"),
+            "selectorStrategy": selector.get("selectorStrategy"),
+            "selectorExtractorVersion": selector.get("selectorExtractorVersion"),
+            "fallbackLocatorTypes": selector.get("fallbackLocatorTypes") or [],
+            "fallbackSelectorStrategies": selector.get("fallbackSelectorStrategies") or [],
         },
         "builderDiagnostics": builder_diagnostics,
     }
@@ -458,34 +418,17 @@ def click_args(event: dict[str, Any]) -> dict[str, Any]:
     return {"button": mapping.get(event.get("action"), "left")}
 
 
-def selector_confidence(locator_type: str | None) -> float:
-    if locator_type == "focusedElement":
-        return 0.92
-    if locator_type in {"windowContext", "appContext"}:
-        return 0.82
-    if locator_type == "coordinateFallback":
-        return 0.58
-    return 0.45
-
-
 def choose_cluster_selectors(cluster: EventCluster) -> list[dict[str, Any]]:
-    if cluster.kind == "click":
-        event = cluster.events[-1]
-        primary = focused_element_selector(event) or coordinate_fallback_selector(event)
-        selectors = [primary] if primary else []
-        fallback = coordinate_fallback_selector(event)
-        if (
-            primary is not None
-            and fallback is not None
-            and primary.get("locatorType") != fallback.get("locatorType")
-        ):
-            selectors.append(fallback)
-        return [selector for selector in selectors if selector is not None]
-
     event = cluster.events[-1]
-    primary = focused_element_selector(event)
-    if primary is not None:
-        return [primary]
+    selectors = build_accessibility_selector_chain(event)
+    if selectors:
+        if cluster.kind == "click":
+            return selectors
+        non_absolute = [
+            selector for selector in selectors if selector.get("selectorStrategy") != "absolute_coordinate"
+        ]
+        if non_absolute:
+            return non_absolute
 
     context = event_context(event)
     return [window_context_selector(context)]
@@ -504,11 +447,16 @@ def build_cluster_action(
     selectors = choose_cluster_selectors(cluster)
     if not selectors:
         selectors = [{"locatorType": "unknown", "selectorKind": "unknown", "source": "sem101-builder"}]
+    chain_summary = selector_chain_summary(selectors)
     primary_selector = dict(selectors[0])
-    primary_selector["confidence"] = selector_confidence(primary_selector.get("locatorType"))
+    if primary_selector.get("confidence") is None:
+        primary_selector["confidence"] = selector_strategy_confidence(
+            str(primary_selector.get("selectorStrategy") or "")
+        )
     selectors[0] = dict(primary_selector)
     for selector in selectors[1:]:
-        selector["confidence"] = selector_confidence(selector.get("locatorType"))
+        if selector.get("confidence") is None:
+            selector["confidence"] = selector_strategy_confidence(str(selector.get("selectorStrategy") or ""))
 
     first_event = cluster.events[0]
     last_event = cluster.events[-1]
@@ -527,8 +475,10 @@ def build_cluster_action(
         args = shortcut_args(cluster.events)
 
     builder_diagnostics = list(cluster.diagnostics)
-    if primary_selector.get("locatorType") == "coordinateFallback":
-        builder_diagnostics.append("selector-fell-back-to-coordinate")
+    if primary_selector.get("selectorStrategy") == "bounds_norm":
+        builder_diagnostics.append("selector-fell-back-to-bounds-norm")
+    elif primary_selector.get("selectorStrategy") == "absolute_coordinate":
+        builder_diagnostics.append("selector-fell-back-to-absolute-coordinate")
     elif primary_selector.get("locatorType") == "windowContext":
         builder_diagnostics.append("selector-fell-back-to-window-context")
 
@@ -552,6 +502,7 @@ def build_cluster_action(
             workspace_root=workspace_root,
             cluster=cluster,
             selector=primary_selector,
+            selector_summary=chain_summary,
             builder_diagnostics=builder_diagnostics,
         ),
         confidence=float(primary_selector.get("confidence") or 0.0),
@@ -559,7 +510,8 @@ def build_cluster_action(
         source_frame_ids=[],
         source_path=repo_relative_or_abs(task_chunk_path, workspace_root),
         preferred_locator_type=primary_selector.get("locatorType"),
-        manual_review_required=primary_selector.get("locatorType") in {"coordinateFallback", "unknown"},
+        manual_review_required=selector_manual_review_required(primary_selector)
+        or primary_selector.get("locatorType") == "unknown",
         legacy_coordinate=event_pointer(last_event) if action_type == "click" else None,
         created_at=created_at,
         updated_at=updated_at,
@@ -618,7 +570,8 @@ def build_transition_action(
     else:
         return None
 
-    selector["confidence"] = selector_confidence(selector.get("locatorType"))
+    if selector.get("confidence") is None:
+        selector["confidence"] = selector_strategy_confidence(str(selector.get("selectorStrategy") or ""))
     created_at = str(current_event.get("timestamp") or previous_event.get("timestamp") or "")
     source_event_ids = [value for value in [event_id(previous_event), event_id(current_event)] if value]
     cluster = EventCluster(kind=action_type, events=[current_event], diagnostics=diagnostics)
@@ -643,6 +596,7 @@ def build_transition_action(
             workspace_root=workspace_root,
             cluster=cluster,
             selector=selector,
+            selector_summary=selector_chain_summary([selector]),
             builder_diagnostics=diagnostics,
         ),
         confidence=float(selector.get("confidence") or 0.0),

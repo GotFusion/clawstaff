@@ -1,6 +1,6 @@
 # Semantic Action Store v0
 
-更新时间：2026-03-26
+更新时间：2026-03-27
 
 ## 1. 目标
 
@@ -20,6 +20,7 @@
   - `scripts/learning/migrations/semantic_actions/0001_semantic_actions.down.sql`
 - repository / DAO：`scripts/learning/semantic_action_store.py`
 - SEM-101 builder：`scripts/learning/semantic_action_builder.py`
+- SEM-102 selector extractor：`scripts/learning/semantic_selector_extractor.py`
 - builder CLI：`scripts/learning/build_semantic_actions.py`
 - 回填脚本：`scripts/learning/migrate_semantic_actions.py`
 

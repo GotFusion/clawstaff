@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
 更新时间：2026-03-27  
-状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 已完成，其余待执行）
+状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 已完成，其余待执行）
 
 ## 1. 目标与原则
 
@@ -129,17 +129,24 @@
   - 缓解：保留可调参数并输出冲突诊断日志。
 
 ### SEM-102 选择器抽取器 v1（Accessibility 优先）
+状态：已完成（2026-03-27）
 - 目标：为动作生成稳定 selector。
 - 任务：
   - 选择器优先级：
-    1) `automation_id`
-    2) `role + name/text`
-    3) `role + ancestry_path`
-    4) `bounds_norm`（仅回退匹配）
-  - 绑定 `app/window/url` 上下文。
+    - [x] `automation_id`
+    - [x] `role + name/text`
+    - [x] `role + ancestry_path`
+    - [x] `bounds_norm`（仅回退匹配）
+  - [x] 绑定 `app/window/url` 上下文。
+- 落地产物：
+  - `scripts/learning/semantic_selector_extractor.py`
+  - `scripts/learning/semantic_action_builder.py`
+  - `tests/unit/test_semantic_selector_extractor.py`
+  - `tests/unit/test_semantic_action_builder.py`
+  - `tests/integration/test_semantic_action_builder.py`
 - DoD：
-  - 生成 selector 可在同会话重复定位成功率 >= 95%。
-  - 可输出 fallback selector 链路。
+  - [x] 生成 selector 可在同会话重复定位成功率 >= 95%。
+  - [x] 可输出 fallback selector 链路。
 - 风险：
   - UI 文本变化导致 selector 脆弱。
   - 缓解：多特征组合 + fallback 链。

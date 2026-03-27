@@ -72,6 +72,13 @@ class SemanticActionBuilderIntegrationTests(unittest.TestCase):
                                     "appName": "Safari",
                                     "windowTitle": "Start Page",
                                     "isFrontmost": True,
+                                    "windowSignature": {
+                                        "signature": "window-start-page",
+                                        "signatureVersion": "window-v1",
+                                        "role": "AXWindow",
+                                        "subrole": "AXStandardWindow",
+                                    },
+                                    "url": "https://www.google.com/",
                                     "focusedElement": {
                                         "role": "AXButton",
                                         "title": "Search",
@@ -104,6 +111,26 @@ class SemanticActionBuilderIntegrationTests(unittest.TestCase):
                                     "appName": "Safari",
                                     "windowTitle": "Start Page",
                                     "isFrontmost": True,
+                                    "windowSignature": {
+                                        "signature": "window-start-page",
+                                        "signatureVersion": "window-v1",
+                                        "role": "AXWindow",
+                                        "subrole": "AXStandardWindow",
+                                    },
+                                    "url": "https://www.google.com/",
+                                    "focusedElement": {
+                                        "role": "AXTextField",
+                                        "title": "Address",
+                                        "identifier": "address-bar",
+                                        "boundingRect": {
+                                            "x": 150,
+                                            "y": 80,
+                                            "width": 640,
+                                            "height": 32,
+                                            "coordinateSpace": "screen",
+                                        },
+                                        "valueRedacted": False,
+                                    },
                                 },
                                 "keyboard": {
                                     "characters": "h",
@@ -129,6 +156,26 @@ class SemanticActionBuilderIntegrationTests(unittest.TestCase):
                                     "appName": "Safari",
                                     "windowTitle": "Start Page",
                                     "isFrontmost": True,
+                                    "windowSignature": {
+                                        "signature": "window-start-page",
+                                        "signatureVersion": "window-v1",
+                                        "role": "AXWindow",
+                                        "subrole": "AXStandardWindow",
+                                    },
+                                    "url": "https://www.google.com/",
+                                    "focusedElement": {
+                                        "role": "AXTextField",
+                                        "title": "Address",
+                                        "identifier": "address-bar",
+                                        "boundingRect": {
+                                            "x": 150,
+                                            "y": 80,
+                                            "width": 640,
+                                            "height": 32,
+                                            "coordinateSpace": "screen",
+                                        },
+                                        "valueRedacted": False,
+                                    },
                                 },
                                 "keyboard": {
                                     "characters": "i",
@@ -192,6 +239,18 @@ class SemanticActionBuilderIntegrationTests(unittest.TestCase):
             self.assertEqual([action["action_type"] for action in actions], ["click", "switch_app", "click", "type"])
             self.assertEqual(actions[-1]["args_json"]["text"], "hi")
             self.assertFalse(actions[-1]["manual_review_required"])
+            self.assertEqual(actions[2]["selector_json"]["selectorStrategy"], "automation_id")
+            self.assertEqual(
+                [target["selector_json"]["selectorStrategy"] for target in actions[2]["targets"]],
+                [
+                    "automation_id",
+                    "role_and_name",
+                    "role_and_ancestry_path",
+                    "bounds_norm",
+                    "absolute_coordinate",
+                ],
+            )
+            self.assertEqual(actions[2]["context_json"]["selectorSummary"]["candidateCount"], 5)
 
     def test_cli_reports_semanticized_ratio_above_threshold_for_fixture_corpus(self):
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -23,6 +23,8 @@ def raw_event(
     key: str | None = None,
     key_code: int | None = None,
     focused_element: dict | None = None,
+    window_signature: dict | None = None,
+    url: str | None = None,
 ) -> dict:
     payload = {
         "schemaVersion": "capture.raw.v0",
@@ -44,8 +46,12 @@ def raw_event(
         },
         "modifiers": [],
     }
+    if window_signature is not None:
+        payload["contextSnapshot"]["windowSignature"] = window_signature
     if focused_element is not None:
         payload["contextSnapshot"]["focusedElement"] = focused_element
+    if url is not None:
+        payload["contextSnapshot"]["url"] = url
     if action == "keyDown":
         payload["keyboard"] = {
             "characters": key,
@@ -84,6 +90,18 @@ class SemanticActionBuilderTests(unittest.TestCase):
             "boundingRect": {"x": 150, "y": 80, "width": 640, "height": 32, "coordinateSpace": "screen"},
             "valueRedacted": False,
         }
+        safari_start_page_signature = {
+            "signature": "window-safari-start-page",
+            "signatureVersion": "window-v1",
+            "role": "AXWindow",
+            "subrole": "AXStandardWindow",
+        }
+        safari_results_signature = {
+            "signature": "window-safari-search-results",
+            "signatureVersion": "window-v1",
+            "role": "AXWindow",
+            "subrole": "AXStandardWindow",
+        }
         events = [
             raw_event(
                 event_id="event-001",
@@ -103,6 +121,8 @@ class SemanticActionBuilderTests(unittest.TestCase):
                 window_title="Start Page",
                 pointer=(220, 320),
                 focused_element=focused_button,
+                window_signature=safari_start_page_signature,
+                url="https://www.google.com/",
             ),
             raw_event(
                 event_id="event-003",
@@ -115,6 +135,8 @@ class SemanticActionBuilderTests(unittest.TestCase):
                 key_code=4,
                 pointer=(400, 90),
                 focused_element=focused_field,
+                window_signature=safari_start_page_signature,
+                url="https://www.google.com/",
             ),
             raw_event(
                 event_id="event-004",
@@ -127,6 +149,8 @@ class SemanticActionBuilderTests(unittest.TestCase):
                 key_code=34,
                 pointer=(400, 90),
                 focused_element=focused_field,
+                window_signature=safari_start_page_signature,
+                url="https://www.google.com/",
             ),
             raw_event(
                 event_id="event-005",
@@ -139,6 +163,8 @@ class SemanticActionBuilderTests(unittest.TestCase):
                 key_code=36,
                 pointer=(400, 90),
                 focused_element=focused_field,
+                window_signature=safari_start_page_signature,
+                url="https://www.google.com/",
             ),
             raw_event(
                 event_id="event-006",
@@ -149,6 +175,8 @@ class SemanticActionBuilderTests(unittest.TestCase):
                 window_title="Search Results",
                 pointer=(520, 640),
                 focused_element=focused_button,
+                window_signature=safari_results_signature,
+                url="https://www.google.com/search?q=hi",
             ),
             raw_event(
                 event_id="event-007",
@@ -161,6 +189,8 @@ class SemanticActionBuilderTests(unittest.TestCase):
                 key_code=36,
                 pointer=(520, 640),
                 focused_element=focused_button,
+                window_signature=safari_results_signature,
+                url="https://www.google.com/search?q=hi",
             ),
         ]
 
@@ -183,20 +213,41 @@ class SemanticActionBuilderTests(unittest.TestCase):
         first_click = bundles[0].action
         self.assertTrue(first_click.manual_review_required)
         self.assertEqual(first_click.preferred_locator_type, "coordinateFallback")
+        self.assertEqual(first_click.selector["selectorStrategy"], "absolute_coordinate")
 
         switch_app = bundles[1].action
         self.assertEqual(switch_app.args["fromAppBundleId"], "com.apple.dt.Xcode")
         self.assertEqual(switch_app.args["toAppBundleId"], "com.apple.Safari")
 
         safari_click = bundles[2]
-        self.assertEqual(safari_click.action.preferred_locator_type, "focusedElement")
-        self.assertEqual(len(safari_click.targets), 2)
-        self.assertEqual(safari_click.targets[0].locator_type, "focusedElement")
-        self.assertEqual(safari_click.targets[1].locator_type, "coordinateFallback")
+        self.assertEqual(safari_click.action.preferred_locator_type, "roleAndTitle")
+        self.assertEqual(safari_click.action.selector["selectorStrategy"], "automation_id")
+        self.assertEqual(len(safari_click.targets), 5)
+        self.assertEqual(
+            [target.selector["selectorStrategy"] for target in safari_click.targets],
+            [
+                "automation_id",
+                "role_and_name",
+                "role_and_ancestry_path",
+                "bounds_norm",
+                "absolute_coordinate",
+            ],
+        )
+        self.assertEqual(safari_click.targets[2].locator_type, "axPath")
+        self.assertEqual(
+            safari_click.action.context["selectorSummary"]["fallbackSelectorStrategies"],
+            [
+                "role_and_name",
+                "role_and_ancestry_path",
+                "bounds_norm",
+                "absolute_coordinate",
+            ],
+        )
 
         type_action = bundles[3].action
         self.assertEqual(type_action.args["text"], "hi")
         self.assertEqual(type_action.source_event_ids, ["event-003", "event-004"])
+        self.assertEqual(type_action.selector["selectorStrategy"], "automation_id")
 
         shortcut = bundles[4].action
         self.assertEqual(shortcut.args["keys"], ["return"])
