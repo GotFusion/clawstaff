@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
-更新时间：2026-03-26  
-状态：进行中（SEM-001 / SEM-002 已完成，其余待执行）
+更新时间：2026-03-27  
+状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 已完成，其余待执行）
 
 ## 1. 目标与原则
 
@@ -84,18 +84,19 @@
   - `tests/integration/test_semantic_action_migration.py`
 
 ### SEM-003 CI 守门规则（禁止新增坐标执行调用）
+状态：已完成（2026-03-27）
 - 目标：防止坐标执行逻辑回流。
 - 任务：
-  - 新增 lint/grep rule：阻止 `execute_click(x,y)` 等入口被调用。
-  - PR 模板新增检查项：语义选择器、上下文校验、断言。
+  - [x] 新增 lint/grep rule：阻止 `execute_click(x,y)` 等入口被调用。
+  - [x] PR 模板新增检查项：语义选择器、上下文校验、断言。
 - 落地产物：
   - `scripts/validation/guard_coordinate_execution.py`
   - `tests/unit/test_guard_coordinate_execution.py`
   - `.github/workflows/semantic-coordinate-guard.yml`
   - `.github/PULL_REQUEST_TEMPLATE.md`
 - DoD：
-  - CI 对违规调用直接失败。
-  - 规则在 main 分支生效。
+  - [x] CI 对违规调用直接失败。
+  - [x] 规则在 main 分支生效。
 - 风险：
   - 误伤合法测试代码。
   - 缓解：允许测试 fixture 白名单目录。
@@ -103,25 +104,26 @@
 ## Week 2（2026-04-06 ~ 2026-04-12）：语义捕获推断器（Builder v1）
 
 ### SEM-101 Action Builder v1（click/type/shortcut/switch）
+状态：已完成（2026-03-27）
 - 目标：从输入事件流构建语义步骤序列。
 - 任务：
-  - 聚合事件窗口（时间邻近 + 上下文一致）形成动作候选。
-  - 规则引擎识别动作类型：
-    - `switch_app`
-    - `focus_window`
-    - `click(target)`
-    - `type(target,text)`
-    - `shortcut(keys)`
-  - 输出置信度和 `source_event_ids`。
+  - [x] 聚合事件窗口（时间邻近 + 上下文一致）形成动作候选。
+  - [x] 规则引擎识别动作类型：
+    - [x] `switch_app`
+    - [x] `focus_window`
+    - [x] `click(target)`
+    - [x] `type(target,text)`
+    - [x] `shortcut(keys)`
+  - [x] 输出置信度和 `source_event_ids`。
 - 落地产物：
   - `scripts/learning/semantic_action_builder.py`
   - `scripts/learning/build_semantic_actions.py`
   - `tests/unit/test_semantic_action_builder.py`
   - `tests/integration/test_semantic_action_builder.py`
 - DoD：
-  - 离线回放日志上 80% 以上步骤可成功语义化。
-  - 每个动作都有可解释来源（source_event_ids 非空）。
-  - 生成结果可写入 `semantic_actions`。
+  - [x] 离线回放日志上 80% 以上步骤可成功语义化。
+  - [x] 每个动作都有可解释来源（source_event_ids 非空）。
+  - [x] 生成结果可写入 `semantic_actions`。
 - 风险：
   - 事件合并过度导致动作丢失。
   - 缓解：保留可调参数并输出冲突诊断日志。
