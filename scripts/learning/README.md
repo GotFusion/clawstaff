@@ -20,6 +20,11 @@
   - 创建 / 回滚 `semantic_actions` SQLite schema
   - 从 `data/learning/turns/**` 回填 `semantic_actions / action_targets / action_assertions / action_execution_logs`
   - 优先复用 `InteractionTurn.semanticTargetSetRef` 与关联 skill bundle 的 `actionType / locatorStrategyOrder / coordinate legacy ref`
+- `build_semantic_actions.py`
+  - 执行 `SEM-101 Action Builder v1`
+  - 读取 `data/task-chunks/** + data/raw-events/**`，按“时间邻近 + 上下文一致”聚合事件窗口
+  - 识别并写入 `switch_app / focus_window / click / type / shortcut` 到 `semantic_actions`
+  - 输出 `semanticizedEventRatio / conflictDiagnosticCount / manualReviewRequiredCount` 摘要
 - `export_learning_bundle.py`
   - 导出 `turns / evidence / signals / rules / profiles / audit`
   - 生成 `manifest.json` 与 `verification.json`
@@ -101,6 +106,24 @@ python3 scripts/learning/verify_learning_bundle.py \
 - `docs/semantic-action-store-v0.md`
 
 ## Semantic Actions SQLite
+
+从 raw event / task chunk 直接构建动作序列：
+
+```bash
+python3 scripts/learning/build_semantic_actions.py \
+  --db-path data/semantic-actions/semantic-actions.sqlite \
+  --workspace-root . \
+  --task-chunks-root data/task-chunks \
+  --raw-events-root data/raw-events \
+  --clean \
+  --json
+```
+
+或直接用 Makefile：
+
+```bash
+make semantic-actions-build ARGS="--clean --json"
+```
 
 建库并回填示例：
 

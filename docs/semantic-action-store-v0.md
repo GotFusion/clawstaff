@@ -19,6 +19,8 @@
   - `scripts/learning/migrations/semantic_actions/0001_semantic_actions.up.sql`
   - `scripts/learning/migrations/semantic_actions/0001_semantic_actions.down.sql`
 - repository / DAO：`scripts/learning/semantic_action_store.py`
+- SEM-101 builder：`scripts/learning/semantic_action_builder.py`
+- builder CLI：`scripts/learning/build_semantic_actions.py`
 - 回填脚本：`scripts/learning/migrate_semantic_actions.py`
 
 ## 3. 表结构

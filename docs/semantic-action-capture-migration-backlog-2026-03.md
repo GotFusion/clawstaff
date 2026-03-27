@@ -113,6 +113,11 @@
     - `type(target,text)`
     - `shortcut(keys)`
   - 输出置信度和 `source_event_ids`。
+- 落地产物：
+  - `scripts/learning/semantic_action_builder.py`
+  - `scripts/learning/build_semantic_actions.py`
+  - `tests/unit/test_semantic_action_builder.py`
+  - `tests/integration/test_semantic_action_builder.py`
 - DoD：
   - 离线回放日志上 80% 以上步骤可成功语义化。
   - 每个动作都有可解释来源（source_event_ids 非空）。
