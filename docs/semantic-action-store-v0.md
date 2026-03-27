@@ -23,6 +23,7 @@
 - SEM-102 selector extractor：`scripts/learning/semantic_selector_extractor.py`
 - builder CLI：`scripts/learning/build_semantic_actions.py`
 - 回填脚本：`scripts/learning/migrate_semantic_actions.py`
+- SEM-201 executor：`OpenStaffReplayVerifyCLI --semantic-action-db <db> --action-id <id> [--dry-run]`
 
 ## 3. 表结构
 
@@ -90,6 +91,13 @@
 - `review_id`
 - `executed_at`
 
+`SEM-201` 之后，这张表已由 `OpenStaffReplayVerifyCLI` 的 semantic executor 直接写入，默认记录：
+
+- `status`
+- `selector_hit_path_json`
+- `duration_ms`
+- `result_json.summary / matchedLocatorType / dryRun`
+
 ## 4. 回填来源优先级
 
 `migrate_semantic_actions.py` 的回填顺序：
@@ -137,8 +145,8 @@
 v0 暂不做：
 
 - 把 `semantic_actions` 并入 `learning bundle`
-- 真实在线执行器直接消费该库
+- GUI 主执行链默认切到 `semantic_actions` store
 - drag intent 的跨 App/跨控件细分策略学习
 - 跨设备 locator repair
 
-这些属于后续 `SEM-103 / 201 / 301` 的接续工作。
+这些属于后续 `SEM-202 / 203 / 301` 的接续工作。

@@ -90,6 +90,52 @@ struct OpenStaffReplayVerifyCLI {
                 if driftReport.status == .driftDetected {
                     Foundation.exit(2)
                 }
+            case .semanticAction(let databaseURL, let actionId, let dryRun):
+                let store = SemanticActionSQLiteStore(databaseURL: databaseURL)
+                guard let action = try store.fetchAction(actionId: actionId) else {
+                    print("Replay verify CLI failed: semantic action not found: \(actionId)")
+                    Foundation.exit(1)
+                }
+
+                let executor = SemanticActionExecutor(
+                    snapshotProvider: StaticReplayEnvironmentSnapshotProvider(snapshot: snapshot)
+                )
+                let report = executor.execute(action: action, dryRun: dryRun)
+                try store.appendExecutionLog(
+                    SemanticActionStoreExecutionLogRecord(
+                        executionLogId: "action-log-\(UUID().uuidString.lowercased())",
+                        actionId: action.actionId,
+                        traceId: action.traceId,
+                        component: "semantic.executor.cli",
+                        status: executionLogStatus(for: report),
+                        errorCode: report.errorCode,
+                        selectorHitPath: report.selectorHitPath,
+                        result: [
+                            "actionType": report.actionType,
+                            "dryRun": report.dryRun,
+                            "matchedLocatorType": report.matchedLocatorType as Any,
+                            "summary": report.summary,
+                            "status": report.status.rawValue,
+                        ],
+                        durationMs: report.durationMs,
+                        executedAt: report.executedAt
+                    )
+                )
+
+                if options.printJSON {
+                    let encoder = JSONEncoder()
+                    encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                    let data = try encoder.encode(report)
+                    if let text = String(data: data, encoding: .utf8) {
+                        print(text)
+                    }
+                } else {
+                    printSummary(report: report)
+                }
+
+                if report.status != .succeeded {
+                    Foundation.exit(2)
+                }
             }
         } catch {
             print("Replay verify CLI failed: \(error.localizedDescription)")
@@ -104,12 +150,16 @@ struct OpenStaffReplayVerifyCLI {
         Usage:
           make replay-verify ARGS="--knowledge core/knowledge/examples/knowledge-item.sample.json --snapshot core/executor/examples/replay-environment.sample.json --json"
           make replay-verify ARGS="--skill-dir data/skills/pending/example --snapshot core/executor/examples/replay-environment.sample.json --json"
+          make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-actions.sqlite --action-id action-001 --snapshot core/executor/examples/replay-environment.sample.json --dry-run --json"
 
         Flags:
           --knowledge <path>        KnowledgeItem JSON file or directory.
           --skill-dir <path>        OpenStaff skill bundle directory.
+          --semantic-action-db <path> Semantic action SQLite DB path.
+          --action-id <id>          Semantic action id to execute.
           --snapshot <path>         Optional replay snapshot JSON file. If omitted, capture the current frontmost window via AX.
           --preferences-root <path> Preference store root. Default: data/preferences
+          --dry-run                 Resolve and plan execution only; do not actuate UI.
           --json                    Print structured verification report.
           --help                    Show this help message.
 
@@ -178,25 +228,66 @@ struct OpenStaffReplayVerifyCLI {
             }
         }
     }
+
+    static func printSummary(report: SemanticActionExecutionReport) {
+        print(
+            "Semantic action execution finished. " +
+            "action=\(report.actionId) " +
+            "type=\(report.actionType) " +
+            "status=\(report.status.rawValue) " +
+            "dryRun=\(report.dryRun) " +
+            "locator=\(report.matchedLocatorType ?? "-") " +
+            "durationMs=\(report.durationMs)"
+        )
+        print("summary=\(report.summary)")
+        if !report.selectorHitPath.isEmpty {
+            print("selectorHitPath=\(report.selectorHitPath.joined(separator: " -> "))")
+        }
+        if let errorCode = report.errorCode {
+            print("errorCode=\(errorCode)")
+        }
+    }
+
+    static func executionLogStatus(for report: SemanticActionExecutionReport) -> String {
+        switch (report.dryRun, report.status) {
+        case (true, .succeeded):
+            return "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED"
+        case (true, .blocked):
+            return "STATUS_SEMANTIC_ACTION_DRY_RUN_BLOCKED"
+        case (true, .failed):
+            return "STATUS_SEMANTIC_ACTION_DRY_RUN_FAILED"
+        case (false, .succeeded):
+            return "STATUS_SEMANTIC_ACTION_SUCCEEDED"
+        case (false, .blocked):
+            return "STATUS_SEMANTIC_ACTION_BLOCKED"
+        case (false, .failed):
+            return "STATUS_SEMANTIC_ACTION_FAILED"
+        }
+    }
 }
 
 enum ReplayVerifyInput {
     case knowledge(URL)
     case skillDirectory(URL)
+    case semanticAction(databaseURL: URL, actionId: String, dryRun: Bool)
 }
 
 struct ReplayVerifyCLIOptions {
     let input: ReplayVerifyInput
     let snapshotPath: String?
     let preferencesRootPath: String
+    let dryRun: Bool
     let printJSON: Bool
     let showHelp: Bool
 
     static func parse(arguments: [String]) throws -> ReplayVerifyCLIOptions {
         var knowledgeInputPath: String?
         var skillDirectoryPath: String?
+        var semanticActionDatabasePath: String?
+        var actionId: String?
         var snapshotPath: String?
         var preferencesRootPath = "data/preferences"
+        var dryRun = false
         var printJSON = false
         var showHelp = false
 
@@ -217,6 +308,18 @@ struct ReplayVerifyCLIOptions {
                     throw ReplayVerifyCLIOptionError.missingValue("--skill-dir")
                 }
                 skillDirectoryPath = arguments[index]
+            case "--semantic-action-db":
+                index += 1
+                guard index < arguments.count else {
+                    throw ReplayVerifyCLIOptionError.missingValue("--semantic-action-db")
+                }
+                semanticActionDatabasePath = arguments[index]
+            case "--action-id":
+                index += 1
+                guard index < arguments.count else {
+                    throw ReplayVerifyCLIOptionError.missingValue("--action-id")
+                }
+                actionId = arguments[index]
             case "--snapshot":
                 index += 1
                 guard index < arguments.count else {
@@ -231,6 +334,8 @@ struct ReplayVerifyCLIOptions {
                 preferencesRootPath = arguments[index]
             case "--json":
                 printJSON = true
+            case "--dry-run":
+                dryRun = true
             case "--help", "-h":
                 showHelp = true
             default:
@@ -245,12 +350,16 @@ struct ReplayVerifyCLIOptions {
                 input: .knowledge(resolveStatic(path: knowledgeInputPath ?? "core/knowledge/examples/knowledge-item.sample.json")),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                dryRun: dryRun,
                 printJSON: printJSON,
                 showHelp: true
             )
         }
 
-        if knowledgeInputPath != nil, skillDirectoryPath != nil {
+        let activeInputCount = [knowledgeInputPath, skillDirectoryPath, semanticActionDatabasePath]
+            .compactMap { $0 }
+            .count
+        if activeInputCount > 1 {
             throw ReplayVerifyCLIOptionError.conflictingInputs
         }
 
@@ -259,6 +368,7 @@ struct ReplayVerifyCLIOptions {
                 input: .knowledge(resolveStatic(path: knowledgeInputPath)),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                dryRun: dryRun,
                 printJSON: printJSON,
                 showHelp: false
             )
@@ -269,12 +379,31 @@ struct ReplayVerifyCLIOptions {
                 input: .skillDirectory(resolveStatic(path: skillDirectoryPath)),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                dryRun: dryRun,
                 printJSON: printJSON,
                 showHelp: false
             )
         }
 
-        throw ReplayVerifyCLIOptionError.missingRequired("--knowledge or --skill-dir")
+        if let semanticActionDatabasePath {
+            guard let actionId, !actionId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                throw ReplayVerifyCLIOptionError.missingRequired("--action-id")
+            }
+            return ReplayVerifyCLIOptions(
+                input: .semanticAction(
+                    databaseURL: resolveStatic(path: semanticActionDatabasePath),
+                    actionId: actionId,
+                    dryRun: dryRun
+                ),
+                snapshotPath: snapshotPath,
+                preferencesRootPath: preferencesRootPath,
+                dryRun: dryRun,
+                printJSON: printJSON,
+                showHelp: false
+            )
+        }
+
+        throw ReplayVerifyCLIOptionError.missingRequired("--knowledge or --skill-dir or --semantic-action-db")
     }
 
     func snapshotProvider() throws -> any ReplayEnvironmentSnapshotProviding {

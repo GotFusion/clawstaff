@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
 更新时间：2026-03-27  
-状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 已完成，其余待执行）
+状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 已完成，其余待执行）
 
 ## 1. 目标与原则
 
@@ -181,15 +181,22 @@
 ## Week 3（2026-04-13 ~ 2026-04-19）：语义执行器与强校验
 
 ### SEM-201 Semantic Executor v1
+状态：已完成（2026-03-27）
 - 目标：实现语义动作执行器（替换坐标执行器）。
 - 任务：
-  - 执行动作：`switch_app`, `focus_window`, `click`, `type`, `shortcut`, `drag`。
-  - 选择器解析与优先级 fallback。
-  - 执行日志统一写入 `action_execution_logs`。
+  - [x] 执行动作：`switch_app`, `focus_window`, `click`, `type`, `shortcut`, `drag`。
+  - [x] 选择器解析与优先级 fallback。
+  - [x] 执行日志统一写入 `action_execution_logs`。
+- 落地产物：
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/SemanticActionStore.swift`
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/SemanticActionExecutor.swift`
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/OpenStaffReplayVerifyCLI.swift`
+  - `apps/macos/Tests/OpenStaffAppTests/SemanticActionExecutorTests.swift`
+  - `tests/integration/test_semantic_action_executor_cli.py`
 - DoD：
-  - 执行链路不读取坐标字段作为决策输入。
-  - 关键动作单测和集成测试通过。
-  - 执行日志含选择器命中路径和耗时。
+  - [x] 执行链路不读取坐标字段作为决策输入。
+  - [x] 关键动作单测和集成测试通过。
+  - [x] 执行日志含选择器命中路径和耗时。
 - 风险：
   - fallback 过度导致误点。
   - 缓解：fallback 到最低级时必须二次确认。

@@ -46,7 +46,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 - `Sources/OpenStaffCaptureCLI/`: Phase 1.3 capture CLI (permission check, click capture, context snapshot, JSONL persistence + rotation).
 - `Sources/OpenStaffTaskSlicerCLI/`: Phase 2.1 task slicer CLI (session events -> TaskChunk files).
 - `Sources/OpenStaffKnowledgeBuilderCLI/`: Phase 2.2 knowledge builder CLI (TaskChunk -> KnowledgeItem).
-- `Sources/OpenStaffReplayVerifyCLI/`: Phase 7.3 replay verify CLI (KnowledgeItem -> dry-run semantic resolution report).
+- `Sources/OpenStaffReplayVerifyCLI/`: Phase 7.3 replay verify CLI + `SEM-201` semantic executor（KnowledgeItem dry-run / skill drift / semantic_actions execute）。
 - `Sources/OpenStaffPreferenceProfileCLI/`: Phase 11.3 preference profile CLI（当前偏好快照查看 / 重建 / 落盘）。
 
 ## Capture CLI
@@ -103,6 +103,9 @@ make replay-verify ARGS="--knowledge core/knowledge/examples/knowledge-item.samp
 
 # Verify a real knowledge file against the current frontmost app/window
 make replay-verify ARGS="--knowledge data/knowledge/2026-03-13/task-session-20260313-a1-001.json"
+
+# Execute one semantic action from semantic_actions SQLite in dry-run mode
+make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-actions.sqlite --action-id action-001 --snapshot core/executor/examples/replay-environment.sample.json --dry-run --json"
 ```
 
 Exit code `2` means at least one step degraded to coordinate fallback or failed semantic resolution.

@@ -77,7 +77,7 @@ let package = Package(
         ),
         .testTarget(
             name: "OpenStaffAppTests",
-            dependencies: ["OpenStaffApp", "OpenStaffOpenClawCLI"],
+            dependencies: ["OpenStaffApp", "OpenStaffOpenClawCLI", "OpenStaffReplayVerifyCLI"],
             path: "Tests/OpenStaffAppTests"
         )
     ]
