@@ -220,6 +220,33 @@ make learning-bundle-restore ARGS="--bundle /tmp/openstaff-learning-bundle --res
 make preference-profile ARGS="--preferences-root /tmp/openstaff-restored/data/preferences --rebuild --json"
 ```
 
+### 4.6 语义动作审核工作流（Teacher Confirmation）
+当 `semantic action` 命中低置信或高风险策略时，`OpenStaffReplayVerifyCLI` 会在真正执行前进入审核门。
+
+示例：
+
+```bash
+make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-actions.sqlite --action-id semantic-action-turn-001 --snapshot core/executor/examples/replay-environment.sample.json --dry-run --json"
+```
+
+若需要老师放行：
+
+```bash
+make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-actions.sqlite --action-id semantic-action-turn-001 --snapshot core/executor/examples/replay-environment.sample.json --teacher-confirmed --teacher-confirmation-root data/semantic-actions/teacher-confirmations --json"
+```
+
+如需临时调整审核阈值与策略：
+
+```bash
+make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-actions.sqlite --action-id semantic-action-turn-001 --snapshot core/executor/examples/replay-environment.sample.json --teacher-confirmation-policy config/semantic-teacher-confirmation.example.json --json"
+```
+
+说明：
+- 默认会对 `manual_review_required`、低于阈值的 selector、`switch_app`、`drag`、批量 `type` 触发审核。
+- 未传 `--teacher-confirmed` 时，会返回 `SEM302-TEACHER-CONFIRMATION-REQUIRED`，并在输出里展示候选 selector、上下文要求和断言摘要。
+- 审核结果会写进 `action_execution_logs.result_json.teacherConfirmation`。
+- 若配置了 `--teacher-confirmation-root`，还会额外落 JSON artifact 到 `teacher-confirmations/{date}/{sessionId}/`，便于后续学习链路引用。
+
 用来验证恢复后的 rule ids 与 profile rebuild 仍然一致。
 
 ## 5. 发布前检查

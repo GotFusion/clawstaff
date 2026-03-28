@@ -104,6 +104,7 @@
 - `duration_ms`
 - `result_json.summary / matchedLocatorType / dryRun`
 - `result_json.errorCode / contextGuard`
+- `result_json.teacherConfirmation / teacherConfirmationArtifactPath`
 - `result_json.postAssertions`
 
 其中 `SEM-202` 新增的 `contextGuard` 结构默认包含：
@@ -119,6 +120,20 @@
 - `checkedAt`
 - `assertions[*].assertionType / status / isRequired / message`
 - `assertions[*].expected / actual`
+
+`SEM-302` 新增的 `teacherConfirmation` 结构默认包含：
+
+- `status`：`required / approved`
+- `teacherConfirmed`
+- `generatedAt`
+- `actionConfidence`
+- `policy.minimumConfidence / requireForSwitchApp / requireForDrag / requireForBulkType / bulkTypeMinimumLength`
+- `reasons[*].code / message`
+- `selectorCandidates[*].targetRole / locatorType / selectorStrategy / confidence`
+- `assertions[*].assertionType / isRequired / payload`
+- `expectedContext / actualContext`
+
+若 CLI 同时传入 `--teacher-confirmation-root`（或使用默认 sibling 目录），执行日志还会附带 `teacherConfirmationArtifactPath`，指向独立 JSON artifact。
 
 ## 4. 回填来源优先级
 
@@ -196,3 +211,4 @@ v0 暂不做：
 - `SEM-202` 已在 `OpenStaffReplayVerifyCLI` 上接入严格 context guard，但浏览器 `urlHost` 仍属于 best-effort 采集，优先依赖 snapshot 中显式 `url/urlHost`，其次尝试实时读取 `AXDocument / AXURL`。
 - `SEM-203` 的 `textValueContains` 目前依赖可读的非敏感 `AXValue`；若目标控件不暴露 value 或被系统标记为安全输入框，执行器会保守返回断言失败而不是假定成功。
 - `SEM-301` 目前只对带可读 `rawEventLogPath + taskChunkPath + sourceEventIds` 的历史 GUI turn 自动恢复；若旧数据缺其中任意关键回链，会保守落为人工审核而不是猜测 selector。
+- `SEM-302` 的确认 artifact 目前先由 replay verify CLI 写到 `semantic-actions.sqlite` 同级目录下的 `teacher-confirmations/{date}/{sessionId}/`；后续学习脚本可直接把该 JSON 当成新的审阅证据源消费。

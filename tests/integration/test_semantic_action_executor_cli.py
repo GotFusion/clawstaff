@@ -280,6 +280,305 @@ class SemanticActionExecutorCLITests(unittest.TestCase):
                 "requiredFrontmostApp",
             )
 
+    def test_cli_blocks_confirmation_required_action_and_persists_review_artifact(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace_root = Path(tmpdir)
+            db_path = workspace_root / "semantic-actions.sqlite"
+            snapshot_path = workspace_root / "snapshot.json"
+            review_root = workspace_root / "teacher-confirmations"
+
+            manager = SemanticActionMigrationManager(db_path)
+            manager.migrate_up()
+            repository = SemanticActionRepository(db_path)
+            repository.replace_action(
+                SemanticActionRecord(
+                    action_id="action-click-review-001",
+                    session_id="session-001",
+                    task_id="task-001",
+                    trace_id="trace-review-001",
+                    step_id="step-review-001",
+                    action_type="click",
+                    selector={
+                        "locatorType": "roleAndTitle",
+                        "appBundleId": "com.test.app",
+                        "windowTitlePattern": "^Main$",
+                        "elementRole": "AXButton",
+                        "elementTitle": "Open",
+                        "elementIdentifier": "open-button",
+                        "confidence": 0.42,
+                    },
+                    args={"button": "left", "instruction": "点击打开按钮"},
+                    context={},
+                    confidence=0.42,
+                    created_at="2026-03-28T09:00:00Z",
+                    updated_at="2026-03-28T09:00:00Z",
+                    preferred_locator_type="roleAndTitle",
+                ),
+                targets=[
+                    SemanticActionTargetRecord(
+                        target_id="action-click-review-001:target:01",
+                        target_role="primary",
+                        ordinal=1,
+                        locator_type="roleAndTitle",
+                        selector={
+                            "locatorType": "roleAndTitle",
+                            "appBundleId": "com.test.app",
+                            "windowTitlePattern": "^Main$",
+                            "elementRole": "AXButton",
+                            "elementTitle": "Open",
+                            "elementIdentifier": "open-button",
+                            "confidence": 0.42,
+                            "selectorStrategy": "role_and_name",
+                        },
+                        created_at="2026-03-28T09:00:00Z",
+                        is_preferred=True,
+                    )
+                ],
+            )
+
+            snapshot_path.write_text(
+                json.dumps(
+                    {
+                        "capturedAt": "2026-03-28T09:01:00Z",
+                        "appName": "TestApp",
+                        "appBundleId": "com.test.app",
+                        "windowTitle": "Main",
+                        "windowId": "1",
+                        "windowSignature": {
+                            "signature": "window-signature-001",
+                            "signatureVersion": "window-v1",
+                            "normalizedTitle": "main",
+                            "role": "AXWindow",
+                            "subrole": "AXStandardWindow",
+                            "sizeBucket": "12x8",
+                        },
+                        "focusedElement": {
+                            "axPath": "AXWindow/AXButton[0]",
+                            "role": "AXButton",
+                            "title": "Open",
+                            "identifier": "open-button",
+                            "boundingRect": {
+                                "x": 220,
+                                "y": 140,
+                                "width": 72,
+                                "height": 28,
+                                "coordinateSpace": "screen",
+                            },
+                        },
+                        "visibleElements": [
+                            {
+                                "axPath": "AXWindow/AXButton[0]",
+                                "role": "AXButton",
+                                "title": "Open",
+                                "identifier": "open-button",
+                                "boundingRect": {
+                                    "x": 220,
+                                    "y": 140,
+                                    "width": 72,
+                                    "height": 28,
+                                    "coordinateSpace": "screen",
+                                },
+                            }
+                        ],
+                        "screenshotAnchors": [],
+                        "captureDiagnostics": [],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = run_swift_target(
+                "OpenStaffReplayVerifyCLI",
+                [
+                    "--semantic-action-db",
+                    str(db_path),
+                    "--action-id",
+                    "action-click-review-001",
+                    "--snapshot",
+                    str(snapshot_path),
+                    "--teacher-confirmation-root",
+                    str(review_root),
+                    "--dry-run",
+                    "--json",
+                ],
+            )
+
+            self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
+            payload = extract_last_json_object(result.stdout)
+            self.assertEqual(payload["status"], "blocked")
+            self.assertEqual(payload["errorCode"], "SEM302-TEACHER-CONFIRMATION-REQUIRED")
+            self.assertEqual(payload["teacherConfirmation"]["status"], "required")
+            self.assertEqual(
+                payload["teacherConfirmation"]["reasons"][0]["code"],
+                "SEM302-LOW-SELECTOR-CONFIDENCE",
+            )
+
+            action = repository.get_action("action-click-review-001")
+            self.assertIsNotNone(action)
+            assert action is not None
+            self.assertEqual(len(action["execution_logs"]), 1)
+            self.assertEqual(
+                action["execution_logs"][0]["result_json"]["teacherConfirmation"]["status"],
+                "required",
+            )
+            artifact_path = Path(action["execution_logs"][0]["result_json"]["teacherConfirmationArtifactPath"])
+            self.assertTrue(artifact_path.exists())
+            artifact_payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+            self.assertEqual(artifact_payload["teacherConfirmation"]["status"], "required")
+
+    def test_cli_allows_confirmed_action_and_records_approved_review(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace_root = Path(tmpdir)
+            db_path = workspace_root / "semantic-actions.sqlite"
+            snapshot_path = workspace_root / "snapshot.json"
+            review_root = workspace_root / "teacher-confirmations"
+
+            manager = SemanticActionMigrationManager(db_path)
+            manager.migrate_up()
+            repository = SemanticActionRepository(db_path)
+            repository.replace_action(
+                SemanticActionRecord(
+                    action_id="action-click-approved-001",
+                    session_id="session-001",
+                    task_id="task-001",
+                    trace_id="trace-approved-001",
+                    step_id="step-approved-001",
+                    action_type="click",
+                    selector={
+                        "locatorType": "roleAndTitle",
+                        "appBundleId": "com.test.app",
+                        "windowTitlePattern": "^Main$",
+                        "elementRole": "AXButton",
+                        "elementTitle": "Open",
+                        "elementIdentifier": "open-button",
+                        "confidence": 0.40,
+                    },
+                    args={"button": "left", "instruction": "点击打开按钮"},
+                    context={},
+                    confidence=0.40,
+                    created_at="2026-03-28T09:05:00Z",
+                    updated_at="2026-03-28T09:05:00Z",
+                    preferred_locator_type="roleAndTitle",
+                ),
+                targets=[
+                    SemanticActionTargetRecord(
+                        target_id="action-click-approved-001:target:01",
+                        target_role="primary",
+                        ordinal=1,
+                        locator_type="roleAndTitle",
+                        selector={
+                            "locatorType": "roleAndTitle",
+                            "appBundleId": "com.test.app",
+                            "windowTitlePattern": "^Main$",
+                            "elementRole": "AXButton",
+                            "elementTitle": "Open",
+                            "elementIdentifier": "open-button",
+                            "confidence": 0.40,
+                            "selectorStrategy": "role_and_name",
+                        },
+                        created_at="2026-03-28T09:05:00Z",
+                        is_preferred=True,
+                    )
+                ],
+            )
+
+            snapshot_path.write_text(
+                json.dumps(
+                    {
+                        "capturedAt": "2026-03-28T09:06:00Z",
+                        "appName": "TestApp",
+                        "appBundleId": "com.test.app",
+                        "windowTitle": "Main",
+                        "windowId": "1",
+                        "windowSignature": {
+                            "signature": "window-signature-001",
+                            "signatureVersion": "window-v1",
+                            "normalizedTitle": "main",
+                            "role": "AXWindow",
+                            "subrole": "AXStandardWindow",
+                            "sizeBucket": "12x8",
+                        },
+                        "focusedElement": {
+                            "axPath": "AXWindow/AXButton[0]",
+                            "role": "AXButton",
+                            "title": "Open",
+                            "identifier": "open-button",
+                            "boundingRect": {
+                                "x": 220,
+                                "y": 140,
+                                "width": 72,
+                                "height": 28,
+                                "coordinateSpace": "screen",
+                            },
+                        },
+                        "visibleElements": [
+                            {
+                                "axPath": "AXWindow/AXButton[0]",
+                                "role": "AXButton",
+                                "title": "Open",
+                                "identifier": "open-button",
+                                "boundingRect": {
+                                    "x": 220,
+                                    "y": 140,
+                                    "width": 72,
+                                    "height": 28,
+                                    "coordinateSpace": "screen",
+                                },
+                            }
+                        ],
+                        "screenshotAnchors": [],
+                        "captureDiagnostics": [],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = run_swift_target(
+                "OpenStaffReplayVerifyCLI",
+                [
+                    "--semantic-action-db",
+                    str(db_path),
+                    "--action-id",
+                    "action-click-approved-001",
+                    "--snapshot",
+                    str(snapshot_path),
+                    "--teacher-confirmation-root",
+                    str(review_root),
+                    "--teacher-confirmed",
+                    "--dry-run",
+                    "--json",
+                ],
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr or result.stdout)
+            payload = extract_last_json_object(result.stdout)
+            self.assertEqual(payload["status"], "succeeded")
+            self.assertEqual(payload["teacherConfirmation"]["status"], "approved")
+            self.assertTrue(payload["teacherConfirmation"]["teacherConfirmed"])
+
+            action = repository.get_action("action-click-approved-001")
+            self.assertIsNotNone(action)
+            assert action is not None
+            self.assertEqual(len(action["execution_logs"]), 1)
+            self.assertEqual(
+                action["execution_logs"][0]["status"],
+                "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+            )
+            self.assertEqual(
+                action["execution_logs"][0]["result_json"]["teacherConfirmation"]["status"],
+                "approved",
+            )
+            artifact_path = Path(action["execution_logs"][0]["result_json"]["teacherConfirmationArtifactPath"])
+            self.assertTrue(artifact_path.exists())
+            artifact_payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+            self.assertEqual(artifact_payload["teacherConfirmation"]["status"], "approved")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -77,6 +77,7 @@ struct SemanticActionExecutionReport: Codable {
     let errorCode: String?
     let matchedLocatorType: String?
     let selectorHitPath: [String]
+    let teacherConfirmation: SemanticActionTeacherConfirmationReview?
     let contextGuard: SemanticActionContextGuardResult?
     let postAssertions: SemanticActionPostAssertionReport?
     let durationMs: Int
@@ -129,7 +130,9 @@ final class SemanticActionExecutor {
 
     func execute(
         action: SemanticActionStoreAction,
-        dryRun: Bool
+        dryRun: Bool,
+        teacherConfirmed: Bool = false,
+        confirmationPolicy: SemanticActionTeacherConfirmationPolicy = .default
     ) -> SemanticActionExecutionReport {
         let started = nowProvider()
         let contextSnapshot = snapshotProvider.snapshot()
@@ -147,24 +150,81 @@ final class SemanticActionExecutor {
                 errorCode: "SEM202-CONTEXT-MISMATCH",
                 matchedLocatorType: nil,
                 selectorHitPath: [],
+                teacherConfirmation: nil,
                 contextGuard: contextGuard
+            )
+        }
+
+        let teacherConfirmation = evaluateTeacherConfirmation(
+            action: action,
+            snapshot: contextSnapshot,
+            teacherConfirmed: teacherConfirmed,
+            basePolicy: confirmationPolicy
+        )
+        if let teacherConfirmation,
+           teacherConfirmation.status == .required {
+            let reasonSummary = teacherConfirmation.reasons
+                .map(\.message)
+                .joined(separator: "；")
+            return finalize(
+                action: action,
+                dryRun: dryRun,
+                started: started,
+                status: .blocked,
+                summary: "Teacher confirmation required before execution. \(reasonSummary)",
+                errorCode: "SEM302-TEACHER-CONFIRMATION-REQUIRED",
+                matchedLocatorType: nil,
+                selectorHitPath: [],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
         let outcome: SemanticActionExecutionReport
         switch action.actionType {
         case "switch_app":
-            outcome = executeSwitchApp(action: action, dryRun: dryRun, started: started)
+            outcome = executeSwitchApp(
+                action: action,
+                dryRun: dryRun,
+                started: started,
+                teacherConfirmation: teacherConfirmation
+            )
         case "focus_window":
-            outcome = executeFocusWindow(action: action, dryRun: dryRun, started: started)
+            outcome = executeFocusWindow(
+                action: action,
+                dryRun: dryRun,
+                started: started,
+                teacherConfirmation: teacherConfirmation
+            )
         case "shortcut":
-            outcome = executeShortcut(action: action, dryRun: dryRun, started: started)
+            outcome = executeShortcut(
+                action: action,
+                dryRun: dryRun,
+                started: started,
+                teacherConfirmation: teacherConfirmation
+            )
         case "click":
-            outcome = executeElementAction(action: action, dryRun: dryRun, started: started, kind: .click)
+            outcome = executeElementAction(
+                action: action,
+                dryRun: dryRun,
+                started: started,
+                kind: .click,
+                teacherConfirmation: teacherConfirmation
+            )
         case "type":
-            outcome = executeElementAction(action: action, dryRun: dryRun, started: started, kind: .type)
+            outcome = executeElementAction(
+                action: action,
+                dryRun: dryRun,
+                started: started,
+                kind: .type,
+                teacherConfirmation: teacherConfirmation
+            )
         case "drag":
-            outcome = executeDrag(action: action, dryRun: dryRun, started: started)
+            outcome = executeDrag(
+                action: action,
+                dryRun: dryRun,
+                started: started,
+                teacherConfirmation: teacherConfirmation
+            )
         default:
             outcome = finalize(
                 action: action,
@@ -174,7 +234,8 @@ final class SemanticActionExecutor {
                 summary: "Unsupported semantic action type: \(action.actionType)",
                 errorCode: "SEM201-UNSUPPORTED-ACTION",
                 matchedLocatorType: nil,
-                selectorHitPath: []
+                selectorHitPath: [],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -189,7 +250,8 @@ final class SemanticActionExecutor {
     private func executeSwitchApp(
         action: SemanticActionStoreAction,
         dryRun: Bool,
-        started: Date
+        started: Date,
+        teacherConfirmation: SemanticActionTeacherConfirmationReview?
     ) -> SemanticActionExecutionReport {
         guard let bundleId = string(action.args["toAppBundleId"]) ?? string(action.selector["appBundleId"]),
               !bundleId.isEmpty else {
@@ -201,7 +263,8 @@ final class SemanticActionExecutor {
                 summary: "switch_app 缺少目标 appBundleId。",
                 errorCode: "SEM201-MISSING-APP-BUNDLE",
                 matchedLocatorType: "app_context",
-                selectorHitPath: ["app_context"]
+                selectorHitPath: ["app_context"],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -214,7 +277,8 @@ final class SemanticActionExecutor {
                 summary: "Dry-run: would activate app \(bundleId).",
                 errorCode: nil,
                 matchedLocatorType: "app_context",
-                selectorHitPath: ["app_context"]
+                selectorHitPath: ["app_context"],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -227,14 +291,16 @@ final class SemanticActionExecutor {
             summary: activated ? "Activated app \(bundleId)." : "Failed to activate app \(bundleId).",
             errorCode: activated ? nil : "SEM201-APP-ACTIVATION-FAILED",
             matchedLocatorType: "app_context",
-            selectorHitPath: ["app_context"]
+            selectorHitPath: ["app_context"],
+            teacherConfirmation: teacherConfirmation
         )
     }
 
     private func executeFocusWindow(
         action: SemanticActionStoreAction,
         dryRun: Bool,
-        started: Date
+        started: Date,
+        teacherConfirmation: SemanticActionTeacherConfirmationReview?
     ) -> SemanticActionExecutionReport {
         guard let bundleId = string(action.selector["appBundleId"]),
               !bundleId.isEmpty else {
@@ -246,7 +312,8 @@ final class SemanticActionExecutor {
                 summary: "focus_window 缺少上下文 appBundleId。",
                 errorCode: "SEM201-MISSING-APP-BUNDLE",
                 matchedLocatorType: "window_context",
-                selectorHitPath: ["window_context"]
+                selectorHitPath: ["window_context"],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -267,7 +334,8 @@ final class SemanticActionExecutor {
                     : "Dry-run: current snapshot does not match focus_window selector.",
                 errorCode: windowMatches ? nil : "SEM201-WINDOW-UNRESOLVED",
                 matchedLocatorType: "window_context",
-                selectorHitPath: ["window_context"]
+                selectorHitPath: ["window_context"],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -280,7 +348,8 @@ final class SemanticActionExecutor {
                 summary: "Failed to activate app \(bundleId) before focus_window.",
                 errorCode: "SEM201-APP-ACTIVATION-FAILED",
                 matchedLocatorType: "window_context",
-                selectorHitPath: ["window_context"]
+                selectorHitPath: ["window_context"],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -297,14 +366,16 @@ final class SemanticActionExecutor {
             summary: performOutcome.message,
             errorCode: performOutcome.errorCode,
             matchedLocatorType: "window_context",
-            selectorHitPath: ["window_context"]
+            selectorHitPath: ["window_context"],
+            teacherConfirmation: teacherConfirmation
         )
     }
 
     private func executeShortcut(
         action: SemanticActionStoreAction,
         dryRun: Bool,
-        started: Date
+        started: Date,
+        teacherConfirmation: SemanticActionTeacherConfirmationReview?
     ) -> SemanticActionExecutionReport {
         let keys = shortcutKeys(from: action.args)
         guard !keys.isEmpty else {
@@ -316,7 +387,8 @@ final class SemanticActionExecutor {
                 summary: "shortcut 缺少 keys。",
                 errorCode: "SEM201-MISSING-SHORTCUT-KEYS",
                 matchedLocatorType: nil,
-                selectorHitPath: []
+                selectorHitPath: [],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -331,7 +403,8 @@ final class SemanticActionExecutor {
                 summary: "Dry-run: would send shortcut \(joinedKeys).",
                 errorCode: nil,
                 matchedLocatorType: bundleId == nil ? nil : "app_context",
-                selectorHitPath: bundleId == nil ? [] : ["app_context"]
+                selectorHitPath: bundleId == nil ? [] : ["app_context"],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -344,7 +417,8 @@ final class SemanticActionExecutor {
             summary: performOutcome.message,
             errorCode: performOutcome.errorCode,
             matchedLocatorType: bundleId == nil ? nil : "app_context",
-            selectorHitPath: bundleId == nil ? [] : ["app_context"]
+            selectorHitPath: bundleId == nil ? [] : ["app_context"],
+            teacherConfirmation: teacherConfirmation
         )
     }
 
@@ -352,7 +426,8 @@ final class SemanticActionExecutor {
         action: SemanticActionStoreAction,
         dryRun: Bool,
         started: Date,
-        kind: ElementActionKind
+        kind: ElementActionKind,
+        teacherConfirmation: SemanticActionTeacherConfirmationReview?
     ) -> SemanticActionExecutionReport {
         let candidates = semanticTargets(
             for: action,
@@ -368,7 +443,8 @@ final class SemanticActionExecutor {
                 summary: "Action lacks non-coordinate semantic selector candidates.",
                 errorCode: "SEM201-SEMANTIC-TARGET-REQUIRED",
                 matchedLocatorType: nil,
-                selectorHitPath: []
+                selectorHitPath: [],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -382,7 +458,8 @@ final class SemanticActionExecutor {
                 summary: "Failed to activate app \(appBundleId) before \(action.actionType).",
                 errorCode: "SEM201-APP-ACTIVATION-FAILED",
                 matchedLocatorType: nil,
-                selectorHitPath: []
+                selectorHitPath: [],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -406,7 +483,8 @@ final class SemanticActionExecutor {
                 summary: "Coordinate fallback is disabled for semantic execution.",
                 errorCode: "SEM201-COORDINATE-FALLBACK-DISALLOWED",
                 matchedLocatorType: resolution.matchedLocatorType?.rawValue,
-                selectorHitPath: selectorHitPath
+                selectorHitPath: selectorHitPath,
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -420,7 +498,8 @@ final class SemanticActionExecutor {
                 summary: resolution.message,
                 errorCode: "SEM201-TARGET-UNRESOLVED",
                 matchedLocatorType: resolution.matchedLocatorType?.rawValue,
-                selectorHitPath: selectorHitPath
+                selectorHitPath: selectorHitPath,
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -434,7 +513,8 @@ final class SemanticActionExecutor {
                 summary: "Dry-run: resolved \(action.actionType) target via \(resolvedLocator).",
                 errorCode: nil,
                 matchedLocatorType: resolution.matchedLocatorType?.rawValue,
-                selectorHitPath: selectorHitPath
+                selectorHitPath: selectorHitPath,
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -452,7 +532,8 @@ final class SemanticActionExecutor {
                     summary: "type action 缺少 text。",
                     errorCode: "SEM201-MISSING-TYPE-TEXT",
                     matchedLocatorType: resolution.matchedLocatorType?.rawValue,
-                    selectorHitPath: selectorHitPath
+                    selectorHitPath: selectorHitPath,
+                    teacherConfirmation: teacherConfirmation
                 )
             }
             performOutcome = performer.setText(matchedElement, text: text, appBundleId: appBundleId)
@@ -466,14 +547,16 @@ final class SemanticActionExecutor {
             summary: performOutcome.message,
             errorCode: performOutcome.errorCode,
             matchedLocatorType: resolution.matchedLocatorType?.rawValue,
-            selectorHitPath: selectorHitPath
+            selectorHitPath: selectorHitPath,
+            teacherConfirmation: teacherConfirmation
         )
     }
 
     private func executeDrag(
         action: SemanticActionStoreAction,
         dryRun: Bool,
-        started: Date
+        started: Date,
+        teacherConfirmation: SemanticActionTeacherConfirmationReview?
     ) -> SemanticActionExecutionReport {
         let sourceTargets = semanticTargets(for: action, targetRolePrefixes: ["source"], fallbackSelector: selector(action.args["sourceSelector"]))
         let targetTargets = semanticTargets(for: action, targetRolePrefixes: ["target"], fallbackSelector: selector(action.args["targetSelector"]))
@@ -486,7 +569,8 @@ final class SemanticActionExecutor {
                 summary: "drag 缺少 source/target 语义选择器。",
                 errorCode: "SEM201-SEMANTIC-TARGET-REQUIRED",
                 matchedLocatorType: nil,
-                selectorHitPath: []
+                selectorHitPath: [],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -500,7 +584,8 @@ final class SemanticActionExecutor {
                 summary: "Failed to activate app \(appBundleId) before drag.",
                 errorCode: "SEM201-APP-ACTIVATION-FAILED",
                 matchedLocatorType: nil,
-                selectorHitPath: []
+                selectorHitPath: [],
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -531,7 +616,8 @@ final class SemanticActionExecutor {
                 summary: "Coordinate fallback is disabled for semantic drag execution.",
                 errorCode: "SEM201-COORDINATE-FALLBACK-DISALLOWED",
                 matchedLocatorType: sourceResolution.matchedLocatorType?.rawValue,
-                selectorHitPath: selectorHitPath
+                selectorHitPath: selectorHitPath,
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -547,7 +633,8 @@ final class SemanticActionExecutor {
                 summary: sourceResolution.status == .resolved ? targetResolution.message : sourceResolution.message,
                 errorCode: "SEM201-TARGET-UNRESOLVED",
                 matchedLocatorType: sourceResolution.matchedLocatorType?.rawValue,
-                selectorHitPath: selectorHitPath
+                selectorHitPath: selectorHitPath,
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -561,7 +648,8 @@ final class SemanticActionExecutor {
                 summary: "Dry-run: would execute drag intent=\(intent).",
                 errorCode: nil,
                 matchedLocatorType: sourceResolution.matchedLocatorType?.rawValue,
-                selectorHitPath: selectorHitPath
+                selectorHitPath: selectorHitPath,
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -574,7 +662,8 @@ final class SemanticActionExecutor {
                 summary: "Live drag currently supports only window_move intent.",
                 errorCode: "SEM201-UNSUPPORTED-DRAG-INTENT",
                 matchedLocatorType: sourceResolution.matchedLocatorType?.rawValue,
-                selectorHitPath: selectorHitPath
+                selectorHitPath: selectorHitPath,
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -587,7 +676,8 @@ final class SemanticActionExecutor {
             summary: performOutcome.message,
             errorCode: performOutcome.errorCode,
             matchedLocatorType: sourceResolution.matchedLocatorType?.rawValue,
-            selectorHitPath: selectorHitPath
+            selectorHitPath: selectorHitPath,
+            teacherConfirmation: teacherConfirmation
         )
     }
 
@@ -754,6 +844,110 @@ final class SemanticActionExecutor {
         )
     }
 
+    private func evaluateTeacherConfirmation(
+        action: SemanticActionStoreAction,
+        snapshot: ReplayEnvironmentSnapshot,
+        teacherConfirmed: Bool,
+        basePolicy: SemanticActionTeacherConfirmationPolicy
+    ) -> SemanticActionTeacherConfirmationReview? {
+        let effectivePolicy = basePolicy.merged(
+            overrides: teacherConfirmationPolicyOverrides(from: action.context)
+        )
+        let actionConfidence = primaryActionConfidence(for: action)
+        let hasReviewableSelectors = hasTeacherConfirmationReviewableSelectors(for: action)
+        var reasons: [SemanticActionTeacherConfirmationReason] = []
+
+        if effectivePolicy.requireManualReviewActions,
+           action.manualReviewRequired,
+           hasReviewableSelectors {
+            reasons.append(
+                SemanticActionTeacherConfirmationReason(
+                    code: "SEM302-MANUAL-REVIEW-REQUIRED",
+                    message: "Action is marked manual_review_required and must be reviewed by the teacher."
+                )
+            )
+        }
+
+        if let actionConfidence,
+           actionConfidence < effectivePolicy.minimumConfidence,
+           hasReviewableSelectors {
+            reasons.append(
+                SemanticActionTeacherConfirmationReason(
+                    code: "SEM302-LOW-SELECTOR-CONFIDENCE",
+                    message: String(
+                        format: "Action confidence %.2f is below confirmation threshold %.2f.",
+                        actionConfidence,
+                        effectivePolicy.minimumConfidence
+                    )
+                )
+            )
+        }
+
+        if effectivePolicy.requireForSwitchApp, action.actionType == "switch_app" {
+            reasons.append(
+                SemanticActionTeacherConfirmationReason(
+                    code: "SEM302-CROSS-APP-SWITCH",
+                    message: "switch_app is confirmation-gated by policy."
+                )
+            )
+        }
+
+        if effectivePolicy.requireForDrag, action.actionType == "drag" {
+            reasons.append(
+                SemanticActionTeacherConfirmationReason(
+                    code: "SEM302-DRAG-ACTION",
+                    message: "drag actions are confirmation-gated by policy."
+                )
+            )
+        }
+
+        if effectivePolicy.requireForBulkType,
+           action.actionType == "type",
+           let text = string(action.args["text"]),
+           text.count >= effectivePolicy.bulkTypeMinimumLength {
+            reasons.append(
+                SemanticActionTeacherConfirmationReason(
+                    code: "SEM302-BULK-TYPE-INPUT",
+                    message: "type text length \(text.count) exceeds confirmation threshold \(effectivePolicy.bulkTypeMinimumLength)."
+                )
+            )
+        }
+
+        guard !reasons.isEmpty else {
+            return nil
+        }
+
+        let generatedAt = formatter.string(from: nowProvider())
+        return SemanticActionTeacherConfirmationReview(
+            status: teacherConfirmed ? .approved : .required,
+            teacherConfirmed: teacherConfirmed,
+            generatedAt: generatedAt,
+            actionConfidence: actionConfidence,
+            policy: SemanticActionTeacherConfirmationPolicySummary(policy: effectivePolicy),
+            reasons: reasons,
+            selectorCandidates: teacherConfirmationSelectors(for: action),
+            assertions: teacherConfirmationAssertions(for: action),
+            expectedContext: teacherConfirmationExpectedContext(for: action),
+            actualContext: teacherConfirmationActualContext(for: snapshot)
+        )
+    }
+
+    private func hasTeacherConfirmationReviewableSelectors(
+        for action: SemanticActionStoreAction
+    ) -> Bool {
+        if action.actionType == "switch_app" || action.actionType == "shortcut" {
+            return true
+        }
+
+        let candidates = teacherConfirmationSelectors(for: action)
+        return candidates.contains { candidate in
+            guard let locatorType = candidate.locatorType else {
+                return false
+            }
+            return locatorType != "coordinateFallback" && locatorType != "unknown"
+        }
+    }
+
     private func contextGuardRequirements(for action: SemanticActionStoreAction) -> SemanticActionContextGuardRequirements {
         let config = selector(action.context["contextGuard"]) ?? [:]
         let disabledDimensions = Set(
@@ -838,6 +1032,127 @@ final class SemanticActionExecutor {
         return string(config["onMismatch"]) ?? "stopAndAskTeacher"
     }
 
+    private func teacherConfirmationPolicyOverrides(
+        from context: SemanticJSONObject
+    ) -> SemanticActionTeacherConfirmationPolicyOverrides? {
+        guard let payload = selector(context["teacherConfirmationPolicy"]) else {
+            return nil
+        }
+
+        return SemanticActionTeacherConfirmationPolicyOverrides(
+            minimumConfidence: double(payload["minimumConfidence"]),
+            requireManualReviewActions: bool(payload["requireManualReviewActions"]),
+            requireForSwitchApp: bool(payload["requireForSwitchApp"]),
+            requireForDrag: bool(payload["requireForDrag"]),
+            requireForBulkType: bool(payload["requireForBulkType"]),
+            bulkTypeMinimumLength: int(payload["bulkTypeMinimumLength"])
+        )
+    }
+
+    private func primaryActionConfidence(for action: SemanticActionStoreAction) -> Double? {
+        if let selectorConfidence = double(action.selector["confidence"]) {
+            return selectorConfidence
+        }
+
+        if let preferredTarget = action.targets
+            .sorted(by: { lhs, rhs in
+                if lhs.isPreferred == rhs.isPreferred {
+                    return lhs.ordinal < rhs.ordinal
+                }
+                return lhs.isPreferred && !rhs.isPreferred
+            })
+            .first,
+           let targetConfidence = double(preferredTarget.selector["confidence"]) {
+            return targetConfidence
+        }
+
+        return nil
+    }
+
+    private func teacherConfirmationSelectors(
+        for action: SemanticActionStoreAction
+    ) -> [SemanticActionTeacherConfirmationSelectorCandidate] {
+        let orderedTargets = action.targets
+            .sorted { lhs, rhs in
+                if lhs.ordinal == rhs.ordinal {
+                    return lhs.targetId < rhs.targetId
+                }
+                return lhs.ordinal < rhs.ordinal
+            }
+
+        if !orderedTargets.isEmpty {
+            return orderedTargets.map { target in
+                SemanticActionTeacherConfirmationSelectorCandidate(
+                    targetRole: target.targetRole,
+                    locatorType: target.locatorType ?? string(target.selector["locatorType"]),
+                    selectorStrategy: string(target.selector["selectorStrategy"]),
+                    confidence: double(target.selector["confidence"]),
+                    isPreferred: target.isPreferred,
+                    elementRole: string(target.selector["elementRole"]),
+                    elementTitle: string(target.selector["elementTitle"]),
+                    elementIdentifier: string(target.selector["elementIdentifier"])
+                )
+            }
+        }
+
+        return [
+            SemanticActionTeacherConfirmationSelectorCandidate(
+                targetRole: "primary",
+                locatorType: string(action.selector["locatorType"]),
+                selectorStrategy: string(action.selector["selectorStrategy"]),
+                confidence: double(action.selector["confidence"]),
+                isPreferred: true,
+                elementRole: string(action.selector["elementRole"]),
+                elementTitle: string(action.selector["elementTitle"]),
+                elementIdentifier: string(action.selector["elementIdentifier"])
+            )
+        ]
+    }
+
+    private func teacherConfirmationAssertions(
+        for action: SemanticActionStoreAction
+    ) -> [SemanticActionTeacherConfirmationAssertionSummary] {
+        action.assertions
+            .sorted { lhs, rhs in
+                if lhs.ordinal == rhs.ordinal {
+                    return lhs.assertionId < rhs.assertionId
+                }
+                return lhs.ordinal < rhs.ordinal
+            }
+            .map { assertion in
+                SemanticActionTeacherConfirmationAssertionSummary(
+                    assertionType: assertion.assertionType,
+                    isRequired: assertion.isRequired,
+                    payload: stringMap(assertion.payload)
+                )
+            }
+    }
+
+    private func teacherConfirmationExpectedContext(
+        for action: SemanticActionStoreAction
+    ) -> [String: String] {
+        let requirements = contextGuardRequirements(for: action)
+        return stringMap([
+            "requiredFrontmostAppBundleId": requirements.requiredFrontmostAppBundleId as Any,
+            "requiredFrontmostAppName": requirements.requiredFrontmostAppName as Any,
+            "windowTitlePattern": requirements.windowTitlePattern as Any,
+            "urlHost": requirements.urlHost as Any,
+        ])
+    }
+
+    private func teacherConfirmationActualContext(
+        for snapshot: ReplayEnvironmentSnapshot
+    ) -> [String: String] {
+        stringMap([
+            "appName": snapshot.appName,
+            "appBundleId": snapshot.appBundleId,
+            "windowTitle": snapshot.windowTitle as Any,
+            "windowSignature": snapshot.windowSignature?.signature as Any,
+            "url": snapshot.url as Any,
+            "urlHost": snapshot.urlHost as Any,
+        ])
+    }
+
     private func assertionValue(
         _ assertions: [SemanticActionStoreAssertionRecord],
         type: String,
@@ -920,7 +1235,8 @@ final class SemanticActionExecutor {
         summary: String,
         errorCode: String?,
         matchedLocatorType: String?,
-        selectorHitPath: [String]
+        selectorHitPath: [String],
+        teacherConfirmation: SemanticActionTeacherConfirmationReview?
     ) -> SemanticActionExecutionReport {
         guard !dryRun, status == .succeeded else {
             return finalize(
@@ -931,7 +1247,8 @@ final class SemanticActionExecutor {
                 summary: summary,
                 errorCode: errorCode,
                 matchedLocatorType: matchedLocatorType,
-                selectorHitPath: selectorHitPath
+                selectorHitPath: selectorHitPath,
+                teacherConfirmation: teacherConfirmation
             )
         }
 
@@ -952,6 +1269,7 @@ final class SemanticActionExecutor {
                 errorCode: "SEM203-ASSERTION-FAILED",
                 matchedLocatorType: matchedLocatorType,
                 selectorHitPath: selectorHitPath,
+                teacherConfirmation: teacherConfirmation,
                 postAssertions: postAssertionReport
             )
         }
@@ -965,6 +1283,7 @@ final class SemanticActionExecutor {
             errorCode: errorCode,
             matchedLocatorType: matchedLocatorType,
             selectorHitPath: selectorHitPath,
+            teacherConfirmation: teacherConfirmation,
             postAssertions: postAssertionReport
         )
     }
@@ -1293,6 +1612,7 @@ final class SemanticActionExecutor {
         errorCode: String?,
         matchedLocatorType: String?,
         selectorHitPath: [String],
+        teacherConfirmation: SemanticActionTeacherConfirmationReview? = nil,
         contextGuard: SemanticActionContextGuardResult? = nil,
         postAssertions: SemanticActionPostAssertionReport? = nil
     ) -> SemanticActionExecutionReport {
@@ -1307,6 +1627,7 @@ final class SemanticActionExecutor {
             errorCode: errorCode,
             matchedLocatorType: matchedLocatorType,
             selectorHitPath: selectorHitPath,
+            teacherConfirmation: teacherConfirmation,
             contextGuard: contextGuard,
             postAssertions: postAssertions,
             durationMs: max(Int(finished.timeIntervalSince(started) * 1000), 0),
@@ -1368,6 +1689,36 @@ final class SemanticActionExecutor {
         }
         if let number = value as? NSNumber {
             return number.stringValue
+        }
+        return nil
+    }
+
+    private func bool(_ value: Any?) -> Bool? {
+        if let bool = value as? Bool {
+            return bool
+        }
+        if let number = value as? NSNumber {
+            return number.boolValue
+        }
+        if let text = string(value) {
+            switch text.lowercased() {
+            case "true", "1", "yes":
+                return true
+            case "false", "0", "no":
+                return false
+            default:
+                return nil
+            }
+        }
+        return nil
+    }
+
+    private func int(_ value: Any?) -> Int? {
+        if let number = value as? NSNumber {
+            return number.intValue
+        }
+        if let text = value as? String {
+            return Int(text)
         }
         return nil
     }

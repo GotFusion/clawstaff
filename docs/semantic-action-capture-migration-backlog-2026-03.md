@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
 更新时间：2026-03-28  
-状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 / SEM-203 / SEM-301 已完成，其余待执行）
+状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 / SEM-203 / SEM-301 / SEM-302 已完成，其余待执行）
 
 ## 1. 目标与原则
 
@@ -265,16 +265,24 @@
   - 缓解：只自动转高置信度步骤，低置信度转人工；`migrate_semantic_actions.py` 会把 `historicalConversion.reasonCode` 和 `historicalAutoConversionRate` 一并写入 action context / backfill summary。
 
 ### SEM-302 审核工作流（Teacher Confirmation）
+状态：已完成（2026-03-28）
 - 目标：将人工确认内建到低置信度路径。
 - 任务：
-  - 置信度阈值与策略配置。
-  - UI 显示候选 selector、上下文、断言。
+  - [x] 置信度阈值与策略配置。
+  - [x] UI 显示候选 selector、上下文、断言。
+- 落地产物：
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/SemanticActionTeacherConfirmation.swift`
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/SemanticActionExecutor.swift`
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/OpenStaffReplayVerifyCLI.swift`
+  - `apps/macos/Tests/OpenStaffAppTests/SemanticActionExecutorTests.swift`
+  - `tests/integration/test_semantic_action_executor_cli.py`
+  - `config/semantic-teacher-confirmation.example.json`
 - DoD：
-  - 低置信度动作全部进入审核，不直接执行。
-  - 审核结果可回写并参与后续学习。
+  - [x] 低置信度动作全部进入审核，不直接执行。
+  - [x] 审核结果可回写并参与后续学习。
 - 风险：
   - 审核负担上升。
-  - 缓解：只拦截高风险动作（跨 app、drag、批量输入）。
+  - 缓解：只拦截高风险动作（跨 app、drag、批量输入）；执行器默认只在 `manual_review_required / 低置信 / switch_app / drag / 批量 type` 时触发审核，并把结果写入 `action_execution_logs.result_json.teacherConfirmation` 与独立 artifact。
 
 ### SEM-303 可观测性与指标看板
 - 目标：建立迁移期实时质量追踪。

@@ -274,8 +274,142 @@ final class SemanticActionExecutorTests: XCTestCase {
 
         let report = executor.execute(action: makeDragAction(), dryRun: true)
 
+        XCTAssertEqual(report.status, .blocked)
+        XCTAssertEqual(report.errorCode, "SEM302-TEACHER-CONFIRMATION-REQUIRED")
+        XCTAssertEqual(report.teacherConfirmation?.status, .required)
+        XCTAssertEqual(report.teacherConfirmation?.reasons.first?.code, "SEM302-MANUAL-REVIEW-REQUIRED")
+        XCTAssertTrue(performer.events.isEmpty)
+    }
+
+    func testDryRunDragSucceedsAfterTeacherConfirmationAndKeepsReviewPayload() {
+        let snapshot = makeSnapshot(
+            focusedElement: ReplayElementSnapshot(
+                axPath: "AXWindow/AXList[0]/AXRow[1]",
+                role: "AXRow",
+                title: "Todo B",
+                identifier: "todo-row-b",
+                boundingRect: SemanticBoundingRect(x: 200, y: 180, width: 320, height: 28)
+            ),
+            visibleElements: [
+                ReplayElementSnapshot(
+                    axPath: "AXWindow/AXList[0]/AXRow[0]",
+                    role: "AXRow",
+                    title: "Todo A",
+                    identifier: "todo-row-a",
+                    boundingRect: SemanticBoundingRect(x: 200, y: 140, width: 320, height: 28)
+                ),
+                ReplayElementSnapshot(
+                    axPath: "AXWindow/AXList[0]/AXRow[1]",
+                    role: "AXRow",
+                    title: "Todo B",
+                    identifier: "todo-row-b",
+                    boundingRect: SemanticBoundingRect(x: 200, y: 180, width: 320, height: 28)
+                )
+            ]
+        )
+        let performer = StubSemanticActionPerformer()
+        let executor = SemanticActionExecutor(
+            snapshotProvider: StaticReplayEnvironmentSnapshotProvider(snapshot: snapshot),
+            resolver: SemanticTargetResolver(fingerprintCapture: StubFingerprintCapture(anchor: nil)),
+            performer: performer,
+            nowProvider: fixedNow
+        )
+
+        let report = executor.execute(
+            action: makeDragAction(),
+            dryRun: true,
+            teacherConfirmed: true
+        )
+
         XCTAssertEqual(report.status, .succeeded)
         XCTAssertEqual(report.selectorHitPath, ["source:roleAndTitle", "target:roleAndTitle"])
+        XCTAssertEqual(report.teacherConfirmation?.status, .approved)
+        XCTAssertEqual(report.teacherConfirmation?.selectorCandidates.count, 2)
+        XCTAssertTrue(performer.events.isEmpty)
+    }
+
+    func testDryRunLowConfidenceClickRequiresTeacherConfirmation() {
+        let snapshot = makeSnapshot(
+            focusedElement: ReplayElementSnapshot(
+                axPath: "AXWindow/AXButton[0]",
+                role: "AXButton",
+                title: "Open",
+                identifier: "open-button",
+                boundingRect: SemanticBoundingRect(x: 220, y: 140, width: 72, height: 28)
+            ),
+            visibleElements: [
+                ReplayElementSnapshot(
+                    axPath: "AXWindow/AXButton[0]",
+                    role: "AXButton",
+                    title: "Open",
+                    identifier: "open-button",
+                    boundingRect: SemanticBoundingRect(x: 220, y: 140, width: 72, height: 28)
+                )
+            ]
+        )
+        let performer = StubSemanticActionPerformer()
+        let executor = SemanticActionExecutor(
+            snapshotProvider: StaticReplayEnvironmentSnapshotProvider(snapshot: snapshot),
+            resolver: SemanticTargetResolver(fingerprintCapture: StubFingerprintCapture(anchor: nil)),
+            performer: performer,
+            nowProvider: fixedNow
+        )
+
+        let report = executor.execute(
+            action: makeClickAction(confidence: 0.42),
+            dryRun: true
+        )
+
+        XCTAssertEqual(report.status, .blocked)
+        XCTAssertEqual(report.errorCode, "SEM302-TEACHER-CONFIRMATION-REQUIRED")
+        XCTAssertEqual(report.teacherConfirmation?.status, .required)
+        XCTAssertEqual(report.teacherConfirmation?.reasons.last?.code, "SEM302-LOW-SELECTOR-CONFIDENCE")
+        XCTAssertTrue(performer.events.isEmpty)
+    }
+
+    func testCustomTeacherConfirmationPolicyCanLowerConfidenceThreshold() {
+        let snapshot = makeSnapshot(
+            focusedElement: ReplayElementSnapshot(
+                axPath: "AXWindow/AXButton[0]",
+                role: "AXButton",
+                title: "Open",
+                identifier: "open-button",
+                boundingRect: SemanticBoundingRect(x: 220, y: 140, width: 72, height: 28)
+            ),
+            visibleElements: [
+                ReplayElementSnapshot(
+                    axPath: "AXWindow/AXButton[0]",
+                    role: "AXButton",
+                    title: "Open",
+                    identifier: "open-button",
+                    boundingRect: SemanticBoundingRect(x: 220, y: 140, width: 72, height: 28)
+                )
+            ]
+        )
+        let performer = StubSemanticActionPerformer()
+        let executor = SemanticActionExecutor(
+            snapshotProvider: StaticReplayEnvironmentSnapshotProvider(snapshot: snapshot),
+            resolver: SemanticTargetResolver(fingerprintCapture: StubFingerprintCapture(anchor: nil)),
+            performer: performer,
+            nowProvider: fixedNow
+        )
+
+        let report = executor.execute(
+            action: makeClickAction(confidence: 0.42),
+            dryRun: true,
+            confirmationPolicy: SemanticActionTeacherConfirmationPolicy(
+                minimumConfidence: 0.30,
+                requireManualReviewActions: true,
+                requireForSwitchApp: true,
+                requireForDrag: true,
+                requireForBulkType: true,
+                bulkTypeMinimumLength: 20
+            )
+        )
+
+        XCTAssertEqual(report.status, .succeeded)
+        XCTAssertNil(report.teacherConfirmation)
+        XCTAssertEqual(report.matchedLocatorType, "roleAndTitle")
         XCTAssertTrue(performer.events.isEmpty)
     }
 
@@ -320,7 +454,11 @@ final class SemanticActionExecutorTests: XCTestCase {
             assertions: []
         )
 
-        let report = executor.execute(action: action, dryRun: false)
+        let report = executor.execute(
+            action: action,
+            dryRun: false,
+            teacherConfirmed: true
+        )
 
         XCTAssertEqual(report.status, .failed)
         XCTAssertEqual(report.errorCode, "SEM203-ASSERTION-FAILED")
@@ -434,7 +572,7 @@ final class SemanticActionExecutorTests: XCTestCase {
         XCTAssertEqual(performer.events, ["activate:com.test.app", "type:hello"])
     }
 
-    private func makeClickAction() -> SemanticActionStoreAction {
+    private func makeClickAction(confidence: Double = 0.92) -> SemanticActionStoreAction {
         SemanticActionStoreAction(
             actionId: "action-click-001",
             sessionId: "session-001",
@@ -449,7 +587,7 @@ final class SemanticActionExecutorTests: XCTestCase {
                 "elementRole": "AXButton",
                 "elementTitle": "Open",
                 "elementIdentifier": "open-button",
-                "confidence": 0.92,
+                "confidence": confidence,
             ],
             args: ["button": "left"],
             context: [:],
@@ -470,7 +608,7 @@ final class SemanticActionExecutorTests: XCTestCase {
                         "elementRole": "AXButton",
                         "elementTitle": "Open",
                         "elementIdentifier": "open-button",
-                        "confidence": 0.92,
+                        "confidence": confidence,
                     ],
                     isPreferred: true
                 )

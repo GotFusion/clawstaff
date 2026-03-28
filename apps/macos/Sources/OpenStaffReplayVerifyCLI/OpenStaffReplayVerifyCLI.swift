@@ -100,7 +100,15 @@ struct OpenStaffReplayVerifyCLI {
                 let executor = SemanticActionExecutor(
                     snapshotProvider: StaticReplayEnvironmentSnapshotProvider(snapshot: snapshot)
                 )
-                let report = executor.execute(action: action, dryRun: dryRun)
+                let report = executor.execute(
+                    action: action,
+                    dryRun: dryRun,
+                    teacherConfirmed: options.teacherConfirmed,
+                    confirmationPolicy: try options.teacherConfirmationPolicy()
+                )
+                let teacherConfirmationArtifactPath = try options.teacherConfirmationArtifactStore(
+                    semanticActionDatabaseURL: databaseURL
+                )?.store(action: action, report: report)?.path
                 try store.appendExecutionLog(
                     SemanticActionStoreExecutionLogRecord(
                         executionLogId: "action-log-\(UUID().uuidString.lowercased())",
@@ -110,7 +118,10 @@ struct OpenStaffReplayVerifyCLI {
                         status: executionLogStatus(for: report),
                         errorCode: report.errorCode,
                         selectorHitPath: report.selectorHitPath,
-                        result: executionResultPayload(for: report),
+                        result: executionResultPayload(
+                            for: report,
+                            teacherConfirmationArtifactPath: teacherConfirmationArtifactPath
+                        ),
                         durationMs: report.durationMs,
                         executedAt: report.executedAt
                     )
@@ -145,6 +156,7 @@ struct OpenStaffReplayVerifyCLI {
           make replay-verify ARGS="--knowledge core/knowledge/examples/knowledge-item.sample.json --snapshot core/executor/examples/replay-environment.sample.json --json"
           make replay-verify ARGS="--skill-dir data/skills/pending/example --snapshot core/executor/examples/replay-environment.sample.json --json"
           make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-actions.sqlite --action-id action-001 --snapshot core/executor/examples/replay-environment.sample.json --dry-run --json"
+          make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-actions.sqlite --action-id action-001 --snapshot core/executor/examples/replay-environment.sample.json --teacher-confirmed --json"
 
         Flags:
           --knowledge <path>        KnowledgeItem JSON file or directory.
@@ -153,6 +165,9 @@ struct OpenStaffReplayVerifyCLI {
           --action-id <id>          Semantic action id to execute.
           --snapshot <path>         Optional replay snapshot JSON file. If omitted, capture the current frontmost window via AX.
           --preferences-root <path> Preference store root. Default: data/preferences
+          --teacher-confirmed       Approve confirmation-gated semantic actions for this run.
+          --teacher-confirmation-root <path> Root directory for teacher confirmation artifacts.
+          --teacher-confirmation-policy <path> Optional JSON policy override for confirmation gating.
           --dry-run                 Resolve and plan execution only; do not actuate UI.
           --json                    Print structured verification report.
           --help                    Show this help message.
@@ -240,6 +255,29 @@ struct OpenStaffReplayVerifyCLI {
         if let errorCode = report.errorCode {
             print("errorCode=\(errorCode)")
         }
+        if let teacherConfirmation = report.teacherConfirmation {
+            print(
+                "teacherConfirmation=\(teacherConfirmation.status.rawValue) " +
+                "teacherConfirmed=\(teacherConfirmation.teacherConfirmed) " +
+                "reasons=\(teacherConfirmation.reasons.count)"
+            )
+            for reason in teacherConfirmation.reasons {
+                print("  confirmation[\(reason.code)] \(reason.message)")
+            }
+            if !teacherConfirmation.selectorCandidates.isEmpty {
+                print("  selectorCandidates=\(teacherConfirmation.selectorCandidates.count)")
+                for candidate in teacherConfirmation.selectorCandidates {
+                    print(
+                        "    [\(candidate.targetRole)] locator=\(candidate.locatorType ?? "-") " +
+                        "strategy=\(candidate.selectorStrategy ?? "-") " +
+                        "confidence=\(candidate.confidence.map { String(format: "%.2f", $0) } ?? "-")"
+                    )
+                }
+            }
+            if !teacherConfirmation.assertions.isEmpty {
+                print("  assertions=\(teacherConfirmation.assertions.count)")
+            }
+        }
         if let contextGuard = report.contextGuard,
            contextGuard.status == .blocked {
             print("contextGuard=\(contextGuard.failurePolicy)")
@@ -273,7 +311,10 @@ struct OpenStaffReplayVerifyCLI {
         }
     }
 
-    static func executionResultPayload(for report: SemanticActionExecutionReport) -> SemanticJSONObject {
+    static func executionResultPayload(
+        for report: SemanticActionExecutionReport,
+        teacherConfirmationArtifactPath: String? = nil
+    ) -> SemanticJSONObject {
         var payload: SemanticJSONObject = [
             "actionType": report.actionType,
             "dryRun": report.dryRun,
@@ -289,6 +330,13 @@ struct OpenStaffReplayVerifyCLI {
         if let contextGuard = report.contextGuard,
            let encodedContextGuard = codableJSONObject(contextGuard) {
             payload["contextGuard"] = encodedContextGuard
+        }
+        if let teacherConfirmation = report.teacherConfirmation,
+           let encodedTeacherConfirmation = codableJSONObject(teacherConfirmation) {
+            payload["teacherConfirmation"] = encodedTeacherConfirmation
+        }
+        if let teacherConfirmationArtifactPath {
+            payload["teacherConfirmationArtifactPath"] = teacherConfirmationArtifactPath
         }
         if let postAssertions = report.postAssertions,
            let encodedPostAssertions = codableJSONObject(postAssertions) {
@@ -317,6 +365,9 @@ struct ReplayVerifyCLIOptions {
     let input: ReplayVerifyInput
     let snapshotPath: String?
     let preferencesRootPath: String
+    let teacherConfirmed: Bool
+    let teacherConfirmationRootPath: String?
+    let teacherConfirmationPolicyPath: String?
     let dryRun: Bool
     let printJSON: Bool
     let showHelp: Bool
@@ -328,6 +379,9 @@ struct ReplayVerifyCLIOptions {
         var actionId: String?
         var snapshotPath: String?
         var preferencesRootPath = "data/preferences"
+        var teacherConfirmed = false
+        var teacherConfirmationRootPath: String?
+        var teacherConfirmationPolicyPath: String?
         var dryRun = false
         var printJSON = false
         var showHelp = false
@@ -373,6 +427,20 @@ struct ReplayVerifyCLIOptions {
                     throw ReplayVerifyCLIOptionError.missingValue("--preferences-root")
                 }
                 preferencesRootPath = arguments[index]
+            case "--teacher-confirmation-root":
+                index += 1
+                guard index < arguments.count else {
+                    throw ReplayVerifyCLIOptionError.missingValue("--teacher-confirmation-root")
+                }
+                teacherConfirmationRootPath = arguments[index]
+            case "--teacher-confirmation-policy":
+                index += 1
+                guard index < arguments.count else {
+                    throw ReplayVerifyCLIOptionError.missingValue("--teacher-confirmation-policy")
+                }
+                teacherConfirmationPolicyPath = arguments[index]
+            case "--teacher-confirmed":
+                teacherConfirmed = true
             case "--json":
                 printJSON = true
             case "--dry-run":
@@ -391,6 +459,9 @@ struct ReplayVerifyCLIOptions {
                 input: .knowledge(resolveStatic(path: knowledgeInputPath ?? "core/knowledge/examples/knowledge-item.sample.json")),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                teacherConfirmed: teacherConfirmed,
+                teacherConfirmationRootPath: teacherConfirmationRootPath,
+                teacherConfirmationPolicyPath: teacherConfirmationPolicyPath,
                 dryRun: dryRun,
                 printJSON: printJSON,
                 showHelp: true
@@ -409,6 +480,9 @@ struct ReplayVerifyCLIOptions {
                 input: .knowledge(resolveStatic(path: knowledgeInputPath)),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                teacherConfirmed: teacherConfirmed,
+                teacherConfirmationRootPath: teacherConfirmationRootPath,
+                teacherConfirmationPolicyPath: teacherConfirmationPolicyPath,
                 dryRun: dryRun,
                 printJSON: printJSON,
                 showHelp: false
@@ -420,6 +494,9 @@ struct ReplayVerifyCLIOptions {
                 input: .skillDirectory(resolveStatic(path: skillDirectoryPath)),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                teacherConfirmed: teacherConfirmed,
+                teacherConfirmationRootPath: teacherConfirmationRootPath,
+                teacherConfirmationPolicyPath: teacherConfirmationPolicyPath,
                 dryRun: dryRun,
                 printJSON: printJSON,
                 showHelp: false
@@ -438,6 +515,9 @@ struct ReplayVerifyCLIOptions {
                 ),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                teacherConfirmed: teacherConfirmed,
+                teacherConfirmationRootPath: teacherConfirmationRootPath,
+                teacherConfirmationPolicyPath: teacherConfirmationPolicyPath,
                 dryRun: dryRun,
                 printJSON: printJSON,
                 showHelp: false
@@ -458,6 +538,28 @@ struct ReplayVerifyCLIOptions {
 
     var preferencesRootURL: URL {
         Self.resolveStatic(path: preferencesRootPath)
+    }
+
+    func teacherConfirmationPolicy() throws -> SemanticActionTeacherConfirmationPolicy {
+        guard let teacherConfirmationPolicyPath else {
+            return .default
+        }
+        let data = try Data(contentsOf: Self.resolveStatic(path: teacherConfirmationPolicyPath))
+        return try JSONDecoder().decode(SemanticActionTeacherConfirmationPolicy.self, from: data)
+    }
+
+    func teacherConfirmationArtifactStore(
+        semanticActionDatabaseURL: URL
+    ) throws -> SemanticActionTeacherConfirmationArtifactStore? {
+        let rootURL: URL
+        if let teacherConfirmationRootPath {
+            rootURL = Self.resolveStatic(path: teacherConfirmationRootPath)
+        } else {
+            rootURL = semanticActionDatabaseURL
+                .deletingLastPathComponent()
+                .appendingPathComponent("teacher-confirmations", isDirectory: true)
+        }
+        return SemanticActionTeacherConfirmationArtifactStore(rootURL: rootURL)
     }
 
     private static func resolveStatic(path: String) -> URL {

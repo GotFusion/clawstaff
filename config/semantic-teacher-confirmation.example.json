@@ -1,0 +1,8 @@
+{
+  "minimumConfidence": 0.86,
+  "requireManualReviewActions": true,
+  "requireForSwitchApp": true,
+  "requireForDrag": true,
+  "requireForBulkType": true,
+  "bulkTypeMinimumLength": 20
+}
