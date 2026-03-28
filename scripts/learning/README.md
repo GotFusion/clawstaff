@@ -20,6 +20,8 @@
   - 创建 / 回滚 `semantic_actions` SQLite schema
   - 从 `data/learning/turns/**` 回填 `semantic_actions / action_targets / action_assertions / action_execution_logs`
   - 优先复用 `InteractionTurn.semanticTargetSetRef` 与关联 skill bundle 的 `actionType / locatorStrategyOrder / coordinate legacy ref`
+  - 对仅剩 `coordinateFallback / unknown` 的历史步骤，回读 `rawEventLog + taskChunk` 并基于 `sourceEventIds` 自动恢复 semantic selector / args / assertions
+  - 对无法可靠恢复的步骤写 `context.historicalConversion.reasonCode`，并在 CLI 摘要输出 `historicalAutoConversionRate / historicalConversionReasonCounts`
 - `build_semantic_actions.py`
   - 执行 `SEM-101 Action Builder v1` + `SEM-102` 选择器抽取 + `SEM-103` 拖动动作语义化
   - 读取 `data/task-chunks/** + data/raw-events/**`，按“时间邻近 + 上下文一致”聚合事件窗口
@@ -141,6 +143,13 @@ python3 scripts/learning/migrate_semantic_actions.py \
   --clean \
   --json
 ```
+
+输出摘要除 `writtenActions / manualReviewRequiredCount` 外，还会附带：
+
+- `historicalCoordinateCandidateCount`
+- `historicalAutoConvertedCount`
+- `historicalAutoConversionRate`
+- `historicalConversionReasonCounts`
 
 只做 schema rollback：
 

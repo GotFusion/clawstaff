@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
 更新时间：2026-03-28  
-状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 / SEM-203 已完成，其余待执行）
+状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 / SEM-203 / SEM-301 已完成，其余待执行）
 
 ## 1. 目标与原则
 
@@ -247,16 +247,22 @@
 ## Week 4（2026-04-20 ~ 2026-04-26）：兼容迁移与灰度
 
 ### SEM-301 历史任务转换器（Coordinate -> Semantic）
+状态：已完成（2026-03-28）
 - 目标：将可转换旧任务迁移到语义格式。
 - 任务：
-  - 建立转换规则：基于历史帧和事件还原 selector。
-  - 无法可靠转换的步骤标记 `manual_review_required=true`。
+  - [x] 建立转换规则：基于历史帧和事件还原 selector。
+  - [x] 无法可靠转换的步骤标记 `manual_review_required=true`。
+- 落地产物：
+  - `scripts/learning/migrate_semantic_actions.py`
+  - `tests/integration/test_historical_coordinate_converter.py`
+  - `docs/semantic-action-store-v0.md`
+  - `scripts/learning/README.md`
 - DoD：
-  - 历史样本任务转换率 >= 70%（自动）。
-  - 不可转换步骤都有明确原因码。
+  - [x] 历史样本任务转换率 >= 70%（自动）。
+  - [x] 不可转换步骤都有明确原因码。
 - 风险：
   - 旧数据缺上下文。
-  - 缓解：只自动转高置信度步骤，低置信度转人工。
+  - 缓解：只自动转高置信度步骤，低置信度转人工；`migrate_semantic_actions.py` 会把 `historicalConversion.reasonCode` 和 `historicalAutoConversionRate` 一并写入 action context / backfill summary。
 
 ### SEM-302 审核工作流（Teacher Confirmation）
 - 目标：将人工确认内建到低置信度路径。

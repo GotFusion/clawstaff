@@ -1,6 +1,6 @@
 # Semantic Action Store v0
 
-更新时间：2026-03-27
+更新时间：2026-03-28
 
 ## 1. 目标
 
@@ -57,6 +57,7 @@
 - `selector_json / args_json / context_json` 先保持 JSON 扩展，避免过早冻结 DSL。
 - `source_event_ids / source_frame_ids` 用 JSON 数组文本保存，方便审计和后续导出。
 - `legacy_coordinate_json` 只保留为诊断来源，不作为执行依据。
+- `context_json.historicalConversion` 从 `SEM-301` 起用于记录历史坐标步骤的转换状态、reason code、匹配到的 builder action 与恢复来源路径。
 
 ### 3.2 `action_targets`
 
@@ -133,6 +134,12 @@
    - 候选 targets
    - 默认 assertions
    - execution logs
+5. 若 turn 当前只有 `coordinateFallback / unknown`，则触发 `SEM-301` 历史恢复：
+   - 回读 `observationRef.rawEventLogPath + taskChunkPath`
+   - 用 `semantic_action_builder.py` 重建历史动作窗口
+   - 按 `sourceEventIds` 匹配 builder action
+   - 若恢复出高置信度非坐标 selector，则替换主 selector / targets / assertions / args
+   - 若不能可靠恢复，则保留原记录并写明 `historicalConversion.reasonCode`
 
 动作类型映射当前遵循：
 
@@ -158,8 +165,22 @@
 - 只有 `coordinateFallback`
 - selector 缺失，只能落 `unknown / context-only` 选择器
 - turn 风险等级为 `high / critical`
+- `SEM-301` 恢复失败或恢复结果仍要求人工审核：
+  - `SEM301-MISSING-RAW-EVENT-LOG`
+  - `SEM301-MISSING-TASK-CHUNK`
+  - `SEM301-SOURCE-EVENTS-MISSING`
+  - `SEM301-NO-HISTORICAL-MATCH`
+  - `SEM301-RECOVERED-COORDINATE-ONLY`
+  - `SEM301-RECOVERED-REQUIRES-MANUAL-REVIEW`
 
 这保证迁移期虽然能留住历史动作资产，但不会把低质量 selector 误当成可自动执行结果。
+
+`SEM-301` 新增的迁移摘要指标包括：
+
+- `historicalCoordinateCandidateCount`
+- `historicalAutoConvertedCount`
+- `historicalAutoConversionRate`
+- `historicalConversionReasonCounts`
 
 ## 6. 当前边界
 
@@ -174,5 +195,4 @@ v0 暂不做：
 
 - `SEM-202` 已在 `OpenStaffReplayVerifyCLI` 上接入严格 context guard，但浏览器 `urlHost` 仍属于 best-effort 采集，优先依赖 snapshot 中显式 `url/urlHost`，其次尝试实时读取 `AXDocument / AXURL`。
 - `SEM-203` 的 `textValueContains` 目前依赖可读的非敏感 `AXValue`；若目标控件不暴露 value 或被系统标记为安全输入框，执行器会保守返回断言失败而不是假定成功。
-
-这些属于后续 `SEM-301` 及后续执行增强工作的接续内容。
+- `SEM-301` 目前只对带可读 `rawEventLogPath + taskChunkPath + sourceEventIds` 的历史 GUI turn 自动恢复；若旧数据缺其中任意关键回链，会保守落为人工审核而不是猜测 selector。

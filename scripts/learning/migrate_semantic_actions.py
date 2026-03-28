@@ -20,13 +20,26 @@ from semantic_action_store import (
     SemanticActionRepository,
     SemanticActionTargetRecord,
 )
+from semantic_action_builder import build_actions_for_task_chunk, read_jsonl
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+HISTORICAL_REASON_NOT_NEEDED = "SEM301-NOT-NEEDED-ALREADY-SEMANTIC"
+HISTORICAL_REASON_AUTO_CONVERTED = "SEM301-AUTO-CONVERTED-FROM-RAW-EVENTS"
+HISTORICAL_REASON_MISSING_RAW_EVENT_LOG = "SEM301-MISSING-RAW-EVENT-LOG"
+HISTORICAL_REASON_MISSING_TASK_CHUNK = "SEM301-MISSING-TASK-CHUNK"
+HISTORICAL_REASON_SOURCE_EVENTS_MISSING = "SEM301-SOURCE-EVENTS-MISSING"
+HISTORICAL_REASON_NO_MATCH = "SEM301-NO-HISTORICAL-MATCH"
+HISTORICAL_REASON_COORDINATE_ONLY = "SEM301-RECOVERED-COORDINATE-ONLY"
+HISTORICAL_REASON_REQUIRES_MANUAL_REVIEW = "SEM301-RECOVERED-REQUIRES-MANUAL-REVIEW"
 
 
 def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def deep_copy_json(value: Any) -> Any:
+    return json.loads(json.dumps(value, ensure_ascii=False))
 
 
 def repo_relative_or_abs(path: Path, workspace_root: Path) -> str:
@@ -259,6 +272,176 @@ def load_skill_context(
     return None, None, None
 
 
+def turn_source_event_ids(turn: dict[str, Any], step_mapping: dict[str, Any] | None) -> list[str]:
+    explicit = dedupe_strings(
+        list((step_mapping or {}).get("sourceEventIds") or [])
+        + list((turn.get("stepReference") or {}).get("sourceEventIds") or [])
+    )
+    if explicit:
+        return explicit
+    observation = turn.get("observationRef") or {}
+    return dedupe_strings(list(observation.get("eventIds") or []))
+
+
+def has_semantic_candidates(candidates: list[dict[str, Any]]) -> bool:
+    return any(candidate.get("locatorType") not in {None, "unknown", "coordinateFallback"} for candidate in candidates)
+
+
+def is_historical_conversion_candidate(candidates: list[dict[str, Any]], selector: dict[str, Any]) -> bool:
+    locator_type = selector.get("locatorType")
+    return locator_type in {None, "unknown", "coordinateFallback"} or not has_semantic_candidates(candidates)
+
+
+def rebuild_targets_from_bundle(
+    action_id: str,
+    bundle_targets: list[SemanticActionTargetRecord],
+    created_at: str,
+) -> list[SemanticActionTargetRecord]:
+    targets: list[SemanticActionTargetRecord] = []
+    for index, target in enumerate(bundle_targets, start=1):
+        targets.append(
+            SemanticActionTargetRecord(
+                target_id=f"{action_id}:target:{index:02d}",
+                target_role=target.target_role,
+                ordinal=index,
+                selector=deep_copy_json(target.selector),
+                created_at=created_at,
+                context=deep_copy_json(target.context),
+                locator_type=target.locator_type,
+                confidence=target.confidence,
+                is_preferred=target.is_preferred,
+            )
+        )
+    return targets
+
+
+def rebuild_assertions_from_bundle(
+    action_id: str,
+    bundle_assertions: list[SemanticActionAssertionRecord],
+    created_at: str,
+) -> list[SemanticActionAssertionRecord]:
+    assertions: list[SemanticActionAssertionRecord] = []
+    for index, assertion in enumerate(bundle_assertions):
+        assertions.append(
+            SemanticActionAssertionRecord(
+                assertion_id=f"{action_id}:assertion:{index + 1:02d}",
+                assertion_type=assertion.assertion_type,
+                assertion=deep_copy_json(assertion.assertion),
+                created_at=created_at,
+                source=assertion.source,
+                is_required=assertion.is_required,
+                ordinal=assertion.ordinal,
+            )
+        )
+    return assertions
+
+
+def recover_historical_semantic_bundle(
+    *,
+    turn: dict[str, Any],
+    step_mapping: dict[str, Any] | None,
+    action_type: str,
+    workspace_root: Path,
+    builder_cache: dict[tuple[Path, Path], dict[str, Any]],
+) -> tuple[dict[str, Any] | None, str]:
+    observation = turn.get("observationRef") or {}
+    raw_event_log_path = resolve_path(observation.get("rawEventLogPath"), workspace_root)
+    if raw_event_log_path is None or not raw_event_log_path.exists():
+        return None, HISTORICAL_REASON_MISSING_RAW_EVENT_LOG
+
+    task_chunk_path = resolve_path(observation.get("taskChunkPath"), workspace_root)
+    if task_chunk_path is None or not task_chunk_path.exists():
+        return None, HISTORICAL_REASON_MISSING_TASK_CHUNK
+
+    source_event_ids = turn_source_event_ids(turn, step_mapping)
+    if not source_event_ids:
+        return None, HISTORICAL_REASON_SOURCE_EVENTS_MISSING
+
+    cache_key = (task_chunk_path.resolve(), raw_event_log_path.resolve())
+    if cache_key not in builder_cache:
+        task_chunk = read_json(task_chunk_path)
+        events = read_jsonl(raw_event_log_path)
+        bundles, summary = build_actions_for_task_chunk(
+            task_chunk=task_chunk,
+            task_chunk_path=task_chunk_path,
+            raw_event_log_path=raw_event_log_path,
+            events=events,
+            workspace_root=workspace_root,
+        )
+        builder_cache[cache_key] = {
+            "bundles": bundles,
+            "summary": summary,
+        }
+
+    turn_event_set = set(source_event_ids)
+    scored_matches: list[tuple[int, int, int, int, int, Any, list[str]]] = []
+    for bundle in builder_cache[cache_key]["bundles"]:
+        overlap_ids = [event_id for event_id in bundle.action.source_event_ids if event_id in turn_event_set]
+        if not overlap_ids:
+            continue
+        overlap_count = len(overlap_ids)
+        exact_match = 1 if overlap_count == len(turn_event_set) else 0
+        action_type_match = 1 if bundle.action.action_type == action_type else 0
+        semantic_target_count = sum(
+            1
+            for target in bundle.targets
+            if target.locator_type not in {None, "unknown", "coordinateFallback"}
+        )
+        prefers_auto = 1 if not bundle.action.manual_review_required else 0
+        scored_matches.append(
+            (
+                exact_match,
+                action_type_match,
+                overlap_count,
+                semantic_target_count,
+                prefers_auto,
+                bundle,
+                overlap_ids,
+            )
+        )
+
+    if not scored_matches:
+        return None, HISTORICAL_REASON_NO_MATCH
+
+    scored_matches.sort(
+        key=lambda item: (
+            item[0],
+            item[1],
+            item[2],
+            item[3],
+            item[4],
+        ),
+        reverse=True,
+    )
+    matched_bundle = scored_matches[0][5]
+    matched_event_ids = scored_matches[0][6]
+
+    recovered_targets = [deep_copy_json(target.selector) for target in matched_bundle.targets]
+    if not has_semantic_candidates(recovered_targets):
+        return None, HISTORICAL_REASON_COORDINATE_ONLY
+
+    recovered_selector = deep_copy_json(matched_bundle.action.selector)
+    recovered_context = deep_copy_json(matched_bundle.action.context)
+    reason_code = (
+        HISTORICAL_REASON_REQUIRES_MANUAL_REVIEW
+        if matched_bundle.action.manual_review_required
+        else HISTORICAL_REASON_AUTO_CONVERTED
+    )
+    return (
+        {
+            "bundle": matched_bundle,
+            "selector": recovered_selector,
+            "targets": recovered_targets,
+            "context": recovered_context,
+            "matchedSourceEventIds": matched_event_ids,
+            "rawEventLogPath": repo_relative_or_abs(raw_event_log_path, workspace_root),
+            "taskChunkPath": repo_relative_or_abs(task_chunk_path, workspace_root),
+            "reasonCode": reason_code,
+        },
+        reason_code,
+    )
+
+
 def build_assertions(
     action_id: str,
     turn: dict[str, Any],
@@ -363,6 +546,7 @@ def build_action_bundle(
     turn: dict[str, Any],
     workspace_root: Path,
     skill_cache: dict[Path, dict[str, Any]],
+    builder_cache: dict[tuple[Path, Path], dict[str, Any]],
 ) -> tuple[SemanticActionRecord, list[SemanticActionTargetRecord], list[SemanticActionAssertionRecord], list[SemanticActionExecutionLogRecord]] | tuple[None, str]:
     if turn.get("actionKind") != "guiAction":
         return None, "non_gui_turn"
@@ -381,12 +565,9 @@ def build_action_bundle(
     selector = choose_primary_selector(candidates, preferred_locator_type, app_context)
 
     selected_locator_type = selector.get("locatorType")
-    non_coordinate_candidates = [
-        candidate for candidate in candidates if candidate.get("locatorType") != "coordinateFallback"
-    ]
     manual_review_required = (
         selected_locator_type in {None, "coordinateFallback", "unknown"}
-        or not non_coordinate_candidates
+        or not has_semantic_candidates(candidates)
         or turn.get("riskLevel") in {"high", "critical"}
     )
 
@@ -419,11 +600,76 @@ def build_action_bundle(
         "buildDiagnostics": turn.get("buildDiagnostics") or [],
         "review": turn.get("review"),
     }
+    historical_conversion: dict[str, Any] = {
+        "source": "sem301-coordinate-to-semantic",
+        "candidate": False,
+        "status": "not_needed",
+        "reasonCode": HISTORICAL_REASON_NOT_NEEDED,
+    }
+
+    recovered_bundle = None
+    if is_historical_conversion_candidate(candidates, selector):
+        historical_conversion["candidate"] = True
+        recovered, reason_code = recover_historical_semantic_bundle(
+            turn=turn,
+            step_mapping=step_mapping,
+            action_type=action_type,
+            workspace_root=workspace_root,
+            builder_cache=builder_cache,
+        )
+        if recovered is not None:
+            recovered_bundle = recovered["bundle"]
+            historical_conversion.update(
+                {
+                    "status": "auto_converted"
+                    if recovered["reasonCode"] == HISTORICAL_REASON_AUTO_CONVERTED
+                    else "manual_review_required",
+                    "reasonCode": recovered["reasonCode"],
+                    "matchedBuilderActionId": recovered_bundle.action.action_id,
+                    "matchedSourceEventIds": recovered["matchedSourceEventIds"],
+                    "originalActionType": action_type,
+                    "recoveredActionType": recovered_bundle.action.action_type,
+                    "recoveredLocatorType": recovered["selector"].get("locatorType"),
+                    "recoveredSelectorStrategy": recovered["selector"].get("selectorStrategy"),
+                    "rawEventLogPath": recovered["rawEventLogPath"],
+                    "taskChunkPath": recovered["taskChunkPath"],
+                    "selectorSummary": recovered["context"].get("selectorSummary"),
+                    "builderDiagnostics": recovered["context"].get("builderDiagnostics") or recovered_bundle.diagnostics,
+                }
+            )
+            action_type = recovered_bundle.action.action_type
+            selector = recovered["selector"]
+            candidates = recovered["targets"]
+            preferred_locator_type = recovered_bundle.action.preferred_locator_type or selector.get("locatorType")
+            args = {
+                **args,
+                **deep_copy_json(recovered_bundle.action.args),
+            }
+            manual_review_required = bool(
+                recovered_bundle.action.manual_review_required or turn.get("riskLevel") in {"high", "critical"}
+            )
+        else:
+            historical_conversion.update(
+                {
+                    "status": "manual_review_required",
+                    "reasonCode": reason_code,
+                }
+            )
+            manual_review_required = True
+
+    if step_mapping is not None:
+        if step_mapping.get("requiresTeacherConfirmation") is not None:
+            args["requiresTeacherConfirmation"] = bool(step_mapping.get("requiresTeacherConfirmation"))
+        if step_mapping.get("notes"):
+            args["notes"] = step_mapping.get("notes")
+
+    context["historicalConversion"] = historical_conversion
 
     created_at = str(turn.get("startedAt") or turn.get("endedAt") or "")
     updated_at = str(turn.get("endedAt") or turn.get("startedAt") or "")
     action_id = f"semantic-action-{turn_id}"
-    primary_selector_json = json.loads(json.dumps(selector, ensure_ascii=False))
+    primary_selector_json = deep_copy_json(selector)
+    source_event_ids = turn_source_event_ids(turn, step_mapping)
 
     action = SemanticActionRecord(
         action_id=action_id,
@@ -437,41 +683,43 @@ def build_action_bundle(
         action_type=action_type,
         selector=primary_selector_json,
         args=args,
-        context=context,
+        context=deep_copy_json(context),
         confidence=float(selector.get("confidence") or 0.0),
-        source_event_ids=dedupe_strings(
-            list((turn.get("stepReference") or {}).get("sourceEventIds") or [])
-            + list(observation.get("eventIds") or [])
-        ),
+        source_event_ids=source_event_ids,
         source_frame_ids=source_frame_ids(turn),
         source_path=repo_relative_or_abs(skill_path, workspace_root) if skill_path else None,
         preferred_locator_type=preferred_locator_type,
         manual_review_required=manual_review_required,
-        legacy_coordinate=(step_mapping or {}).get("coordinate"),
+        legacy_coordinate=(step_mapping or {}).get("coordinate")
+        or (deep_copy_json(recovered_bundle.action.legacy_coordinate) if recovered_bundle else None),
         created_at=created_at,
         updated_at=updated_at,
     )
 
-    targets: list[SemanticActionTargetRecord] = []
-    for index, candidate in enumerate(candidates, start=1):
-        target_id = f"{action_id}:target:{index:02d}"
-        targets.append(
-            SemanticActionTargetRecord(
-                target_id=target_id,
-                target_role="primary"
-                if candidate == selector
-                else ("fallback" if candidate.get("locatorType") == "coordinateFallback" else "candidate"),
-                ordinal=index,
-                locator_type=candidate.get("locatorType"),
-                selector=candidate,
-                context={"preferredLocatorType": preferred_locator_type},
-                confidence=float(candidate.get("confidence") or 0.0) if candidate.get("confidence") is not None else None,
-                is_preferred=(candidate == selector),
-                created_at=created_at,
+    if recovered_bundle is not None:
+        targets = rebuild_targets_from_bundle(action_id, recovered_bundle.targets, created_at)
+        assertions = rebuild_assertions_from_bundle(action_id, recovered_bundle.assertions, created_at)
+    else:
+        targets = []
+        for index, candidate in enumerate(candidates, start=1):
+            target_id = f"{action_id}:target:{index:02d}"
+            targets.append(
+                SemanticActionTargetRecord(
+                    target_id=target_id,
+                    target_role="primary"
+                    if candidate == selector
+                    else ("fallback" if candidate.get("locatorType") == "coordinateFallback" else "candidate"),
+                    ordinal=index,
+                    locator_type=candidate.get("locatorType"),
+                    selector=deep_copy_json(candidate),
+                    context={"preferredLocatorType": preferred_locator_type},
+                    confidence=float(candidate.get("confidence") or 0.0) if candidate.get("confidence") is not None else None,
+                    is_preferred=(candidate == selector),
+                    created_at=created_at,
+                )
             )
-        )
+        assertions = build_assertions(action_id, turn, selector, created_at)
 
-    assertions = build_assertions(action_id, turn, selector, created_at)
     execution_logs = build_execution_logs(action_id, turn, step_mapping, selector)
     return action, targets, assertions, execution_logs
 
@@ -486,11 +734,15 @@ def backfill_actions(
 ) -> dict[str, Any]:
     turn_paths = sorted(turns_root.rglob("*.json"))
     skill_cache: dict[Path, dict[str, Any]] = {}
+    builder_cache: dict[tuple[Path, Path], dict[str, Any]] = {}
     scanned_turns = 0
     written_actions = 0
     skipped_counter: Counter[str] = Counter()
     action_type_counter: Counter[str] = Counter()
     manual_review_required_count = 0
+    historical_candidate_count = 0
+    historical_auto_converted_count = 0
+    historical_reason_counter: Counter[str] = Counter()
 
     for path in turn_paths:
         if limit is not None and scanned_turns >= limit:
@@ -500,7 +752,7 @@ def backfill_actions(
             continue
         scanned_turns += 1
 
-        bundle = build_action_bundle(turn, workspace_root, skill_cache)
+        bundle = build_action_bundle(turn, workspace_root, skill_cache, builder_cache)
         if bundle[0] is None:
             skipped_counter[bundle[1]] += 1
             continue
@@ -516,6 +768,17 @@ def backfill_actions(
         action_type_counter[action.action_type] += 1
         if action.manual_review_required:
             manual_review_required_count += 1
+        historical_conversion = action.context.get("historicalConversion") or {}
+        if historical_conversion.get("candidate"):
+            historical_candidate_count += 1
+            reason_code = historical_conversion.get("reasonCode")
+            if isinstance(reason_code, str) and reason_code.strip():
+                historical_reason_counter[reason_code.strip()] += 1
+            if (
+                historical_conversion.get("status") == "auto_converted"
+                and not action.manual_review_required
+            ):
+                historical_auto_converted_count += 1
 
     return {
         "scannedTurns": scanned_turns,
@@ -524,6 +787,14 @@ def backfill_actions(
         "skipReasons": dict(sorted(skipped_counter.items())),
         "actionTypeCounts": dict(sorted(action_type_counter.items())),
         "manualReviewRequiredCount": manual_review_required_count,
+        "historicalCoordinateCandidateCount": historical_candidate_count,
+        "historicalAutoConvertedCount": historical_auto_converted_count,
+        "historicalAutoConversionRate": (
+            historical_auto_converted_count / historical_candidate_count
+            if historical_candidate_count
+            else 0.0
+        ),
+        "historicalConversionReasonCounts": dict(sorted(historical_reason_counter.items())),
     }
 
 
