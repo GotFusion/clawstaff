@@ -1,0 +1,39 @@
+name: semantic-action-e2e-benchmark
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+jobs:
+  sem401-semantic-action-e2e-benchmark:
+    runs-on: macos-14
+    timeout-minutes: 30
+    env:
+      BENCHMARK_ROOT: ${{ runner.temp }}/semantic-action-e2e-benchmark
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run SEM-401 semantic action end-to-end benchmark
+        run: |
+          python3 scripts/benchmarks/run_semantic_action_e2e_benchmark.py \
+            --benchmark-root "$BENCHMARK_ROOT" \
+            --report "$BENCHMARK_ROOT/manifest.json"
+
+      - name: Upload benchmark artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-action-e2e-benchmark-${{ github.run_id }}
+          path: ${{ env.BENCHMARK_ROOT }}
+          if-no-files-found: error

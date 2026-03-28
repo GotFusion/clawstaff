@@ -1,0 +1,353 @@
+{
+  "schemaVersion": "openstaff.semantic-action-e2e-benchmark.catalog.v0",
+  "benchmarkId": "semantic-action-e2e-v20260328",
+  "description": "Frozen semantic-action end-to-end benchmark corpus for SEM-401.",
+  "cases": [
+    {
+      "caseId": "sem401-switch-app-safari-to-finder",
+      "title": "Switch app from Safari to Finder under matching frontmost context",
+      "category": "switch-app-window",
+      "coverage": ["switch_app"],
+      "snapshotPath": "data/benchmarks/semantic-action-e2e/snapshots/safari-browser-main.json",
+      "dryRun": true,
+      "teacherConfirmed": false,
+      "action": {
+        "actionType": "switch_app",
+        "selector": {
+          "appBundleId": "com.apple.Finder",
+          "confidence": 0.99
+        },
+        "args": {
+          "fromAppBundleId": "com.apple.Safari",
+          "fromAppName": "Safari",
+          "toAppBundleId": "com.apple.Finder"
+        },
+        "context": {
+          "teacherConfirmationPolicy": {
+            "requireForSwitchApp": false
+          }
+        },
+        "confidence": 0.99
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "app_context",
+          "selectorHitPath": ["app_context"]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      }
+    },
+    {
+      "caseId": "sem401-focus-window-xcode-package",
+      "title": "Focus the current Xcode Package.swift window",
+      "category": "switch-app-window",
+      "coverage": ["focus_window"],
+      "snapshotPath": "data/benchmarks/semantic-action-e2e/snapshots/xcode-package-window.json",
+      "dryRun": true,
+      "teacherConfirmed": false,
+      "action": {
+        "actionType": "focus_window",
+        "selector": {
+          "appBundleId": "com.apple.dt.Xcode",
+          "windowTitlePattern": "^Package.swift$",
+          "confidence": 0.99
+        },
+        "args": {},
+        "context": {},
+        "confidence": 0.99
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "window_context",
+          "selectorHitPath": ["window_context"]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      }
+    },
+    {
+      "caseId": "sem401-type-browser-search-field",
+      "title": "Type into the browser search field under matching URL host",
+      "category": "text-shortcut",
+      "coverage": ["type"],
+      "snapshotPath": "data/benchmarks/semantic-action-e2e/snapshots/safari-browser-main.json",
+      "dryRun": true,
+      "teacherConfirmed": false,
+      "action": {
+        "actionType": "type",
+        "selector": {
+          "locatorType": "roleAndTitle",
+          "appBundleId": "com.apple.Safari",
+          "windowTitlePattern": "^Baidu Search$",
+          "urlHost": "www.baidu.com",
+          "elementRole": "AXTextField",
+          "elementTitle": "Search Query",
+          "elementIdentifier": "search-field",
+          "confidence": 0.97
+        },
+        "args": {
+          "text": "OpenAI"
+        },
+        "context": {},
+        "confidence": 0.97,
+        "preferredLocatorType": "roleAndTitle"
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "roleAndTitle",
+          "selectorHitPath": ["roleAndTitle"]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      }
+    },
+    {
+      "caseId": "sem401-shortcut-find-in-page",
+      "title": "Send find-in-page shortcut inside Safari",
+      "category": "text-shortcut",
+      "coverage": ["shortcut"],
+      "snapshotPath": "data/benchmarks/semantic-action-e2e/snapshots/safari-browser-main.json",
+      "dryRun": true,
+      "teacherConfirmed": false,
+      "action": {
+        "actionType": "shortcut",
+        "selector": {
+          "appBundleId": "com.apple.Safari",
+          "confidence": 0.98
+        },
+        "args": {
+          "keys": ["command", "f"]
+        },
+        "context": {},
+        "confidence": 0.98
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "app_context",
+          "selectorHitPath": ["app_context"]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      }
+    },
+    {
+      "caseId": "sem401-drag-window-move",
+      "title": "Resolve a window-move drag with semantic source and target",
+      "category": "drag-window",
+      "coverage": ["drag_window"],
+      "snapshotPath": "data/benchmarks/semantic-action-e2e/snapshots/finder-window-drag.json",
+      "dryRun": true,
+      "teacherConfirmed": false,
+      "action": {
+        "actionType": "drag",
+        "selector": {
+          "appBundleId": "com.apple.Finder",
+          "confidence": 0.98
+        },
+        "args": {
+          "intent": "window_move",
+          "sourceSelector": {
+            "locatorType": "roleAndTitle",
+            "appBundleId": "com.apple.Finder",
+            "windowTitlePattern": "^Downloads$",
+            "elementRole": "AXButton",
+            "elementTitle": "Downloads Header",
+            "elementIdentifier": "window-header-handle",
+            "confidence": 0.96
+          },
+          "targetSelector": {
+            "locatorType": "roleAndTitle",
+            "appBundleId": "com.apple.Finder",
+            "windowTitlePattern": "^Downloads$",
+            "elementRole": "AXGroup",
+            "elementTitle": "Desktop Drop Area",
+            "elementIdentifier": "desktop-drop-target",
+            "confidence": 0.96
+          }
+        },
+        "context": {
+          "teacherConfirmationPolicy": {
+            "requireForDrag": false
+          }
+        },
+        "confidence": 0.98
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "roleAndTitle",
+          "selectorHitPath": ["source:roleAndTitle", "target:roleAndTitle"]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      }
+    },
+    {
+      "caseId": "sem401-drag-list-reorder",
+      "title": "Resolve a list reorder drag with semantic row anchors",
+      "category": "drag-list",
+      "coverage": ["drag_list"],
+      "snapshotPath": "data/benchmarks/semantic-action-e2e/snapshots/finder-list-reorder.json",
+      "dryRun": true,
+      "teacherConfirmed": false,
+      "action": {
+        "actionType": "drag",
+        "selector": {
+          "appBundleId": "com.apple.Finder",
+          "confidence": 0.98
+        },
+        "args": {
+          "intent": "list_reorder",
+          "sourceSelector": {
+            "locatorType": "roleAndTitle",
+            "appBundleId": "com.apple.Finder",
+            "windowTitlePattern": "^Downloads$",
+            "elementRole": "AXRow",
+            "elementTitle": "Beta",
+            "elementIdentifier": "row-beta",
+            "confidence": 0.94
+          },
+          "targetSelector": {
+            "locatorType": "roleAndTitle",
+            "appBundleId": "com.apple.Finder",
+            "windowTitlePattern": "^Downloads$",
+            "elementRole": "AXRow",
+            "elementTitle": "Alpha",
+            "elementIdentifier": "row-alpha",
+            "confidence": 0.94
+          }
+        },
+        "context": {
+          "teacherConfirmationPolicy": {
+            "requireForDrag": false
+          }
+        },
+        "confidence": 0.98
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "roleAndTitle",
+          "selectorHitPath": ["source:roleAndTitle", "target:roleAndTitle"]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      }
+    },
+    {
+      "caseId": "sem401-click-secondary-display",
+      "title": "Click a semantic target located on the secondary display",
+      "category": "multi-display",
+      "coverage": ["multi_display"],
+      "snapshotPath": "data/benchmarks/semantic-action-e2e/snapshots/notes-secondary-display.json",
+      "dryRun": true,
+      "teacherConfirmed": false,
+      "action": {
+        "actionType": "click",
+        "selector": {
+          "locatorType": "roleAndTitle",
+          "appBundleId": "com.apple.Notes",
+          "windowTitlePattern": "^Weekly Plan$",
+          "elementRole": "AXButton",
+          "elementTitle": "Save",
+          "elementIdentifier": "secondary-display-save-button",
+          "confidence": 0.95
+        },
+        "args": {
+          "button": "left"
+        },
+        "context": {},
+        "confidence": 0.95,
+        "preferredLocatorType": "roleAndTitle"
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "roleAndTitle",
+          "selectorHitPath": ["roleAndTitle"]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      }
+    },
+    {
+      "caseId": "sem401-browser-url-guard-mismatch",
+      "title": "Block browser action when the URL host no longer matches",
+      "category": "browser-url",
+      "coverage": ["browser_url"],
+      "snapshotPath": "data/benchmarks/semantic-action-e2e/snapshots/safari-browser-main.json",
+      "dryRun": true,
+      "teacherConfirmed": false,
+      "action": {
+        "actionType": "click",
+        "selector": {
+          "locatorType": "roleAndTitle",
+          "appBundleId": "com.apple.Safari",
+          "windowTitlePattern": "^Baidu Search$",
+          "elementRole": "AXButton",
+          "elementTitle": "Search",
+          "elementIdentifier": "search-submit",
+          "confidence": 0.95
+        },
+        "args": {
+          "button": "left"
+        },
+        "context": {
+          "contextGuard": {
+            "urlHost": "docs.openai.com"
+          }
+        },
+        "confidence": 0.95,
+        "preferredLocatorType": "roleAndTitle"
+      },
+      "expected": {
+        "exitCode": 2,
+        "report": {
+          "status": "blocked",
+          "errorCode": "SEM202-CONTEXT-MISMATCH",
+          "contextGuard": {
+            "status": "blocked"
+          }
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_BLOCKED",
+          "errorCode": "SEM202-CONTEXT-MISMATCH",
+          "environment": "benchmark"
+        }
+      }
+    }
+  ]
+}

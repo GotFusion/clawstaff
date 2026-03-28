@@ -57,7 +57,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--skip-benchmark",
         action="store_true",
-        help="Skip all benchmark execution (personal desktop + personal preference).",
+        help="Skip all benchmark execution (personal desktop + semantic action e2e + personal preference).",
     )
     parser.add_argument(
         "--skip-desktop-benchmark",
@@ -68,6 +68,11 @@ def parse_args() -> argparse.Namespace:
         "--skip-preference-benchmark",
         action="store_true",
         help="Skip personal preference benchmark execution.",
+    )
+    parser.add_argument(
+        "--skip-semantic-e2e-benchmark",
+        action="store_true",
+        help="Skip semantic action end-to-end benchmark execution.",
     )
     parser.add_argument(
         "--benchmark-case-limit",
@@ -340,6 +345,30 @@ def append_benchmark_check(
     results.append(run_check(name="benchmark-personal-desktop", command=command))
 
 
+def append_semantic_action_e2e_benchmark_check(
+    results: list[CheckResult],
+    benchmark_root: Path,
+    *,
+    benchmark_case_limit: int | None,
+    replay_verify_executable: str | None,
+) -> None:
+    manifest_path = benchmark_root / "manifest.json"
+    command = [
+        sys.executable,
+        str(REPO_ROOT / "scripts/benchmarks/run_semantic_action_e2e_benchmark.py"),
+        "--benchmark-root",
+        str(benchmark_root),
+        "--report",
+        str(manifest_path),
+    ]
+    if benchmark_case_limit is not None:
+        command.extend(["--case-limit", str(benchmark_case_limit)])
+    if replay_verify_executable:
+        command.extend(["--replay-verify-executable", replay_verify_executable])
+
+    results.append(run_check(name="benchmark-semantic-action-e2e", command=command))
+
+
 def append_preference_benchmark_checks(
     results: list[CheckResult],
     benchmark_root: Path,
@@ -435,6 +464,13 @@ def main() -> int:
             run_dir / "benchmark",
             benchmark_case_limit=args.benchmark_case_limit,
             openclaw_executable=args.openclaw_executable,
+        )
+    if not args.skip_benchmark and not args.skip_semantic_e2e_benchmark:
+        append_semantic_action_e2e_benchmark_check(
+            results,
+            run_dir / "semantic-action-e2e-benchmark",
+            benchmark_case_limit=args.benchmark_case_limit,
+            replay_verify_executable=args.replay_verify_executable,
         )
     if not args.skip_benchmark and not args.skip_preference_benchmark:
         append_preference_benchmark_checks(

@@ -1,7 +1,7 @@
 # OpenStaff 用户使用说明书
 
-版本：v0.6.6  
-更新时间：2026-03-19
+版本：v0.6.7
+更新时间：2026-03-28
 
 ## 1. 产品简介
 
@@ -279,6 +279,30 @@ python3 scripts/observability/build_semantic_action_dashboard.py \
 - 只要出现 `SEM202-CONTEXT-MISMATCH`、`SEM203-ASSERTION-FAILED` 或 `SEM201-COORDINATE-FALLBACK-DISALLOWED`，摘要就会自动生成“误触发风险”告警。
 - 若当前只有 dry-run 日志，`replaySuccessRate` 会退回用全量样本计算，并在摘要里标明 `mode=all_runs`。
 
+### 4.8 语义动作端到端基准（SEM-401）
+当需要验证语义执行链路是否仍覆盖核心高风险场景时，可直接运行冻结的端到端 benchmark corpus。
+
+推荐入口：
+
+```bash
+make benchmark-semantic-e2e
+```
+
+也可以输出到临时目录做 smoke test：
+
+```bash
+python3 scripts/benchmarks/run_semantic_action_e2e_benchmark.py \
+  --benchmark-root /tmp/openstaff-semantic-action-e2e \
+  --report /tmp/openstaff-semantic-action-e2e/manifest.json
+```
+
+说明：
+- 当前 corpus 固定 `8` 条 case，覆盖 `switch_app / focus_window / type / shortcut / drag(window_move) / drag(list_reorder) / multi_display / browser_url`。
+- runner 会自动物化 `semantic_actions` SQLite，并驱动 `OpenStaffReplayVerifyCLI` 对 committed snapshot 做 dry-run 回归，不依赖实时桌面环境。
+- 每条 case 都会产出 `source-record.json`、`case-report.json` 与 `attempts/attempt-XX/{semantic-actions.sqlite,cli-report.json,execution-log.json,attempt-report.json}`，便于复现失败原因。
+- 如需降低环境抖动，可传 `--max-retries <n>` 启用固定次数 flake 重跑；如需只跑部分 case，可配合 `--case-id` 或 `--case-limit`。
+- 默认环境标签为 `benchmark`，会直接写入 `action_execution_logs.result_json.environment`，方便后续观测与聚合。
+
 ## 5. 发布前检查
 
 ### 5.1 执行发布回归
@@ -292,7 +316,7 @@ make release-preflight
 ```
 
 说明：
-- 该入口会依次执行：`SEM-003` 坐标执行静态守门、原始事件校验、知识条目校验、LLM 样例校验、skill 映射、`validate_openclaw_skill.py`、`validate_skill_bundle.py`、replay verify sample、personal desktop benchmark、personal preference benchmark、preference metrics gate。
+- 该入口会依次执行：`SEM-003` 坐标执行静态守门、原始事件校验、知识条目校验、LLM 样例校验、skill 映射、`validate_openclaw_skill.py`、`validate_skill_bundle.py`、replay verify sample、personal desktop benchmark、semantic action e2e benchmark、personal preference benchmark、preference metrics gate。
 - `data/raw-events` 采用 compat 模式校验，当前会把历史键盘事件缺失 `keyboard.isSensitiveInput` 记为告警而非失败。
 - `data/knowledge` 会对缺失 `target` 的历史知识条目输出告警，提醒 replay/自动执行能力可能退化。
 - `validate_skill_bundle.py` 默认允许 `needs_teacher_confirmation` 通过，以便发布前看到安全门提示；若要做“必须可自动执行”的 CI 门禁，可加 `--require-auto-runnable`。
@@ -308,6 +332,12 @@ make release-preflight ARGS="--openclaw-executable apps/macos/.build/debug/OpenS
 
 ```bash
 make benchmark-preference-preflight
+```
+
+如需单独复现 `SEM-401` 语义动作回归，可运行：
+
+```bash
+make benchmark-semantic-e2e
 ```
 
 ## 6. 常见问题

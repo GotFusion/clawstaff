@@ -1,0 +1,556 @@
+{
+  "schemaVersion": "openstaff.semantic-action-e2e-benchmark.manifest.v0",
+  "benchmarkId": "semantic-action-e2e-v20260328",
+  "generatedAt": "2026-03-28T11:00:16+08:00",
+  "benchmarkRoot": "data/benchmarks/semantic-action-e2e",
+  "catalogPath": "data/benchmarks/semantic-action-e2e/catalog.json",
+  "environment": "benchmark",
+  "maxRetries": 1,
+  "totalCases": 8,
+  "passedCases": 8,
+  "failedCases": [],
+  "categoryCounts": {
+    "browser-url": 1,
+    "drag-list": 1,
+    "drag-window": 1,
+    "multi-display": 1,
+    "switch-app-window": 2,
+    "text-shortcut": 2
+  },
+  "coverageCounts": {
+    "browser_url": 1,
+    "drag_list": 1,
+    "drag_window": 1,
+    "focus_window": 1,
+    "multi_display": 1,
+    "shortcut": 1,
+    "switch_app": 1,
+    "type": 1
+  },
+  "flakyRecoveredCases": [],
+  "cases": [
+    {
+      "schemaVersion": "openstaff.semantic-action-e2e-benchmark.case-report.v0",
+      "caseId": "sem401-switch-app-safari-to-finder",
+      "title": "Switch app from Safari to Finder under matching frontmost context",
+      "category": "switch-app-window",
+      "coverage": [
+        "switch_app"
+      ],
+      "passed": true,
+      "attemptCount": 1,
+      "flakeRecovered": false,
+      "summary": "status=succeeded exitCode=0 attempts=1",
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/semantic-action-e2e/generated/sem401-switch-app-safari-to-finder/source-record.json",
+        "finalAttemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-switch-app-safari-to-finder/attempts/attempt-01/attempt-report.json",
+        "caseReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-switch-app-safari-to-finder/case-report.json"
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "app_context",
+          "selectorHitPath": [
+            "app_context"
+          ]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "results": {
+        "exitCode": 0,
+        "report": {
+          "actionId": "sem401-switch-app-safari-to-finder",
+          "actionType": "switch_app",
+          "dryRun": true,
+          "durationMs": 0,
+          "executedAt": "2026-03-28T03:00:16.519Z",
+          "matchedLocatorType": "app_context",
+          "schemaVersion": "openstaff.semantic-action-execution.v0",
+          "selectorHitPath": [
+            "app_context"
+          ],
+          "status": "succeeded",
+          "summary": "Dry-run: would activate app com.apple.Finder."
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "attempts": [
+        {
+          "attemptNumber": 1,
+          "passed": true,
+          "attemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-switch-app-safari-to-finder/attempts/attempt-01/attempt-report.json"
+        }
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.semantic-action-e2e-benchmark.case-report.v0",
+      "caseId": "sem401-focus-window-xcode-package",
+      "title": "Focus the current Xcode Package.swift window",
+      "category": "switch-app-window",
+      "coverage": [
+        "focus_window"
+      ],
+      "passed": true,
+      "attemptCount": 1,
+      "flakeRecovered": false,
+      "summary": "status=succeeded exitCode=0 attempts=1",
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/semantic-action-e2e/generated/sem401-focus-window-xcode-package/source-record.json",
+        "finalAttemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-focus-window-xcode-package/attempts/attempt-01/attempt-report.json",
+        "caseReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-focus-window-xcode-package/case-report.json"
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "window_context",
+          "selectorHitPath": [
+            "window_context"
+          ]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "results": {
+        "exitCode": 0,
+        "report": {
+          "actionId": "sem401-focus-window-xcode-package",
+          "actionType": "focus_window",
+          "dryRun": true,
+          "durationMs": 0,
+          "executedAt": "2026-03-28T03:00:16.533Z",
+          "matchedLocatorType": "window_context",
+          "schemaVersion": "openstaff.semantic-action-execution.v0",
+          "selectorHitPath": [
+            "window_context"
+          ],
+          "status": "succeeded",
+          "summary": "Dry-run: focus_window context matches current snapshot."
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "attempts": [
+        {
+          "attemptNumber": 1,
+          "passed": true,
+          "attemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-focus-window-xcode-package/attempts/attempt-01/attempt-report.json"
+        }
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.semantic-action-e2e-benchmark.case-report.v0",
+      "caseId": "sem401-type-browser-search-field",
+      "title": "Type into the browser search field under matching URL host",
+      "category": "text-shortcut",
+      "coverage": [
+        "type"
+      ],
+      "passed": true,
+      "attemptCount": 1,
+      "flakeRecovered": false,
+      "summary": "status=succeeded exitCode=0 attempts=1",
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/semantic-action-e2e/generated/sem401-type-browser-search-field/source-record.json",
+        "finalAttemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-type-browser-search-field/attempts/attempt-01/attempt-report.json",
+        "caseReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-type-browser-search-field/case-report.json"
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "roleAndTitle",
+          "selectorHitPath": [
+            "roleAndTitle"
+          ]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "results": {
+        "exitCode": 0,
+        "report": {
+          "actionId": "sem401-type-browser-search-field",
+          "actionType": "type",
+          "dryRun": true,
+          "durationMs": 1,
+          "executedAt": "2026-03-28T03:00:16.548Z",
+          "matchedLocatorType": "roleAndTitle",
+          "schemaVersion": "openstaff.semantic-action-execution.v0",
+          "selectorHitPath": [
+            "roleAndTitle"
+          ],
+          "status": "succeeded",
+          "summary": "Dry-run: resolved type target via roleAndTitle."
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "attempts": [
+        {
+          "attemptNumber": 1,
+          "passed": true,
+          "attemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-type-browser-search-field/attempts/attempt-01/attempt-report.json"
+        }
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.semantic-action-e2e-benchmark.case-report.v0",
+      "caseId": "sem401-shortcut-find-in-page",
+      "title": "Send find-in-page shortcut inside Safari",
+      "category": "text-shortcut",
+      "coverage": [
+        "shortcut"
+      ],
+      "passed": true,
+      "attemptCount": 1,
+      "flakeRecovered": false,
+      "summary": "status=succeeded exitCode=0 attempts=1",
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/semantic-action-e2e/generated/sem401-shortcut-find-in-page/source-record.json",
+        "finalAttemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-shortcut-find-in-page/attempts/attempt-01/attempt-report.json",
+        "caseReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-shortcut-find-in-page/case-report.json"
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "app_context",
+          "selectorHitPath": [
+            "app_context"
+          ]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "results": {
+        "exitCode": 0,
+        "report": {
+          "actionId": "sem401-shortcut-find-in-page",
+          "actionType": "shortcut",
+          "dryRun": true,
+          "durationMs": 0,
+          "executedAt": "2026-03-28T03:00:16.563Z",
+          "matchedLocatorType": "app_context",
+          "schemaVersion": "openstaff.semantic-action-execution.v0",
+          "selectorHitPath": [
+            "app_context"
+          ],
+          "status": "succeeded",
+          "summary": "Dry-run: would send shortcut command+f."
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "attempts": [
+        {
+          "attemptNumber": 1,
+          "passed": true,
+          "attemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-shortcut-find-in-page/attempts/attempt-01/attempt-report.json"
+        }
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.semantic-action-e2e-benchmark.case-report.v0",
+      "caseId": "sem401-drag-window-move",
+      "title": "Resolve a window-move drag with semantic source and target",
+      "category": "drag-window",
+      "coverage": [
+        "drag_window"
+      ],
+      "passed": true,
+      "attemptCount": 1,
+      "flakeRecovered": false,
+      "summary": "status=succeeded exitCode=0 attempts=1",
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/semantic-action-e2e/generated/sem401-drag-window-move/source-record.json",
+        "finalAttemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-drag-window-move/attempts/attempt-01/attempt-report.json",
+        "caseReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-drag-window-move/case-report.json"
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "roleAndTitle",
+          "selectorHitPath": [
+            "source:roleAndTitle",
+            "target:roleAndTitle"
+          ]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "results": {
+        "exitCode": 0,
+        "report": {
+          "actionId": "sem401-drag-window-move",
+          "actionType": "drag",
+          "dryRun": true,
+          "durationMs": 1,
+          "executedAt": "2026-03-28T03:00:16.580Z",
+          "matchedLocatorType": "roleAndTitle",
+          "schemaVersion": "openstaff.semantic-action-execution.v0",
+          "selectorHitPath": [
+            "source:roleAndTitle",
+            "target:roleAndTitle"
+          ],
+          "status": "succeeded",
+          "summary": "Dry-run: would execute drag intent=window_move."
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "attempts": [
+        {
+          "attemptNumber": 1,
+          "passed": true,
+          "attemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-drag-window-move/attempts/attempt-01/attempt-report.json"
+        }
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.semantic-action-e2e-benchmark.case-report.v0",
+      "caseId": "sem401-drag-list-reorder",
+      "title": "Resolve a list reorder drag with semantic row anchors",
+      "category": "drag-list",
+      "coverage": [
+        "drag_list"
+      ],
+      "passed": true,
+      "attemptCount": 1,
+      "flakeRecovered": false,
+      "summary": "status=succeeded exitCode=0 attempts=1",
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/semantic-action-e2e/generated/sem401-drag-list-reorder/source-record.json",
+        "finalAttemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-drag-list-reorder/attempts/attempt-01/attempt-report.json",
+        "caseReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-drag-list-reorder/case-report.json"
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "roleAndTitle",
+          "selectorHitPath": [
+            "source:roleAndTitle",
+            "target:roleAndTitle"
+          ]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "results": {
+        "exitCode": 0,
+        "report": {
+          "actionId": "sem401-drag-list-reorder",
+          "actionType": "drag",
+          "dryRun": true,
+          "durationMs": 1,
+          "executedAt": "2026-03-28T03:00:16.596Z",
+          "matchedLocatorType": "roleAndTitle",
+          "schemaVersion": "openstaff.semantic-action-execution.v0",
+          "selectorHitPath": [
+            "source:roleAndTitle",
+            "target:roleAndTitle"
+          ],
+          "status": "succeeded",
+          "summary": "Dry-run: would execute drag intent=list_reorder."
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "attempts": [
+        {
+          "attemptNumber": 1,
+          "passed": true,
+          "attemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-drag-list-reorder/attempts/attempt-01/attempt-report.json"
+        }
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.semantic-action-e2e-benchmark.case-report.v0",
+      "caseId": "sem401-click-secondary-display",
+      "title": "Click a semantic target located on the secondary display",
+      "category": "multi-display",
+      "coverage": [
+        "multi_display"
+      ],
+      "passed": true,
+      "attemptCount": 1,
+      "flakeRecovered": false,
+      "summary": "status=succeeded exitCode=0 attempts=1",
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/semantic-action-e2e/generated/sem401-click-secondary-display/source-record.json",
+        "finalAttemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-click-secondary-display/attempts/attempt-01/attempt-report.json",
+        "caseReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-click-secondary-display/case-report.json"
+      },
+      "expected": {
+        "exitCode": 0,
+        "report": {
+          "status": "succeeded",
+          "matchedLocatorType": "roleAndTitle",
+          "selectorHitPath": [
+            "roleAndTitle"
+          ]
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "results": {
+        "exitCode": 0,
+        "report": {
+          "actionId": "sem401-click-secondary-display",
+          "actionType": "click",
+          "dryRun": true,
+          "durationMs": 1,
+          "executedAt": "2026-03-28T03:00:16.613Z",
+          "matchedLocatorType": "roleAndTitle",
+          "schemaVersion": "openstaff.semantic-action-execution.v0",
+          "selectorHitPath": [
+            "roleAndTitle"
+          ],
+          "status": "succeeded",
+          "summary": "Dry-run: resolved click target via roleAndTitle."
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
+          "errorCode": null,
+          "environment": "benchmark"
+        }
+      },
+      "attempts": [
+        {
+          "attemptNumber": 1,
+          "passed": true,
+          "attemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-click-secondary-display/attempts/attempt-01/attempt-report.json"
+        }
+      ]
+    },
+    {
+      "schemaVersion": "openstaff.semantic-action-e2e-benchmark.case-report.v0",
+      "caseId": "sem401-browser-url-guard-mismatch",
+      "title": "Block browser action when the URL host no longer matches",
+      "category": "browser-url",
+      "coverage": [
+        "browser_url"
+      ],
+      "passed": true,
+      "attemptCount": 1,
+      "flakeRecovered": false,
+      "summary": "status=blocked exitCode=2 attempts=1",
+      "artifacts": {
+        "sourceRecordPath": "data/benchmarks/semantic-action-e2e/generated/sem401-browser-url-guard-mismatch/source-record.json",
+        "finalAttemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-browser-url-guard-mismatch/attempts/attempt-01/attempt-report.json",
+        "caseReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-browser-url-guard-mismatch/case-report.json"
+      },
+      "expected": {
+        "exitCode": 2,
+        "report": {
+          "status": "blocked",
+          "errorCode": "SEM202-CONTEXT-MISMATCH",
+          "contextGuard": {
+            "status": "blocked"
+          }
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_BLOCKED",
+          "errorCode": "SEM202-CONTEXT-MISMATCH",
+          "environment": "benchmark"
+        }
+      },
+      "results": {
+        "exitCode": 2,
+        "report": {
+          "actionId": "sem401-browser-url-guard-mismatch",
+          "actionType": "click",
+          "contextGuard": {
+            "actual": {
+              "appBundleId": "com.apple.Safari",
+              "appName": "Safari",
+              "url": "https://www.baidu.com/s?wd=openstaff",
+              "urlHost": "www.baidu.com",
+              "windowSignature": "safari-browser-main-signature",
+              "windowTitle": "Baidu Search"
+            },
+            "failurePolicy": "stopAndAskTeacher",
+            "mismatches": [
+              {
+                "actual": "www.baidu.com",
+                "dimension": "urlHost",
+                "expected": "docs.openai.com",
+                "message": "urlHost mismatch. expected=docs.openai.com actual=www.baidu.com"
+              }
+            ],
+            "requirements": {
+              "requiredFrontmostAppBundleId": "com.apple.Safari",
+              "urlHost": "docs.openai.com",
+              "windowTitlePattern": "^Baidu Search$"
+            },
+            "status": "blocked"
+          },
+          "dryRun": true,
+          "durationMs": 0,
+          "errorCode": "SEM202-CONTEXT-MISMATCH",
+          "executedAt": "2026-03-28T03:00:16.627Z",
+          "schemaVersion": "openstaff.semantic-action-execution.v0",
+          "selectorHitPath": [],
+          "status": "blocked",
+          "summary": "Context guard blocked execution. policy=stopAndAskTeacher. urlHost mismatch. expected=docs.openai.com actual=www.baidu.com"
+        },
+        "executionLog": {
+          "status": "STATUS_SEMANTIC_ACTION_DRY_RUN_BLOCKED",
+          "errorCode": "SEM202-CONTEXT-MISMATCH",
+          "environment": "benchmark"
+        }
+      },
+      "attempts": [
+        {
+          "attemptNumber": 1,
+          "passed": true,
+          "attemptReportPath": "data/benchmarks/semantic-action-e2e/generated/sem401-browser-url-guard-mismatch/attempts/attempt-01/attempt-report.json"
+        }
+      ]
+    }
+  ]
+}

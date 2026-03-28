@@ -305,21 +305,29 @@
 ## Week 5（2026-04-27 ~ 2026-05-03）：稳定性与回归硬化
 
 ### SEM-401 端到端基准集与回归套件
+状态：已完成（2026-03-28）
 - 目标：覆盖核心高风险交互场景。
 - 任务：
   - 场景集：
-    - 切换 app/window
-    - 文本输入和快捷键
-    - 拖动（窗口、列表）
-    - 多显示器
-    - 浏览器 URL 场景
-  - 建立 nightly 回归。
+    - [x] 切换 app/window
+    - [x] 文本输入和快捷键
+    - [x] 拖动（窗口、列表）
+    - [x] 多显示器
+    - [x] 浏览器 URL 场景
+  - [x] 建立 nightly 回归。
+- 落地产物：
+  - `data/benchmarks/semantic-action-e2e/catalog.json`
+  - `data/benchmarks/semantic-action-e2e/manifest.json`
+  - `scripts/benchmarks/run_semantic_action_e2e_benchmark.py`
+  - `tests/integration/test_semantic_action_e2e_benchmark.py`
+  - `docs/semantic-action-e2e-benchmark-spec.md`
+  - `.github/workflows/semantic-action-e2e-benchmark.yml`
 - DoD：
-  - 关键场景自动化回归全部接入 CI。
-  - 失败可复现并带结构化上下文。
+  - [x] 关键场景自动化回归全部接入 CI。
+  - [x] 失败可复现并带结构化上下文。
 - 风险：
   - 测试环境抖动造成误报。
-  - 缓解：基准环境固定 + flake 重跑策略。
+  - 缓解：基准环境固定 + flake 重跑策略；`run_semantic_action_e2e_benchmark.py` 现已冻结 `8` 条 committed snapshot case，失败时会落 `source-record / case-report / attempt-report / cli-report / execution-log`，并支持 `--max-retries` 做确定性的重跑恢复。
 
 ### SEM-402 性能与鲁棒性优化
 - 目标：控制迁移后时延与资源占用。

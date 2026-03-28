@@ -13,6 +13,8 @@ OPENCLAW_TARGET := OpenStaffOpenClawCLI
 STUDENT_TARGET := OpenStaffStudentCLI
 PREFERENCE_BENCHMARK_ROOT ?= data/benchmarks/personal-preference
 PREFERENCE_BENCHMARK_MANIFEST ?= $(PREFERENCE_BENCHMARK_ROOT)/manifest.json
+SEMANTIC_ACTION_E2E_BENCHMARK_ROOT ?= data/benchmarks/semantic-action-e2e
+SEMANTIC_ACTION_E2E_BENCHMARK_MANIFEST ?= $(SEMANTIC_ACTION_E2E_BENCHMARK_ROOT)/manifest.json
 SEMANTIC_ACTION_DB ?= data/semantic-actions/semantic-actions.sqlite
 SEMANTIC_ACTION_OBSERVABILITY_CONFIG ?= config/semantic-action-observability.v0.json
 SEMANTIC_ACTION_OBSERVABILITY_OUTPUT ?= data/reports/semantic-action-observability/metrics-summary.json
@@ -21,7 +23,7 @@ SWIFT_WRAPPER := ./scripts/dev/with_xcode_env.sh
 SWIFT := $(SWIFT_WRAPPER) swift
 ARGS ?=
 
-.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify review preference-profile learning-bundle-export learning-bundle-verify learning-bundle-restore semantic-actions-build semantic-actions-migrate semantic-observability-dashboard semantic-observability-gates openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample validate-semantic-guard benchmark-personal benchmark-preference benchmark-preference-gates benchmark-preference-preflight test-swift test test-unit test-integration test-e2e release-regression release-preflight
+.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify review preference-profile learning-bundle-export learning-bundle-verify learning-bundle-restore semantic-actions-build semantic-actions-migrate semantic-observability-dashboard semantic-observability-gates openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample validate-semantic-guard benchmark-personal benchmark-semantic-e2e benchmark-preference benchmark-preference-gates benchmark-preference-preflight test-swift test test-unit test-integration test-e2e release-regression release-preflight
 
 build:
 	$(SWIFT) build --package-path $(APP_PACKAGE_PATH)
@@ -126,6 +128,9 @@ validate-semantic-guard:
 
 benchmark-personal:
 	python3 scripts/benchmarks/run_personal_desktop_benchmark.py $(ARGS)
+
+benchmark-semantic-e2e:
+	python3 scripts/benchmarks/run_semantic_action_e2e_benchmark.py --benchmark-root $(SEMANTIC_ACTION_E2E_BENCHMARK_ROOT) --report $(SEMANTIC_ACTION_E2E_BENCHMARK_MANIFEST) $(ARGS)
 
 benchmark-preference:
 	python3 scripts/benchmarks/run_personal_preference_benchmark.py $(ARGS)

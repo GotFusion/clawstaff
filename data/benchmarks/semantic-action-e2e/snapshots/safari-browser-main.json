@@ -1,0 +1,71 @@
+{
+  "capturedAt": "2026-03-28T21:00:00+08:00",
+  "appName": "Safari",
+  "appBundleId": "com.apple.Safari",
+  "windowTitle": "Baidu Search",
+  "windowId": "2001",
+  "windowSignature": {
+    "signature": "safari-browser-main-signature",
+    "signatureVersion": "window-v1",
+    "normalizedTitle": "baidu search",
+    "role": "AXWindow",
+    "subrole": "AXStandardWindow",
+    "sizeBucket": "14x9"
+  },
+  "url": "https://www.baidu.com/s?wd=openstaff",
+  "urlHost": "www.baidu.com",
+  "focusedElement": {
+    "axPath": "AXWindow/AXGroup[0]/AXTextField[0]",
+    "role": "AXTextField",
+    "subrole": null,
+    "title": "Search Query",
+    "identifier": "search-field",
+    "descriptionText": "Search query input",
+    "helpText": "Type a search query",
+    "valueText": "openstaff",
+    "boundingRect": {
+      "x": 460,
+      "y": 248,
+      "width": 420,
+      "height": 34,
+      "coordinateSpace": "screen"
+    }
+  },
+  "visibleElements": [
+    {
+      "axPath": "AXWindow/AXGroup[0]/AXTextField[0]",
+      "role": "AXTextField",
+      "subrole": null,
+      "title": "Search Query",
+      "identifier": "search-field",
+      "descriptionText": "Search query input",
+      "helpText": "Type a search query",
+      "valueText": "openstaff",
+      "boundingRect": {
+        "x": 460,
+        "y": 248,
+        "width": 420,
+        "height": 34,
+        "coordinateSpace": "screen"
+      }
+    },
+    {
+      "axPath": "AXWindow/AXGroup[0]/AXButton[0]",
+      "role": "AXButton",
+      "subrole": null,
+      "title": "Search",
+      "identifier": "search-submit",
+      "descriptionText": "Submit search",
+      "helpText": "Run current search query",
+      "boundingRect": {
+        "x": 894,
+        "y": 248,
+        "width": 88,
+        "height": 34,
+        "coordinateSpace": "screen"
+      }
+    }
+  ],
+  "screenshotAnchors": [],
+  "captureDiagnostics": []
+}

@@ -1,0 +1,51 @@
+{
+  "capturedAt": "2026-03-28T21:15:00+08:00",
+  "appName": "Notes",
+  "appBundleId": "com.apple.Notes",
+  "windowTitle": "Weekly Plan",
+  "windowId": "5301",
+  "windowSignature": {
+    "signature": "notes-secondary-display-signature",
+    "signatureVersion": "window-v1",
+    "normalizedTitle": "weekly plan",
+    "role": "AXWindow",
+    "subrole": "AXStandardWindow",
+    "sizeBucket": "12x8"
+  },
+  "focusedElement": {
+    "axPath": "AXWindow/AXButton[0]",
+    "role": "AXButton",
+    "subrole": null,
+    "title": "Save",
+    "identifier": "secondary-display-save-button",
+    "descriptionText": "Save current note",
+    "helpText": "Save the Weekly Plan note",
+    "boundingRect": {
+      "x": 2190,
+      "y": 162,
+      "width": 92,
+      "height": 32,
+      "coordinateSpace": "screen"
+    }
+  },
+  "visibleElements": [
+    {
+      "axPath": "AXWindow/AXButton[0]",
+      "role": "AXButton",
+      "subrole": null,
+      "title": "Save",
+      "identifier": "secondary-display-save-button",
+      "descriptionText": "Save current note",
+      "helpText": "Save the Weekly Plan note",
+      "boundingRect": {
+        "x": 2190,
+        "y": 162,
+        "width": 92,
+        "height": 32,
+        "coordinateSpace": "screen"
+      }
+    }
+  ],
+  "screenshotAnchors": [],
+  "captureDiagnostics": []
+}

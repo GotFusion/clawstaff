@@ -41,3 +41,6 @@ data/skills/
 
 data/semantic-actions/*
 !data/semantic-actions/.gitkeep
+
+data/benchmarks/semantic-action-e2e/generated/*
+!data/benchmarks/semantic-action-e2e/generated/.gitkeep

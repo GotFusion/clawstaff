@@ -1,0 +1,67 @@
+{
+  "capturedAt": "2026-03-28T21:12:00+08:00",
+  "appName": "Finder",
+  "appBundleId": "com.apple.Finder",
+  "windowTitle": "Downloads",
+  "windowId": "4202",
+  "windowSignature": {
+    "signature": "finder-list-reorder-signature",
+    "signatureVersion": "window-v1",
+    "normalizedTitle": "downloads",
+    "role": "AXWindow",
+    "subrole": "AXStandardWindow",
+    "sizeBucket": "14x9"
+  },
+  "focusedElement": {
+    "axPath": "AXWindow/AXTable[0]/AXRow[1]",
+    "role": "AXRow",
+    "subrole": null,
+    "title": "Beta",
+    "identifier": "row-beta",
+    "descriptionText": "File row Beta",
+    "helpText": "Reorder row Beta",
+    "boundingRect": {
+      "x": 292,
+      "y": 222,
+      "width": 560,
+      "height": 34,
+      "coordinateSpace": "screen"
+    }
+  },
+  "visibleElements": [
+    {
+      "axPath": "AXWindow/AXTable[0]/AXRow[0]",
+      "role": "AXRow",
+      "subrole": null,
+      "title": "Alpha",
+      "identifier": "row-alpha",
+      "descriptionText": "File row Alpha",
+      "helpText": "Top row",
+      "boundingRect": {
+        "x": 292,
+        "y": 184,
+        "width": 560,
+        "height": 34,
+        "coordinateSpace": "screen"
+      }
+    },
+    {
+      "axPath": "AXWindow/AXTable[0]/AXRow[1]",
+      "role": "AXRow",
+      "subrole": null,
+      "title": "Beta",
+      "identifier": "row-beta",
+      "descriptionText": "File row Beta",
+      "helpText": "Second row",
+      "boundingRect": {
+        "x": 292,
+        "y": 222,
+        "width": 560,
+        "height": 34,
+        "coordinateSpace": "screen"
+      }
+    }
+  ],
+  "screenshotAnchors": [],
+  "captureDiagnostics": []
+}

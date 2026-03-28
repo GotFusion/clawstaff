@@ -1,0 +1,67 @@
+{
+  "capturedAt": "2026-03-28T21:10:00+08:00",
+  "appName": "Finder",
+  "appBundleId": "com.apple.Finder",
+  "windowTitle": "Downloads",
+  "windowId": "4201",
+  "windowSignature": {
+    "signature": "finder-window-drag-signature",
+    "signatureVersion": "window-v1",
+    "normalizedTitle": "downloads",
+    "role": "AXWindow",
+    "subrole": "AXStandardWindow",
+    "sizeBucket": "14x9"
+  },
+  "focusedElement": {
+    "axPath": "AXWindow/AXButton[0]",
+    "role": "AXButton",
+    "subrole": null,
+    "title": "Downloads Header",
+    "identifier": "window-header-handle",
+    "descriptionText": "Window drag handle",
+    "helpText": "Drag the Downloads window",
+    "boundingRect": {
+      "x": 502,
+      "y": 68,
+      "width": 220,
+      "height": 28,
+      "coordinateSpace": "screen"
+    }
+  },
+  "visibleElements": [
+    {
+      "axPath": "AXWindow/AXButton[0]",
+      "role": "AXButton",
+      "subrole": null,
+      "title": "Downloads Header",
+      "identifier": "window-header-handle",
+      "descriptionText": "Window drag handle",
+      "helpText": "Drag the Downloads window",
+      "boundingRect": {
+        "x": 502,
+        "y": 68,
+        "width": 220,
+        "height": 28,
+        "coordinateSpace": "screen"
+      }
+    },
+    {
+      "axPath": "AXWindow/AXGroup[0]",
+      "role": "AXGroup",
+      "subrole": null,
+      "title": "Desktop Drop Area",
+      "identifier": "desktop-drop-target",
+      "descriptionText": "Target area on desktop",
+      "helpText": "Drop window near desktop edge",
+      "boundingRect": {
+        "x": 1180,
+        "y": 360,
+        "width": 220,
+        "height": 180,
+        "coordinateSpace": "screen"
+      }
+    }
+  ],
+  "screenshotAnchors": [],
+  "captureDiagnostics": []
+}

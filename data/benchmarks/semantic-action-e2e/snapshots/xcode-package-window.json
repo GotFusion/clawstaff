@@ -1,0 +1,51 @@
+{
+  "capturedAt": "2026-03-28T21:05:00+08:00",
+  "appName": "Xcode",
+  "appBundleId": "com.apple.dt.Xcode",
+  "windowTitle": "Package.swift",
+  "windowId": "3102",
+  "windowSignature": {
+    "signature": "xcode-package-window-signature",
+    "signatureVersion": "window-v1",
+    "normalizedTitle": "package.swift",
+    "role": "AXWindow",
+    "subrole": "AXStandardWindow",
+    "sizeBucket": "16x10"
+  },
+  "focusedElement": {
+    "axPath": "AXWindow/AXScrollArea[0]/AXTextArea[0]",
+    "role": "AXTextArea",
+    "subrole": null,
+    "title": "Package.swift Editor",
+    "identifier": "package-editor",
+    "descriptionText": "Swift package editor",
+    "helpText": "Edit Package.swift",
+    "boundingRect": {
+      "x": 280,
+      "y": 154,
+      "width": 1024,
+      "height": 768,
+      "coordinateSpace": "screen"
+    }
+  },
+  "visibleElements": [
+    {
+      "axPath": "AXWindow/AXToolbar[0]/AXButton[0]",
+      "role": "AXButton",
+      "subrole": null,
+      "title": "Run",
+      "identifier": "toolbar-run",
+      "descriptionText": "Run current scheme",
+      "helpText": "Build and run",
+      "boundingRect": {
+        "x": 98,
+        "y": 72,
+        "width": 42,
+        "height": 24,
+        "coordinateSpace": "screen"
+      }
+    }
+  ],
+  "screenshotAnchors": [],
+  "captureDiagnostics": []
+}

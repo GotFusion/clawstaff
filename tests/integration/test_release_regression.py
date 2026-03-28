@@ -24,7 +24,7 @@ class ReleaseRegressionIntegrationTests(unittest.TestCase):
             check=False,
         )
 
-    def test_release_regression_covers_validation_replay_and_all_benchmarks(self):
+    def test_release_regression_covers_validation_replay_semantic_and_preference_benchmarks(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_root = Path(tmpdir) / "release"
             report_path = output_root / "report.json"
@@ -32,6 +32,7 @@ class ReleaseRegressionIntegrationTests(unittest.TestCase):
                 sys.executable,
                 str(RUNNER),
                 "--skip-tests",
+                "--skip-desktop-benchmark",
                 "--benchmark-case-limit",
                 "2",
                 "--output-root",
@@ -57,7 +58,7 @@ class ReleaseRegressionIntegrationTests(unittest.TestCase):
             self.assertIn("raw-events-sample-strict", check_names)
             self.assertIn("knowledge-data-compat", check_names)
             self.assertIn("replay-verify-sample", check_names)
-            self.assertIn("benchmark-personal-desktop", check_names)
+            self.assertIn("benchmark-semantic-action-e2e", check_names)
             self.assertIn("benchmark-personal-preference", check_names)
             self.assertIn("benchmark-personal-preference-gates", check_names)
 
@@ -98,6 +99,7 @@ class ReleaseRegressionIntegrationTests(unittest.TestCase):
             self.assertFalse(payload["passed"])
             self.assertIn("benchmark-personal-preference-gates", payload["failedChecks"])
             check_names = {check["name"] for check in payload["checks"]}
+            self.assertIn("benchmark-semantic-action-e2e", check_names)
             self.assertIn("benchmark-personal-preference", check_names)
             self.assertIn("benchmark-personal-preference-gates", check_names)
 

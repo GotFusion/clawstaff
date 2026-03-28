@@ -3,8 +3,8 @@
 发布前回归检查工具（TODO 6.3 / TODO 10.2 / TODO 11.5.3）。
 
 ## 包含内容
-- `run_regression.py`
-  - 执行发布回归检查：
+  - `run_regression.py`
+    - 执行发布回归检查：
     1. 原始事件校验（sample strict + data compat）。
     2. 知识条目校验（sample strict + data compat）。
     3. LLM 输出样例校验。
@@ -12,9 +12,10 @@
     5. 三条 skill bundle preflight（schema / locator / 风险 / App 白名单）。
     6. replay verify sample。
     7. personal desktop benchmark。
-    8. personal preference benchmark。
-    9. preference-learning v0 gate（`metrics-v0.json`）。
-    10. 测试套件（`scripts/tests/run_all.py`）。
+    8. semantic action e2e benchmark。
+    9. personal preference benchmark。
+    10. preference-learning v0 gate（`metrics-v0.json`）。
+    11. 测试套件（`scripts/tests/run_all.py`）。
   - 输出结构化回归报告 JSON。
 
 ## 推荐命令
@@ -27,6 +28,7 @@ python3 scripts/release/run_regression.py --suite all
 ```bash
 make release-regression
 make release-preflight
+make benchmark-semantic-e2e
 make benchmark-preference-preflight
 ```
 
