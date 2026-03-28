@@ -33,7 +33,7 @@ class GuardCoordinateExecutionTests(unittest.TestCase):
     def setUpClass(cls):
         cls.guard = load_module("guard_coordinate_execution", GUARD_PATH)
 
-    def test_build_report_allows_frozen_legacy_counts(self):
+    def test_build_report_fails_when_legacy_bridge_paths_exist(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             write_file(
@@ -62,8 +62,16 @@ class GuardCoordinateExecutionTests(unittest.TestCase):
 
             report = self.guard.build_report(root)
 
-            self.assertTrue(report["passed"])
-            self.assertEqual(report["violationCount"], 0)
+            self.assertFalse(report["passed"])
+            self.assertEqual(report["violationCount"], 6)
+            self.assertEqual(
+                {item["ruleId"] for item in report["violations"]},
+                {
+                    "SEM003-LOWLEVEL-COORDINATE-MOUSE-EVENT",
+                    "SEM003-LEGACY-APP-EXECUTOR-CALL",
+                    "SEM003-LEGACY-HELPER-EXECUTOR-CALL",
+                },
+            )
 
     def test_build_report_fails_when_new_legacy_executor_call_is_added(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -79,32 +87,12 @@ class GuardCoordinateExecutionTests(unittest.TestCase):
             self.assertEqual(report["violationCount"], 1)
             self.assertEqual(report["violations"][0]["ruleId"], "SEM003-LEGACY-APP-EXECUTOR-CALL")
 
-    def test_build_report_fails_when_allowlisted_file_exceeds_frozen_count(self):
+    def test_build_report_fails_when_low_level_coordinate_mouse_event_is_added(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             write_file(
-                root / "apps/macos/Sources/OpenStaffApp/OpenStaffActionExecutor.swift",
-                "\n".join(
-                    [
-                        source_literal("OpenStaffExecutorXPCClient.shared.", "executeAction("),
-                        source_literal("mouseCursor", "Position: coordinate"),
-                        source_literal("mouseCursor", "Position: coordinate"),
-                        source_literal("mouseCursor", "Position: extraCoordinate"),
-                    ]
-                ),
-            )
-            write_file(
-                root / "apps/macos/Sources/OpenStaffExecutorHelper/OpenStaffExecutorHelper.swift",
-                "\n".join(
-                    [
-                        source_literal("mouseCursor", "Position: coordinate"),
-                        source_literal("mouseCursor", "Position: coordinate"),
-                    ]
-                ),
-            )
-            write_file(
-                root / "apps/macos/Sources/OpenStaffApp/OpenStaffApp.swift",
-                source_literal("OpenStaffAction", "Executor.executeAction(\n"),
+                root / "apps/macos/Sources/Feature/NewFlow.swift",
+                source_literal("let down = CGEvent(mouseCursor", "Position: coordinate, mouseButton: .left)\n"),
             )
 
             report = self.guard.build_report(root)

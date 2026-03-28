@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
 更新时间：2026-03-28  
-状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 / SEM-203 / SEM-301 / SEM-302 / SEM-303 已完成，其余待执行）
+状态：工程已完成（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 / SEM-203 / SEM-301 / SEM-302 / SEM-303 / SEM-501 / SEM-502 已完成；SEM-501 的 7 天 prod 观测待验收）
 
 ## 1. 目标与原则
 
@@ -373,17 +373,25 @@
   - 缓解：灰度分批 + 人工确认兜底；gateway/runner 现已固定 semantic-only，legacy `--semantic-only` 仅作为兼容 no-op，切流与回滚步骤统一收敛到 `docs/semantic-only-cutover-runbook.md`。生产一周稳定性需按 `SEM-303/SEM-402` 看板与 gate 完成真实观测后再勾选。
 
 ### SEM-502 技术债清理与文档收口
+状态：已完成（2026-03-28）
 - 目标：完成坐标方案残留清理。
 - 任务：
-  - 删除坐标执行代码、配置、文档、无效测试。
-  - 更新用户手册和开发文档。
-  - 发布迁移复盘。
+  - [x] 删除坐标执行代码、配置、文档、无效测试。
+  - [x] 更新用户手册和开发文档。
+  - [x] 发布迁移复盘。
+- 落地产物：
+  - `apps/macos/Package.swift`
+  - `apps/macos/Sources/OpenStaffApp/LearnedSkillOpenClawBridge.swift`
+  - `apps/macos/Sources/OpenStaffApp/OpenStaffApp.swift`
+  - `scripts/validation/guard_coordinate_execution.py`
+  - `tests/unit/test_guard_coordinate_execution.py`
+  - `docs/semantic-action-migration-retrospective-2026-03.md`
 - DoD：
-  - 代码库中无可执行坐标路径。
-  - 文档与实现一致，审计通过。
+  - [x] 代码库中无可执行坐标路径。
+  - [x] 文档与实现一致，审计通过。
 - 风险：
   - 清理时误删通用组件。
-  - 缓解：按模块分批清理并逐步回归。
+  - 缓解：旧的 `OpenStaffActionExecutor / OpenStaffExecutorHelper / OpenStaffExecutorXPCClient` 已物理移除，技能回放统一改走 semantic-only `OpenStaffOpenClawCLI`；`SEM-003` guard 也已升级为零 allowlist，任何旧桥重入都会直接失败。
 
 ## 4. 全局风险清单（Risk Register）
 

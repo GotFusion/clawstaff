@@ -70,28 +70,21 @@ class Violation:
 RULES = (
     GuardRule(
         rule_id="SEM003-LOWLEVEL-COORDINATE-MOUSE-EVENT",
-        description="Low-level mouse event synthesis with explicit coordinates is frozen by SEM-001.",
+        description="Low-level mouse event synthesis with explicit coordinates is forbidden after SEM-502.",
         pattern=re.compile(r"\bmouseCursorPosition\s*:"),
-        allowlisted_counts={
-            "apps/macos/Sources/OpenStaffApp/OpenStaffActionExecutor.swift": 2,
-            "apps/macos/Sources/OpenStaffExecutorHelper/OpenStaffExecutorHelper.swift": 2,
-        },
+        allowlisted_counts={},
     ),
     GuardRule(
         rule_id="SEM003-LEGACY-APP-EXECUTOR-CALL",
-        description="OpenStaffActionExecutor is a frozen legacy coordinate execution bridge.",
+        description="OpenStaffActionExecutor has been removed and must not be reintroduced.",
         pattern=re.compile(r"\bOpenStaffActionExecutor\.executeAction\s*\("),
-        allowlisted_counts={
-            "apps/macos/Sources/OpenStaffApp/OpenStaffApp.swift": 1,
-        },
+        allowlisted_counts={},
     ),
     GuardRule(
         rule_id="SEM003-LEGACY-HELPER-EXECUTOR-CALL",
-        description="OpenStaffExecutorXPCClient executeAction is a frozen legacy coordinate execution bridge.",
+        description="OpenStaffExecutorXPCClient has been removed and must not be reintroduced.",
         pattern=re.compile(r"\bOpenStaffExecutorXPCClient\.shared\.executeAction\s*\("),
-        allowlisted_counts={
-            "apps/macos/Sources/OpenStaffApp/OpenStaffActionExecutor.swift": 1,
-        },
+        allowlisted_counts={},
     ),
     GuardRule(
         rule_id="SEM003-GENERIC-EXECUTE-CLICK",

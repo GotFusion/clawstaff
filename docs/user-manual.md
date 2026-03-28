@@ -1,6 +1,6 @@
 # OpenStaff 用户使用说明书
 
-版本：v0.6.9
+版本：v0.7.0
 更新时间：2026-03-28
 
 ## 1. 产品简介
@@ -177,6 +177,7 @@ make openclaw ARGS="--skill-dir scripts/skills/examples/generated/openstaff-task
 说明：
 - 该入口会通过 `OpenClawRunner` 拉起 OpenClaw CLI / gateway 子进程。
 - `SEM-501` 起 OpenClaw gateway 已固定为 semantic-only，外部调用不再需要也不能通过开关恢复坐标执行；历史 `--semantic-only` 仅保留兼容解析，不影响实际行为。
+- `SEM-502` 起 App 内旧的坐标执行桥、helper/XPC 旁路已全部移除；已学技能回放与学生模式自动执行统一改走 semantic-only `OpenStaffOpenClawCLI`。
 - 若 skill 命中 `requiresTeacherConfirmation` / 高风险 / 低置信安全门，必须显式传入 `--teacher-confirmed`。
 - 如需临时验证另一套风控规则，可额外传入 `--safety-rules /abs/path/to/safety-rules.yaml`。
 - 执行日志会写入 `data/logs/{yyyy-mm-dd}/{sessionId}-openclaw.log`。
@@ -357,6 +358,11 @@ make benchmark-semantic-e2e-preflight
 4. 切流后连续观察 `7` 天核心指标；若出现异常，只允许回滚版本或收紧人工确认策略，不允许恢复坐标执行。
 
 详细步骤见 `docs/semantic-only-cutover-runbook.md`。
+
+### 5.4 技术债清理状态（SEM-502）
+- `OpenStaffActionExecutor`、`OpenStaffExecutorHelper` 和对应 XPC 通道已删除，仓库内不再保留可执行坐标回放桥。
+- `SEM-003` 静态守门已升级为零白名单；任何重新引入 `mouseCursorPosition`、legacy executor call 或 generic `click_at/execute_click` 都会直接让校验失败。
+- 迁移复盘见 `docs/semantic-action-migration-retrospective-2026-03.md`。
 
 ## 6. 常见问题
 

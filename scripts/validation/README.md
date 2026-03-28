@@ -35,3 +35,7 @@ make validate-replay-sample ARGS="--replay-verify-executable apps/macos/.build/d
 ```bash
 make release-preflight ARGS="--openclaw-executable apps/macos/.build/debug/OpenStaffOpenClawCLI --replay-verify-executable apps/macos/.build/debug/OpenStaffReplayVerifyCLI"
 ```
+
+## SEM-003 / SEM-502
+- `guard_coordinate_execution.py` 现在已没有历史白名单；任何 `OpenStaffActionExecutor`、`OpenStaffExecutorXPCClient`、低层鼠标坐标事件或通用 `click_at/execute_click` 辅助函数重入，都会直接失败。
+- `SEM-502` 后，仓库中不再保留可执行坐标桥；坐标字段仅允许存在于 capture provenance、迁移诊断和 benchmark 样本里。

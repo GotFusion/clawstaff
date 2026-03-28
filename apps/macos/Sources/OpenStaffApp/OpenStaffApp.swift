@@ -714,27 +714,25 @@ struct OpenStaffDashboardView: View {
 
                 GroupBox("已学技能（回放 / 删除 / 审核）") {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("当前执行后端：\(viewModel.executorBackendDescription)")
+                        Text("当前执行链路：\(viewModel.executorBackendDescription)")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
 
-                        if viewModel.usesHelperExecutorBackend {
-                            if let helperPath = viewModel.executorHelperPath,
-                               !helperPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                Text("当前正在使用的 helper 路径：\(helperPath)")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .textSelection(.enabled)
-                            } else {
-                                Text("当前正在使用的 helper 路径：未激活（运行一次技能后显示）")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
+                        if let helperPath = viewModel.executorHelperPath,
+                           !helperPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Text("当前 OpenClaw CLI 路径：\(helperPath)")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .textSelection(.enabled)
                         } else {
-                            Text("权限要求：仅需为 OpenStaffApp 授予辅助功能权限。")
+                            Text("当前 OpenClaw CLI 路径：未发现，请先执行 make build 或设置 OPENCLAW_CLI_PATH。")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
+
+                        Text("旧的坐标执行桥已移除，技能回放只会走 semantic-only OpenClaw CLI。")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
 
                         if viewModel.learnedSkills.isEmpty {
                             Text("暂无已学技能。请先完成一次教学后处理（API 或手动粘贴执行）。")
@@ -1539,14 +1537,9 @@ final class OpenStaffDashboardViewModel: ObservableObject {
         self.learnedSkills = []
         self.selectedSkillDriftReport = nil
         self.selectedSkillRepairPlan = nil
-        let backend = OpenStaffActionExecutor.backend
-        self.executorBackendDescription = backend.displayName
-        self.usesHelperExecutorBackend = backend == .helper
-        if backend == .helper {
-            self.executorHelperPath = OpenStaffExecutorXPCClient.shared.currentHelperExecutablePath()
-        } else {
-            self.executorHelperPath = nil
-        }
+        self.executorBackendDescription = LearnedSkillOpenClawRuntime.displayName
+        self.usesHelperExecutorBackend = false
+        self.executorHelperPath = LearnedSkillOpenClawRuntime.currentExecutablePath()
         self.learningPrivacyConfiguration = loadedLearningPrivacyConfiguration
         self.learningPrivacyConfigurationPath = learningPrivacyConfigurationStore.configurationURL.path
         self.learningPrivacyStatusMessage = nil
@@ -3374,14 +3367,9 @@ final class OpenStaffDashboardViewModel: ObservableObject {
     }
 
     private func refreshExecutorHelperPath() {
-        let backend = OpenStaffActionExecutor.backend
-        executorBackendDescription = backend.displayName
-        usesHelperExecutorBackend = backend == .helper
-        if usesHelperExecutorBackend {
-            executorHelperPath = OpenStaffExecutorXPCClient.shared.currentHelperExecutablePath()
-        } else {
-            executorHelperPath = nil
-        }
+        executorBackendDescription = LearnedSkillOpenClawRuntime.displayName
+        usesHelperExecutorBackend = false
+        executorHelperPath = LearnedSkillOpenClawRuntime.currentExecutablePath()
     }
 }
 
@@ -4261,127 +4249,43 @@ enum LearnedSkillRunner {
         guard !planSteps.isEmpty else {
             throw LearnedSkillRunnerError.skillStepEmpty(payload.skillName)
         }
+        if emergencyStopActive {
+            throw LearnedSkillRunnerError.executionBlocked("紧急停止已激活，技能回放已取消。")
+        }
 
         let traceId = "trace-skill-ui-run-\(UUID().uuidString.lowercased())"
-        let executor = StudentSkillExecutor()
-        let context = StudentExecutionContext(
+        let rawEventCount = loadRawEventCount(sessionId: payload.sessionId)
+        let executionResult = try LearnedSkillOpenClawBridge.run(
+            skillDirectoryPath: skill.skillDirectoryPath,
             traceId: traceId,
             sessionId: payload.sessionId,
             taskId: payload.taskId,
-            dryRun: false,
-            emergencyStopActive: emergencyStopActive
-        )
-        let eventCoordinateIndex = loadEventCoordinateIndex(sessionId: payload.sessionId)
-        let logWriter = StudentLoopLogWriter(logsRootDirectory: OpenStaffWorkspacePaths.logsDirectory)
-        let orderedStepMappings = payload.provenance?.stepMappings ?? []
-        var stepMappingsById: [String: SkillBundleStepMapping] = [:]
-        for stepMapping in orderedStepMappings {
-            stepMappingsById[stepMapping.skillStepId] = stepMapping
-        }
-        var latestLogURL = try logWriter.write(
-            StudentLoopLogEntry(
-                timestamp: OpenStaffDateFormatter.iso8601String(from: Date()),
-                traceId: traceId,
-                sessionId: payload.sessionId,
-                taskId: payload.taskId,
-                component: "student.skill.single-run",
-                status: StudentLoopStatusCode.executionStarted.rawValue,
-                message: "Manual UI run started for skill \(payload.skillName).",
-                skillId: payload.skillName,
-                skillName: payload.skillName,
-                skillDirectoryPath: skill.skillDirectoryPath,
-                sourceKnowledgeItemId: payload.knowledgeItemId
-            )
+            teacherConfirmed: teacherConfirmationGranted
         )
 
-        var succeededSteps = 0
-        var failedSteps = 0
-        var blockedSteps = 0
-
-        for (index, step) in planSteps.enumerated() {
-            let plannedStep = StudentPlannedStep(
-                planStepId: String(format: "single-step-%03d", index + 1),
-                skillId: "\(payload.skillName)-\(step.stepId)",
-                instruction: step.instruction,
-                sourceKnowledgeItemId: payload.knowledgeItemId,
-                sourceStepId: step.stepId,
-                confidence: payload.mappedOutput.confidence
-            )
-
-            let executionResult = executor.execute(
-                step: plannedStep,
-                stepIndex: index,
-                context: context
-            )
-            let stepMapping = stepMappingsById[step.stepId]
-                ?? (index < orderedStepMappings.count ? orderedStepMappings[index] : nil)
-            let finalized = finalizeStepExecution(
-                base: executionResult,
-                step: step,
-                contextBundleId: resolvedContextBundleId(
-                    for: step,
-                    mapping: stepMapping,
-                    fallbackContextBundleId: payload.mappedOutput.context.appBundleId
-                ),
-                eventCoordinateIndex: eventCoordinateIndex
-            )
-
-            let statusCode: String
-            switch finalized.status {
-            case .succeeded:
-                statusCode = StudentLoopStatusCode.executionCompleted.rawValue
-                succeededSteps += 1
-            case .failed:
-                statusCode = StudentLoopStatusCode.executionFailed.rawValue
-                failedSteps += 1
-            case .blocked:
-                statusCode = StudentLoopStatusCode.executionFailed.rawValue
-                blockedSteps += 1
-            }
-
-            latestLogURL = try logWriter.write(
-                StudentLoopLogEntry(
-                    timestamp: OpenStaffDateFormatter.iso8601String(from: Date()),
-                    traceId: traceId,
-                    sessionId: payload.sessionId,
-                    taskId: payload.taskId,
-                    component: "student.skill.single-run",
-                    status: statusCode,
-                    errorCode: finalized.errorCode?.rawValue,
-                    message: finalized.output,
-                    skillId: plannedStep.skillId,
-                    planStepId: plannedStep.planStepId,
-                    skillName: payload.skillName,
-                    skillDirectoryPath: skill.skillDirectoryPath,
-                    sourceKnowledgeItemId: payload.knowledgeItemId,
-                    sourceStepId: step.stepId,
-                    stepId: step.stepId
-                )
-            )
-
-            if finalized.status != .succeeded {
-                break
-            }
+        var qualityWarnings = evaluateQualityWarnings(
+            payload: payload,
+            planSteps: planSteps,
+            rawEventCount: rawEventCount
+        )
+        if executionResult.status != "succeeded" {
+            qualityWarnings.append(executionResult.summary)
         }
 
         return LearnedSkillRunResult(
-            totalSteps: planSteps.count,
-            succeededSteps: succeededSteps,
-            failedSteps: failedSteps,
-            blockedSteps: blockedSteps,
-            logFilePath: latestLogURL.path,
-            qualityWarnings: evaluateQualityWarnings(
-                payload: payload,
-                planSteps: planSteps,
-                eventCoordinateIndex: eventCoordinateIndex
-            )
+            totalSteps: executionResult.totalSteps,
+            succeededSteps: executionResult.succeededSteps,
+            failedSteps: executionResult.failedSteps,
+            blockedSteps: executionResult.blockedSteps,
+            logFilePath: executionResult.logFilePath,
+            qualityWarnings: qualityWarnings
         )
     }
 
     private static func evaluateQualityWarnings(
         payload: SkillBundlePayload,
         planSteps: [SkillBundleExecutionStep],
-        eventCoordinateIndex: [String: CGPoint]
+        rawEventCount: Int
     ) -> [String] {
         var warnings: [String] = []
 
@@ -4398,142 +4302,32 @@ enum LearnedSkillRunner {
             || $0.target == "unknown"
         }
         if !unknownTargetSteps.isEmpty {
-            warnings.append("存在 \(unknownTargetSteps.count) 个步骤 target=unknown，执行可能只做坐标点击。")
+            warnings.append("存在 \(unknownTargetSteps.count) 个步骤 target=unknown，语义定位信息可能不足。")
         }
 
-        if eventCoordinateIndex.count <= 2 {
-            warnings.append("教学会话仅采集到 \(eventCoordinateIndex.count) 条原始事件，难以复现完整任务。")
+        if rawEventCount <= 2 {
+            warnings.append("教学会话仅采集到 \(rawEventCount) 条原始事件，难以复现完整任务。")
         }
 
         return warnings
     }
 
-    private static func finalizeStepExecution(
-        base: StudentStepExecutionResult,
-        step: SkillBundleExecutionStep,
-        contextBundleId: String,
-        eventCoordinateIndex: [String: CGPoint]
-    ) -> StudentStepExecutionResult {
-        guard base.status == .succeeded else {
-            return base
-        }
-
-        switch performAction(
-            step: step,
-            contextBundleId: contextBundleId,
-            eventCoordinateIndex: eventCoordinateIndex
-        ) {
-        case .succeeded(let output):
-            return StudentStepExecutionResult(
-                planStepId: base.planStepId,
-                skillId: base.skillId,
-                status: .succeeded,
-                startedAt: base.startedAt,
-                finishedAt: OpenStaffDateFormatter.iso8601String(from: Date()),
-                output: output,
-                errorCode: nil
-            )
-        case .failed(let output):
-            return StudentStepExecutionResult(
-                planStepId: base.planStepId,
-                skillId: base.skillId,
-                status: .failed,
-                startedAt: base.startedAt,
-                finishedAt: OpenStaffDateFormatter.iso8601String(from: Date()),
-                output: output,
-                errorCode: .executionFailed
-            )
-        case .blocked(let output):
-            return StudentStepExecutionResult(
-                planStepId: base.planStepId,
-                skillId: base.skillId,
-                status: .blocked,
-                startedAt: base.startedAt,
-                finishedAt: OpenStaffDateFormatter.iso8601String(from: Date()),
-                output: output,
-                errorCode: .blockedAction
-            )
-        }
-    }
-
-    private static func performAction(
-        step: SkillBundleExecutionStep,
-        contextBundleId: String,
-        eventCoordinateIndex: [String: CGPoint]
-    ) -> LearnedSkillActionResult {
-        let fallbackCoordinate = fallbackCoordinateFromSourceEvents(step.sourceEventIds, index: eventCoordinateIndex)
-        return OpenStaffActionExecutor.executeAction(
-            actionType: step.actionType,
-            target: step.target,
-            instruction: step.instruction,
-            contextBundleId: contextBundleId,
-            fallbackCoordinate: fallbackCoordinate
-        )
-    }
-
-    private static func fallbackCoordinateFromSourceEvents(
-        _ sourceEventIds: [String],
-        index: [String: CGPoint]
-    ) -> CGPoint? {
-        for sourceEventId in sourceEventIds {
-            if let point = index[sourceEventId] {
-                return point
-            }
-        }
-        return nil
-    }
-
-    private static func resolvedContextBundleId(
-        for step: SkillBundleExecutionStep,
-        mapping: SkillBundleStepMapping?,
-        fallbackContextBundleId: String
-    ) -> String {
-        if let bundleId = parseBundleTarget(step.target) {
-            return bundleId
-        }
-
-        if let mapping {
-            for semanticTarget in mapping.semanticTargets {
-                let bundleId = semanticTarget.appBundleId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                if !bundleId.isEmpty, bundleId != "unknown" {
-                    return bundleId
-                }
-            }
-        }
-
-        return fallbackContextBundleId.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private static func parseBundleTarget(_ target: String) -> String? {
-        let normalizedTarget = target.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard normalizedTarget.hasPrefix("bundle:") else {
-            return nil
-        }
-        let bundleId = String(normalizedTarget.dropFirst("bundle:".count))
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !bundleId.isEmpty else {
-            return nil
-        }
-        return bundleId
-    }
-
-    private static func loadEventCoordinateIndex(sessionId: String) -> [String: CGPoint] {
+    private static func loadRawEventCount(sessionId: String) -> Int {
         let root = OpenStaffWorkspacePaths.rawEventsDirectory
         let fileManager = FileManager.default
         guard fileManager.fileExists(atPath: root.path) else {
-            return [:]
+            return 0
         }
         guard let enumerator = fileManager.enumerator(
             at: root,
             includingPropertiesForKeys: [.isRegularFileKey],
             options: [.skipsHiddenFiles]
         ) else {
-            return [:]
+            return 0
         }
 
         let decoder = JSONDecoder()
-        var index: [String: CGPoint] = [:]
-        index.reserveCapacity(128)
+        var count = 0
 
         for case let fileURL as URL in enumerator where fileURL.pathExtension == "jsonl" {
             let fileName = fileURL.lastPathComponent
@@ -4550,14 +4344,12 @@ enum LearnedSkillRunner {
                       event.sessionId == sessionId else {
                     continue
                 }
-                index[event.eventId] = CGPoint(
-                    x: Double(event.pointer.x),
-                    y: Double(event.pointer.y)
-                )
+                _ = event
+                count += 1
             }
         }
 
-        return index
+        return count
     }
 
     private static func isLikelySessionRawFile(fileName: String, sessionId: String) -> Bool {
@@ -4577,6 +4369,7 @@ enum LearnedSkillRunnerError: LocalizedError {
     case skillStepEmpty(String)
     case skillPreflightFailed(String)
     case teacherConfirmationRequired(String)
+    case executionBlocked(String)
 
     var errorDescription: String? {
         switch self {
@@ -4590,6 +4383,8 @@ enum LearnedSkillRunnerError: LocalizedError {
             return "技能预检失败：\(summary)"
         case .teacherConfirmationRequired(let summary):
             return "技能命中安全门，需要老师确认后才能执行：\(summary)"
+        case .executionBlocked(let summary):
+            return summary
         }
     }
 }
@@ -4630,12 +4425,6 @@ private struct LearnedSkillReviewReadRecord: Decodable {
     let skillId: String
     let timestamp: String
     let decision: LearnedSkillReviewDecision
-}
-
-enum LearnedSkillActionResult {
-    case succeeded(String)
-    case failed(String)
-    case blocked(String)
 }
 
 enum OpenStaffWorkspacePaths {
