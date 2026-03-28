@@ -46,6 +46,27 @@ struct SemanticActionContextGuardResult: Codable {
     let mismatches: [SemanticActionContextGuardMismatch]
 }
 
+enum SemanticActionPostAssertionStatus: String, Codable {
+    case passed
+    case failed
+    case skipped
+}
+
+struct SemanticActionPostAssertionResult: Codable {
+    let assertionType: String
+    let status: SemanticActionPostAssertionStatus
+    let isRequired: Bool
+    let message: String
+    let expected: [String: String]
+    let actual: [String: String]
+}
+
+struct SemanticActionPostAssertionReport: Codable {
+    let status: SemanticActionPostAssertionStatus
+    let checkedAt: String
+    let assertions: [SemanticActionPostAssertionResult]
+}
+
 struct SemanticActionExecutionReport: Codable {
     let schemaVersion: String
     let actionId: String
@@ -57,6 +78,7 @@ struct SemanticActionExecutionReport: Codable {
     let matchedLocatorType: String?
     let selectorHitPath: [String]
     let contextGuard: SemanticActionContextGuardResult?
+    let postAssertions: SemanticActionPostAssertionReport?
     let durationMs: Int
     let executedAt: String
 }
@@ -197,7 +219,7 @@ final class SemanticActionExecutor {
         }
 
         let activated = performer.activateApp(bundleId: bundleId)
-        return finalize(
+        return finalizeWithPostAssertions(
             action: action,
             dryRun: false,
             started: started,
@@ -267,7 +289,7 @@ final class SemanticActionExecutor {
             windowTitlePattern: pattern,
             windowSignature: signature
         )
-        return finalize(
+        return finalizeWithPostAssertions(
             action: action,
             dryRun: false,
             started: started,
@@ -314,7 +336,7 @@ final class SemanticActionExecutor {
         }
 
         let performOutcome = performer.sendShortcut(keys: keys, appBundleId: bundleId)
-        return finalize(
+        return finalizeWithPostAssertions(
             action: action,
             dryRun: false,
             started: started,
@@ -436,7 +458,7 @@ final class SemanticActionExecutor {
             performOutcome = performer.setText(matchedElement, text: text, appBundleId: appBundleId)
         }
 
-        return finalize(
+        return finalizeWithPostAssertions(
             action: action,
             dryRun: false,
             started: started,
@@ -557,7 +579,7 @@ final class SemanticActionExecutor {
         }
 
         let performOutcome = performer.moveWindow(source: sourceMatched, target: targetMatched, appBundleId: appBundleId)
-        return finalize(
+        return finalizeWithPostAssertions(
             action: action,
             dryRun: false,
             started: started,
@@ -884,6 +906,384 @@ final class SemanticActionExecutor {
         return value.lowercased()
     }
 
+    private struct SemanticActionPostAssertionSpec {
+        let assertionType: String
+        let payload: SemanticJSONObject
+        let isRequired: Bool
+    }
+
+    private func finalizeWithPostAssertions(
+        action: SemanticActionStoreAction,
+        dryRun: Bool,
+        started: Date,
+        status: SemanticActionExecutionStatus,
+        summary: String,
+        errorCode: String?,
+        matchedLocatorType: String?,
+        selectorHitPath: [String]
+    ) -> SemanticActionExecutionReport {
+        guard !dryRun, status == .succeeded else {
+            return finalize(
+                action: action,
+                dryRun: dryRun,
+                started: started,
+                status: status,
+                summary: summary,
+                errorCode: errorCode,
+                matchedLocatorType: matchedLocatorType,
+                selectorHitPath: selectorHitPath
+            )
+        }
+
+        let postAssertionReport = evaluatePostAssertions(
+            action: action,
+            snapshot: snapshotProvider.snapshot()
+        )
+        if postAssertionReport.status == .failed {
+            let failedMessage = postAssertionReport.assertions
+                .first(where: { $0.isRequired && $0.status == .failed })?
+                .message ?? "Required post-assertion failed."
+            return finalize(
+                action: action,
+                dryRun: false,
+                started: started,
+                status: .failed,
+                summary: "\(summary) Post-assertion failed: \(failedMessage)",
+                errorCode: "SEM203-ASSERTION-FAILED",
+                matchedLocatorType: matchedLocatorType,
+                selectorHitPath: selectorHitPath,
+                postAssertions: postAssertionReport
+            )
+        }
+
+        return finalize(
+            action: action,
+            dryRun: false,
+            started: started,
+            status: .succeeded,
+            summary: summary,
+            errorCode: errorCode,
+            matchedLocatorType: matchedLocatorType,
+            selectorHitPath: selectorHitPath,
+            postAssertions: postAssertionReport
+        )
+    }
+
+    private func evaluatePostAssertions(
+        action: SemanticActionStoreAction,
+        snapshot: ReplayEnvironmentSnapshot
+    ) -> SemanticActionPostAssertionReport {
+        let specs = effectivePostAssertionSpecs(for: action)
+        guard !specs.isEmpty else {
+            return SemanticActionPostAssertionReport(
+                status: .skipped,
+                checkedAt: formatter.string(from: nowProvider()),
+                assertions: []
+            )
+        }
+
+        let results = specs.map { evaluatePostAssertion($0, action: action, snapshot: snapshot) }
+        let hasRequiredFailure = results.contains(where: { $0.isRequired && $0.status == .failed })
+        return SemanticActionPostAssertionReport(
+            status: hasRequiredFailure ? .failed : .passed,
+            checkedAt: formatter.string(from: nowProvider()),
+            assertions: results
+        )
+    }
+
+    private func effectivePostAssertionSpecs(
+        for action: SemanticActionStoreAction
+    ) -> [SemanticActionPostAssertionSpec] {
+        var specs: [SemanticActionPostAssertionSpec] = []
+        var seen = Set<String>()
+
+        func append(assertionType: String, payload: SemanticJSONObject, isRequired: Bool) {
+            let key = "\(assertionType)|\(jsonKey(payload))|\(isRequired)"
+            guard !seen.contains(key) else {
+                return
+            }
+            seen.insert(key)
+            specs.append(
+                SemanticActionPostAssertionSpec(
+                    assertionType: assertionType,
+                    payload: payload,
+                    isRequired: isRequired
+                )
+            )
+        }
+
+        for assertion in action.assertions {
+            switch assertion.assertionType {
+            case "requiredFrontmostApp":
+                append(assertionType: assertion.assertionType, payload: assertion.payload, isRequired: true)
+            case "windowTitlePattern":
+                append(assertionType: assertion.assertionType, payload: assertion.payload, isRequired: true)
+            case "selectorResolvable":
+                append(assertionType: assertion.assertionType, payload: assertion.payload, isRequired: false)
+            case "targetSelectorResolvable":
+                append(assertionType: assertion.assertionType, payload: assertion.payload, isRequired: false)
+            default:
+                break
+            }
+        }
+
+        if !specs.contains(where: { $0.assertionType == "requiredFrontmostApp" }),
+           let appBundleId = postAssertionAppBundleId(for: action) {
+            append(
+                assertionType: "requiredFrontmostApp",
+                payload: ["appBundleId": appBundleId],
+                isRequired: true
+            )
+        }
+
+        if !specs.contains(where: { $0.assertionType == "windowTitlePattern" }),
+           let windowTitlePattern = postAssertionWindowTitlePattern(for: action) {
+            append(
+                assertionType: "windowTitlePattern",
+                payload: ["pattern": windowTitlePattern],
+                isRequired: true
+            )
+        }
+
+        if !specs.contains(where: { $0.assertionType == "selectorResolvable" }),
+           hasPrimarySemanticTargets(for: action) {
+            append(
+                assertionType: "selectorResolvable",
+                payload: selectorResolvablePayload(for: action),
+                isRequired: false
+            )
+        }
+
+        if action.actionType == "drag",
+           !specs.contains(where: { $0.assertionType == "targetSelectorResolvable" }),
+           hasTargetSemanticTargets(for: action) {
+            append(
+                assertionType: "targetSelectorResolvable",
+                payload: targetSelectorResolvablePayload(for: action),
+                isRequired: false
+            )
+        }
+
+        if action.actionType == "type",
+           let text = string(action.args["text"]),
+           !specs.contains(where: { $0.assertionType == "textValueContains" }) {
+            append(
+                assertionType: "textValueContains",
+                payload: ["text": text],
+                isRequired: true
+            )
+        }
+
+        return specs
+    }
+
+    private func evaluatePostAssertion(
+        _ spec: SemanticActionPostAssertionSpec,
+        action: SemanticActionStoreAction,
+        snapshot: ReplayEnvironmentSnapshot
+    ) -> SemanticActionPostAssertionResult {
+        switch spec.assertionType {
+        case "requiredFrontmostApp":
+            let expectedBundleId = string(spec.payload["appBundleId"])
+            let actualBundleId = snapshot.appBundleId
+            let passed = normalizedText(expectedBundleId) == normalizedText(actualBundleId)
+            return SemanticActionPostAssertionResult(
+                assertionType: spec.assertionType,
+                status: passed ? .passed : .failed,
+                isRequired: spec.isRequired,
+                message: passed
+                    ? "Frontmost app matches expected bundle id."
+                    : "Frontmost app mismatch. expected=\(expectedBundleId ?? "<nil>") actual=\(actualBundleId)",
+                expected: stringMap(spec.payload),
+                actual: [
+                    "appBundleId": actualBundleId,
+                    "appName": snapshot.appName,
+                ]
+            )
+
+        case "windowTitlePattern":
+            let expectedPattern = string(spec.payload["pattern"])
+            let actualWindowTitle = snapshot.windowTitle
+            let passed = matchesRegex(expectedPattern ?? "", actualWindowTitle)
+            return SemanticActionPostAssertionResult(
+                assertionType: spec.assertionType,
+                status: passed ? .passed : .failed,
+                isRequired: spec.isRequired,
+                message: passed
+                    ? "Window title matches expected pattern."
+                    : "Window title mismatch. expected=\(expectedPattern ?? "<nil>") actual=\(actualWindowTitle ?? "<nil>")",
+                expected: stringMap(spec.payload),
+                actual: stringMap(["windowTitle": actualWindowTitle as Any])
+            )
+
+        case "selectorResolvable":
+            let resolution = resolver.resolve(
+                targets: semanticTargets(
+                    for: action,
+                    targetRolePrefixes: ["primary", "candidate", "fallback"],
+                    fallbackSelector: action.selector
+                ),
+                preferredLocatorType: preferredLocatorType(rawValue: action.preferredLocatorType),
+                coordinate: nil,
+                in: snapshot
+            )
+            let passed = resolution.status == .resolved && resolution.matchedLocatorType != .coordinateFallback
+            return SemanticActionPostAssertionResult(
+                assertionType: spec.assertionType,
+                status: passed ? .passed : .failed,
+                isRequired: spec.isRequired,
+                message: passed ? "Primary selector remains resolvable after execution." : resolution.message,
+                expected: stringMap(spec.payload),
+                actual: stringMap([
+                    "matchedLocatorType": resolution.matchedLocatorType?.rawValue as Any,
+                    "selectorHitPath": selectorHitPath(from: resolution).joined(separator: " -> "),
+                    "message": resolution.message,
+                ])
+            )
+
+        case "targetSelectorResolvable":
+            let resolution = resolver.resolve(
+                targets: semanticTargets(
+                    for: action,
+                    targetRolePrefixes: ["target"],
+                    fallbackSelector: selector(action.args["targetSelector"])
+                ),
+                preferredLocatorType: preferredLocatorType(rawValue: action.preferredLocatorType),
+                coordinate: nil,
+                in: snapshot
+            )
+            let passed = resolution.status == .resolved && resolution.matchedLocatorType != .coordinateFallback
+            return SemanticActionPostAssertionResult(
+                assertionType: spec.assertionType,
+                status: passed ? .passed : .failed,
+                isRequired: spec.isRequired,
+                message: passed ? "Target selector remains resolvable after execution." : resolution.message,
+                expected: stringMap(spec.payload),
+                actual: stringMap([
+                    "matchedLocatorType": resolution.matchedLocatorType?.rawValue as Any,
+                    "selectorHitPath": selectorHitPath(from: resolution).joined(separator: " -> "),
+                    "message": resolution.message,
+                ])
+            )
+
+        case "textValueContains":
+            let expectedText = string(spec.payload["text"]) ?? ""
+            let resolution = resolver.resolve(
+                targets: semanticTargets(
+                    for: action,
+                    targetRolePrefixes: ["primary", "candidate", "fallback"],
+                    fallbackSelector: action.selector
+                ),
+                preferredLocatorType: preferredLocatorType(rawValue: action.preferredLocatorType),
+                coordinate: nil,
+                in: snapshot
+            )
+            let actualValue = resolution.matchedElement?.valueText
+            let passed = resolution.status == .resolved
+                && normalizedText(actualValue)?.contains(normalizedText(expectedText) ?? "") == true
+            return SemanticActionPostAssertionResult(
+                assertionType: spec.assertionType,
+                status: passed ? .passed : .failed,
+                isRequired: spec.isRequired,
+                message: passed
+                    ? "Resolved element value contains expected text."
+                    : "Resolved element value mismatch. expected text=\(expectedText) actual=\(actualValue ?? "<nil>")",
+                expected: stringMap(spec.payload),
+                actual: stringMap([
+                    "matchedLocatorType": resolution.matchedLocatorType?.rawValue as Any,
+                    "valueText": actualValue as Any,
+                    "selectorHitPath": selectorHitPath(from: resolution).joined(separator: " -> "),
+                ])
+            )
+
+        default:
+            return SemanticActionPostAssertionResult(
+                assertionType: spec.assertionType,
+                status: .skipped,
+                isRequired: spec.isRequired,
+                message: "Unsupported post-assertion type: \(spec.assertionType)",
+                expected: stringMap(spec.payload),
+                actual: [:]
+            )
+        }
+    }
+
+    private func postAssertionAppBundleId(for action: SemanticActionStoreAction) -> String? {
+        if action.actionType == "switch_app" {
+            return string(action.args["toAppBundleId"]) ?? string(action.selector["appBundleId"])
+        }
+        return string(action.selector["appBundleId"])
+            ?? semanticTargets(
+                for: action,
+                targetRolePrefixes: ["primary", "candidate", "fallback"],
+                fallbackSelector: action.selector
+            ).first?.appBundleId
+    }
+
+    private func postAssertionWindowTitlePattern(for action: SemanticActionStoreAction) -> String? {
+        if action.actionType == "focus_window" {
+            return string(action.selector["windowTitlePattern"])
+                ?? exactWindowTitlePattern(for: string(action.args["toWindowTitle"]))
+        }
+        return string(action.selector["windowTitlePattern"])
+    }
+
+    private func hasPrimarySemanticTargets(for action: SemanticActionStoreAction) -> Bool {
+        !semanticTargets(
+            for: action,
+            targetRolePrefixes: ["primary", "candidate", "fallback"],
+            fallbackSelector: action.selector
+        ).isEmpty
+    }
+
+    private func hasTargetSemanticTargets(for action: SemanticActionStoreAction) -> Bool {
+        !semanticTargets(
+            for: action,
+            targetRolePrefixes: ["target"],
+            fallbackSelector: selector(action.args["targetSelector"])
+        ).isEmpty
+    }
+
+    private func selectorResolvablePayload(for action: SemanticActionStoreAction) -> SemanticJSONObject {
+        [
+            "locatorType": string(action.selector["locatorType"]) as Any,
+            "selectorStrategy": string(action.selector["selectorStrategy"]) as Any,
+            "elementRole": string(action.selector["elementRole"]) as Any,
+            "elementIdentifier": string(action.selector["elementIdentifier"]) as Any,
+        ]
+    }
+
+    private func targetSelectorResolvablePayload(for action: SemanticActionStoreAction) -> SemanticJSONObject {
+        let targetSelector = selector(action.args["targetSelector"]) ?? [:]
+        return [
+            "locatorType": string(targetSelector["locatorType"]) as Any,
+            "selectorStrategy": string(targetSelector["selectorStrategy"]) as Any,
+            "elementRole": string(targetSelector["elementRole"]) as Any,
+            "elementIdentifier": string(targetSelector["elementIdentifier"]) as Any,
+        ]
+    }
+
+    private func jsonKey(_ payload: SemanticJSONObject) -> String {
+        guard JSONSerialization.isValidJSONObject(payload),
+              let data = try? JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]),
+              let text = String(data: data, encoding: .utf8) else {
+            return "{}"
+        }
+        return text
+    }
+
+    private func stringMap(_ payload: SemanticJSONObject) -> [String: String] {
+        var mapped: [String: String] = [:]
+        for (key, value) in payload {
+            if let stringValue = string(value) {
+                mapped[key] = stringValue
+            } else if let values = value as? [String] {
+                mapped[key] = values.joined(separator: " -> ")
+            }
+        }
+        return mapped
+    }
+
     private func finalize(
         action: SemanticActionStoreAction,
         dryRun: Bool,
@@ -893,7 +1293,8 @@ final class SemanticActionExecutor {
         errorCode: String?,
         matchedLocatorType: String?,
         selectorHitPath: [String],
-        contextGuard: SemanticActionContextGuardResult? = nil
+        contextGuard: SemanticActionContextGuardResult? = nil,
+        postAssertions: SemanticActionPostAssertionReport? = nil
     ) -> SemanticActionExecutionReport {
         let finished = nowProvider()
         return SemanticActionExecutionReport(
@@ -907,6 +1308,7 @@ final class SemanticActionExecutor {
             matchedLocatorType: matchedLocatorType,
             selectorHitPath: selectorHitPath,
             contextGuard: contextGuard,
+            postAssertions: postAssertions,
             durationMs: max(Int(finished.timeIntervalSince(started) * 1000), 0),
             executedAt: formatter.string(from: finished)
         )

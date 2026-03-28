@@ -247,6 +247,13 @@ struct OpenStaffReplayVerifyCLI {
                 print("  context[\(mismatch.dimension)] expected=\(mismatch.expected) actual=\(mismatch.actual ?? "-")")
             }
         }
+        if let postAssertions = report.postAssertions {
+            print("postAssertions=\(postAssertions.status.rawValue) count=\(postAssertions.assertions.count)")
+            for assertion in postAssertions.assertions where assertion.status != .passed {
+                print("  assertion[\(assertion.assertionType)] status=\(assertion.status.rawValue) required=\(assertion.isRequired)")
+                print("    message=\(assertion.message)")
+            }
+        }
     }
 
     static func executionLogStatus(for report: SemanticActionExecutionReport) -> String {
@@ -282,6 +289,10 @@ struct OpenStaffReplayVerifyCLI {
         if let contextGuard = report.contextGuard,
            let encodedContextGuard = codableJSONObject(contextGuard) {
             payload["contextGuard"] = encodedContextGuard
+        }
+        if let postAssertions = report.postAssertions,
+           let encodedPostAssertions = codableJSONObject(postAssertions) {
+            payload["postAssertions"] = encodedPostAssertions
         }
         return payload
     }

@@ -12,6 +12,7 @@ public struct ReplayElementSnapshot: Codable, Equatable {
     public let identifier: String?
     public let descriptionText: String?
     public let helpText: String?
+    public let valueText: String?
     public let boundingRect: SemanticBoundingRect?
 
     public init(
@@ -22,6 +23,7 @@ public struct ReplayElementSnapshot: Codable, Equatable {
         identifier: String? = nil,
         descriptionText: String? = nil,
         helpText: String? = nil,
+        valueText: String? = nil,
         boundingRect: SemanticBoundingRect? = nil
     ) {
         self.axPath = axPath
@@ -31,6 +33,7 @@ public struct ReplayElementSnapshot: Codable, Equatable {
         self.identifier = identifier
         self.descriptionText = descriptionText
         self.helpText = helpText
+        self.valueText = valueText
         self.boundingRect = boundingRect
     }
 }
@@ -1030,6 +1033,7 @@ private struct AXReplaySnapshotBuilder {
         let identifier = stringAttribute("AXIdentifier" as CFString, from: element)
         let descriptionText = stringAttribute(kAXDescriptionAttribute as CFString, from: element)
         let helpText = stringAttribute(kAXHelpAttribute as CFString, from: element)
+        let valueText = valueTextAttribute(from: element, role: role)
         let boundingRect = boundingRect(from: element)
 
         if role == nil,
@@ -1038,6 +1042,7 @@ private struct AXReplaySnapshotBuilder {
            identifier == nil,
            descriptionText == nil,
            helpText == nil,
+           valueText == nil,
            boundingRect == nil {
             return nil
         }
@@ -1050,8 +1055,21 @@ private struct AXReplaySnapshotBuilder {
             identifier: identifier,
             descriptionText: descriptionText,
             helpText: helpText,
+            valueText: valueText,
             boundingRect: boundingRect
         )
+    }
+
+    private func valueTextAttribute(from element: AXUIElement, role: String?) -> String? {
+        guard !shouldRedactValue(forRole: role) else {
+            return nil
+        }
+        return stringAttribute(kAXValueAttribute as CFString, from: element)
+    }
+
+    private func shouldRedactValue(forRole role: String?) -> Bool {
+        let normalizedRole = role?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return normalizedRole == "AXSecureTextField"
     }
 
     private func childElements(from element: AXUIElement) -> [AXUIElement] {

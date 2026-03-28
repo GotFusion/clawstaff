@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
-更新时间：2026-03-27  
-状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 已完成，其余待执行）
+更新时间：2026-03-28  
+状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 / SEM-203 已完成，其余待执行）
 
 ## 1. 目标与原则
 
@@ -224,19 +224,25 @@
   - 缓解：支持 `contextGuard.disabledDimensions` 做局部放宽，但默认严格并在 mismatch 时直接 `stopAndAskTeacher`。
 
 ### SEM-203 Post-Assertion Engine（后置断言）
+状态：已完成（2026-03-28）
 - 目标：执行后验证动作是否真的成功。
 - 任务：
   - 断言类型：
-    - 焦点变化
-    - 元素值变化
-    - 页面/窗口状态变化
-  - 失败时自动停止并上报。
+    - [x] 焦点变化 / 前台 app 变化
+    - [x] 元素值变化
+    - [x] 页面/窗口状态变化
+  - [x] 失败时自动停止并上报。
+- 落地产物：
+  - `core/executor/SemanticTargetResolver.swift`
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/SemanticActionExecutor.swift`
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/OpenStaffReplayVerifyCLI.swift`
+  - `apps/macos/Tests/OpenStaffAppTests/SemanticActionExecutorTests.swift`
 - DoD：
-  - 每个动作至少 1 条默认断言。
-  - 断言失败能触发中止并给出可读原因。
+  - [x] 每个动作至少 1 条默认断言。
+  - [x] 断言失败能触发中止并给出可读原因。
 - 风险：
   - 断言成本增加延迟。
-  - 缓解：分级断言（必需/可选）与超时策略。
+  - 缓解：分级断言（必需/可选）与快照复用；`selectorResolvable / targetSelectorResolvable` 先按可选诊断断言执行，避免把高波动 UI 直接误判成失败。
 
 ## Week 4（2026-04-20 ~ 2026-04-26）：兼容迁移与灰度
 

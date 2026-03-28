@@ -235,6 +235,7 @@ final class SemanticActionExecutorTests: XCTestCase {
 
         XCTAssertEqual(report.status, .succeeded)
         XCTAssertEqual(performer.events, ["shortcut:command+k"])
+        XCTAssertEqual(report.postAssertions?.status, .passed)
     }
 
     func testDryRunDragProducesSourceAndTargetSelectorHitPath() {
@@ -276,6 +277,161 @@ final class SemanticActionExecutorTests: XCTestCase {
         XCTAssertEqual(report.status, .succeeded)
         XCTAssertEqual(report.selectorHitPath, ["source:roleAndTitle", "target:roleAndTitle"])
         XCTAssertTrue(performer.events.isEmpty)
+    }
+
+    func testLiveSwitchAppFailsWhenPostAssertionDoesNotObserveTargetApp() {
+        let performer = StubSemanticActionPerformer()
+        let provider = SequenceReplayEnvironmentSnapshotProvider(
+            snapshots: [
+                makeSnapshot(appName: "SourceApp", appBundleId: "com.source.app"),
+                makeSnapshot(appName: "OtherApp", appBundleId: "com.other.app"),
+            ]
+        )
+        let executor = SemanticActionExecutor(
+            snapshotProvider: provider,
+            resolver: SemanticTargetResolver(fingerprintCapture: StubFingerprintCapture(anchor: nil)),
+            performer: performer,
+            nowProvider: fixedNow
+        )
+
+        let action = SemanticActionStoreAction(
+            actionId: "action-switch-app-001",
+            sessionId: "session-001",
+            taskId: "task-001",
+            traceId: "trace-switch-001",
+            stepId: "step-switch-001",
+            actionType: "switch_app",
+            selector: [
+                "selectorStrategy": "app_context",
+                "appBundleId": "com.target.app",
+            ],
+            args: [
+                "fromAppBundleId": "com.source.app",
+                "fromAppName": "SourceApp",
+                "toAppBundleId": "com.target.app",
+                "toAppName": "TargetApp",
+            ],
+            context: [:],
+            preferredLocatorType: nil,
+            manualReviewRequired: false,
+            createdAt: "2026-03-28T08:00:00Z",
+            updatedAt: "2026-03-28T08:00:00Z",
+            targets: [],
+            assertions: []
+        )
+
+        let report = executor.execute(action: action, dryRun: false)
+
+        XCTAssertEqual(report.status, .failed)
+        XCTAssertEqual(report.errorCode, "SEM203-ASSERTION-FAILED")
+        XCTAssertEqual(report.postAssertions?.status, .failed)
+        XCTAssertEqual(
+            report.postAssertions?.assertions.first(where: { $0.status == .failed })?.assertionType,
+            "requiredFrontmostApp"
+        )
+        XCTAssertEqual(performer.events, ["activate:com.target.app"])
+    }
+
+    func testLiveTypePassesTextValuePostAssertion() {
+        let preResolutionSnapshot = makeSnapshot(
+            focusedElement: ReplayElementSnapshot(
+                axPath: "AXWindow/AXTextField[0]",
+                role: "AXTextField",
+                title: "Search",
+                identifier: "search-field",
+                boundingRect: SemanticBoundingRect(x: 220, y: 140, width: 240, height: 32)
+            ),
+            visibleElements: [
+                ReplayElementSnapshot(
+                    axPath: "AXWindow/AXTextField[0]",
+                    role: "AXTextField",
+                    title: "Search",
+                    identifier: "search-field",
+                    boundingRect: SemanticBoundingRect(x: 220, y: 140, width: 240, height: 32)
+                )
+            ]
+        )
+        let postSnapshot = makeSnapshot(
+            focusedElement: ReplayElementSnapshot(
+                axPath: "AXWindow/AXTextField[0]",
+                role: "AXTextField",
+                title: "Search",
+                identifier: "search-field",
+                valueText: "hello world",
+                boundingRect: SemanticBoundingRect(x: 220, y: 140, width: 240, height: 32)
+            ),
+            visibleElements: [
+                ReplayElementSnapshot(
+                    axPath: "AXWindow/AXTextField[0]",
+                    role: "AXTextField",
+                    title: "Search",
+                    identifier: "search-field",
+                    valueText: "hello world",
+                    boundingRect: SemanticBoundingRect(x: 220, y: 140, width: 240, height: 32)
+                )
+            ]
+        )
+        let performer = StubSemanticActionPerformer()
+        let provider = SequenceReplayEnvironmentSnapshotProvider(
+            snapshots: [preResolutionSnapshot, preResolutionSnapshot, postSnapshot]
+        )
+        let executor = SemanticActionExecutor(
+            snapshotProvider: provider,
+            resolver: SemanticTargetResolver(fingerprintCapture: StubFingerprintCapture(anchor: nil)),
+            performer: performer,
+            nowProvider: fixedNow
+        )
+
+        let action = SemanticActionStoreAction(
+            actionId: "action-type-001",
+            sessionId: "session-001",
+            taskId: "task-001",
+            traceId: "trace-type-001",
+            stepId: "step-type-001",
+            actionType: "type",
+            selector: [
+                "locatorType": "roleAndTitle",
+                "appBundleId": "com.test.app",
+                "windowTitlePattern": "^Main$",
+                "elementRole": "AXTextField",
+                "elementTitle": "Search",
+                "elementIdentifier": "search-field",
+            ],
+            args: ["text": "hello"],
+            context: [:],
+            preferredLocatorType: "roleAndTitle",
+            manualReviewRequired: false,
+            createdAt: "2026-03-28T08:01:00Z",
+            updatedAt: "2026-03-28T08:01:00Z",
+            targets: [
+                SemanticActionStoreTargetRecord(
+                    targetId: "action-type-001:target:01",
+                    targetRole: "primary",
+                    ordinal: 1,
+                    locatorType: "roleAndTitle",
+                    selector: [
+                        "locatorType": "roleAndTitle",
+                        "appBundleId": "com.test.app",
+                        "windowTitlePattern": "^Main$",
+                        "elementRole": "AXTextField",
+                        "elementTitle": "Search",
+                        "elementIdentifier": "search-field",
+                    ],
+                    isPreferred: true
+                )
+            ],
+            assertions: []
+        )
+
+        let report = executor.execute(action: action, dryRun: false)
+
+        XCTAssertEqual(report.status, .succeeded)
+        XCTAssertEqual(report.postAssertions?.status, .passed)
+        XCTAssertEqual(
+            report.postAssertions?.assertions.first(where: { $0.assertionType == "textValueContains" })?.status,
+            .passed
+        )
+        XCTAssertEqual(performer.events, ["activate:com.test.app", "type:hello"])
     }
 
     private func makeClickAction() -> SemanticActionStoreAction {
@@ -461,6 +617,24 @@ private struct StubFingerprintCapture: SemanticScreenFingerprintCapturing {
 
     func capture(rect: SemanticBoundingRect) -> SemanticImageAnchor? {
         anchor
+    }
+}
+
+private final class SequenceReplayEnvironmentSnapshotProvider: ReplayEnvironmentSnapshotProviding {
+    private var snapshots: [ReplayEnvironmentSnapshot]
+    private var index: Int = 0
+
+    init(snapshots: [ReplayEnvironmentSnapshot]) {
+        self.snapshots = snapshots
+    }
+
+    func snapshot() -> ReplayEnvironmentSnapshot {
+        guard !snapshots.isEmpty else {
+            fatalError("SequenceReplayEnvironmentSnapshotProvider requires at least one snapshot.")
+        }
+        let value = snapshots[min(index, snapshots.count - 1)]
+        index += 1
+        return value
     }
 }
 

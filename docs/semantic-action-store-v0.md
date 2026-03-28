@@ -77,6 +77,11 @@
 - `windowTitlePattern`
 - `selectorResolvable`
 
+`SEM-203` 起，执行器会把这些记录作为 post-assertion 输入，并额外按动作类型补充运行时默认断言：
+
+- `targetSelectorResolvable`（drag）
+- `textValueContains`（type）
+
 ### 3.4 `action_execution_logs`
 
 保存动作级执行日志回链：
@@ -98,6 +103,7 @@
 - `duration_ms`
 - `result_json.summary / matchedLocatorType / dryRun`
 - `result_json.errorCode / contextGuard`
+- `result_json.postAssertions`
 
 其中 `SEM-202` 新增的 `contextGuard` 结构默认包含：
 
@@ -105,6 +111,13 @@
 - `requirements.requiredFrontmostAppBundleId / windowTitlePattern / urlHost`
 - `actual.appBundleId / windowTitle / url / urlHost`
 - `mismatches[*].dimension / expected / actual / message`
+
+`SEM-203` 新增的 `postAssertions` 结构默认包含：
+
+- `status`
+- `checkedAt`
+- `assertions[*].assertionType / status / isRequired / message`
+- `assertions[*].expected / actual`
 
 ## 4. 回填来源优先级
 
@@ -160,5 +173,6 @@ v0 暂不做：
 补充说明：
 
 - `SEM-202` 已在 `OpenStaffReplayVerifyCLI` 上接入严格 context guard，但浏览器 `urlHost` 仍属于 best-effort 采集，优先依赖 snapshot 中显式 `url/urlHost`，其次尝试实时读取 `AXDocument / AXURL`。
+- `SEM-203` 的 `textValueContains` 目前依赖可读的非敏感 `AXValue`；若目标控件不暴露 value 或被系统标记为安全输入框，执行器会保守返回断言失败而不是假定成功。
 
-这些属于后续 `SEM-203 / 301` 的接续工作。
+这些属于后续 `SEM-301` 及后续执行增强工作的接续内容。

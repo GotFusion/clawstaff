@@ -109,7 +109,7 @@ make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-act
 ```
 
 Exit code `2` means at least one step degraded to coordinate fallback or failed semantic resolution.
-从 `SEM-202` 开始，semantic action 模式还会在执行前强校验 `requiredFrontmostApp / windowTitlePattern / urlHost`；一旦 mismatch，会直接返回结构化 `contextGuard` 并以 `stopAndAskTeacher` 阻断执行。
+从 `SEM-202` 开始，semantic action 模式会在执行前强校验 `requiredFrontmostApp / windowTitlePattern / urlHost`；一旦 mismatch，会直接返回结构化 `contextGuard` 并以 `stopAndAskTeacher` 阻断执行。`SEM-203` 之后，live actuation 结束后还会继续输出结构化 `postAssertions`，用于回写 `action_execution_logs` 并标记真实执行是否通过后置断言。
 
 ## Preference Profile CLI
 
