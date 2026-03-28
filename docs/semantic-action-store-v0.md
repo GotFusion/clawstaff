@@ -24,6 +24,7 @@
 - builder CLI：`scripts/learning/build_semantic_actions.py`
 - 回填脚本：`scripts/learning/migrate_semantic_actions.py`
 - SEM-201/202 executor：`OpenStaffReplayVerifyCLI --semantic-action-db <db> --action-id <id> [--dry-run]`
+- SEM-303 observability：`scripts/observability/build_semantic_action_dashboard.py`
 
 ## 3. 表结构
 
@@ -102,7 +103,7 @@
 - `status`
 - `selector_hit_path_json`
 - `duration_ms`
-- `result_json.summary / matchedLocatorType / dryRun`
+- `result_json.summary / matchedLocatorType / dryRun / environment`
 - `result_json.errorCode / contextGuard`
 - `result_json.teacherConfirmation / teacherConfirmationArtifactPath`
 - `result_json.postAssertions`
@@ -134,6 +135,17 @@
 - `expectedContext / actualContext`
 
 若 CLI 同时传入 `--teacher-confirmation-root`（或使用默认 sibling 目录），执行日志还会附带 `teacherConfirmationArtifactPath`，指向独立 JSON artifact。
+
+`SEM-303` 起，`build_semantic_action_dashboard.py` 会直接以这张表为事实源聚合：
+
+- `selectorHitRate`
+- `fallbackLayerDistribution`
+- `interceptRate`
+- `replaySuccessRate`
+- `manualConfirmationRate`
+- `misTriggerRiskEventCount`
+
+并按 `result_json.environment`（或 CLI `--environment` / config fallback）生成 `metrics-summary.json + dashboard.md`。
 
 ## 4. 回填来源优先级
 

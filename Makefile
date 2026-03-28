@@ -13,11 +13,15 @@ OPENCLAW_TARGET := OpenStaffOpenClawCLI
 STUDENT_TARGET := OpenStaffStudentCLI
 PREFERENCE_BENCHMARK_ROOT ?= data/benchmarks/personal-preference
 PREFERENCE_BENCHMARK_MANIFEST ?= $(PREFERENCE_BENCHMARK_ROOT)/manifest.json
+SEMANTIC_ACTION_DB ?= data/semantic-actions/semantic-actions.sqlite
+SEMANTIC_ACTION_OBSERVABILITY_CONFIG ?= config/semantic-action-observability.v0.json
+SEMANTIC_ACTION_OBSERVABILITY_OUTPUT ?= data/reports/semantic-action-observability/metrics-summary.json
+SEMANTIC_ACTION_OBSERVABILITY_DASHBOARD ?= data/reports/semantic-action-observability/dashboard.md
 SWIFT_WRAPPER := ./scripts/dev/with_xcode_env.sh
 SWIFT := $(SWIFT_WRAPPER) swift
 ARGS ?=
 
-.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify review preference-profile learning-bundle-export learning-bundle-verify learning-bundle-restore semantic-actions-build semantic-actions-migrate openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample validate-semantic-guard benchmark-personal benchmark-preference benchmark-preference-gates benchmark-preference-preflight test-swift test test-unit test-integration test-e2e release-regression release-preflight
+.PHONY: build dev xcode-open capture slice knowledge orchestrator assist replay-verify review preference-profile learning-bundle-export learning-bundle-verify learning-bundle-restore semantic-actions-build semantic-actions-migrate semantic-observability-dashboard semantic-observability-gates openclaw student llm-prompts llm-validate llm-call llm-retry skill-build skills-sample skills-validate-sample validate-raw-events validate-knowledge validate-replay-sample validate-semantic-guard benchmark-personal benchmark-preference benchmark-preference-gates benchmark-preference-preflight test-swift test test-unit test-integration test-e2e release-regression release-preflight
 
 build:
 	$(SWIFT) build --package-path $(APP_PACKAGE_PATH)
@@ -67,6 +71,12 @@ semantic-actions-build:
 
 semantic-actions-migrate:
 	python3 scripts/learning/migrate_semantic_actions.py $(ARGS)
+
+semantic-observability-dashboard:
+	python3 scripts/observability/build_semantic_action_dashboard.py --db-path $(SEMANTIC_ACTION_DB) --config $(SEMANTIC_ACTION_OBSERVABILITY_CONFIG) --output $(SEMANTIC_ACTION_OBSERVABILITY_OUTPUT) --dashboard-output $(SEMANTIC_ACTION_OBSERVABILITY_DASHBOARD) $(ARGS)
+
+semantic-observability-gates:
+	python3 scripts/observability/build_semantic_action_dashboard.py --db-path $(SEMANTIC_ACTION_DB) --config $(SEMANTIC_ACTION_OBSERVABILITY_CONFIG) --output $(SEMANTIC_ACTION_OBSERVABILITY_OUTPUT) --dashboard-output $(SEMANTIC_ACTION_OBSERVABILITY_DASHBOARD) --check-gates $(ARGS)
 
 openclaw:
 	$(SWIFT) run --package-path $(APP_PACKAGE_PATH) $(OPENCLAW_TARGET) $(ARGS)

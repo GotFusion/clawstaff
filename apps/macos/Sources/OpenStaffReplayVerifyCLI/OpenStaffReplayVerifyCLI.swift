@@ -106,6 +106,7 @@ struct OpenStaffReplayVerifyCLI {
                     teacherConfirmed: options.teacherConfirmed,
                     confirmationPolicy: try options.teacherConfirmationPolicy()
                 )
+                let semanticEnvironment = options.semanticExecutionEnvironment()
                 let teacherConfirmationArtifactPath = try options.teacherConfirmationArtifactStore(
                     semanticActionDatabaseURL: databaseURL
                 )?.store(action: action, report: report)?.path
@@ -120,6 +121,7 @@ struct OpenStaffReplayVerifyCLI {
                         selectorHitPath: report.selectorHitPath,
                         result: executionResultPayload(
                             for: report,
+                            environment: semanticEnvironment,
                             teacherConfirmationArtifactPath: teacherConfirmationArtifactPath
                         ),
                         durationMs: report.durationMs,
@@ -157,6 +159,7 @@ struct OpenStaffReplayVerifyCLI {
           make replay-verify ARGS="--skill-dir data/skills/pending/example --snapshot core/executor/examples/replay-environment.sample.json --json"
           make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-actions.sqlite --action-id action-001 --snapshot core/executor/examples/replay-environment.sample.json --dry-run --json"
           make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-actions.sqlite --action-id action-001 --snapshot core/executor/examples/replay-environment.sample.json --teacher-confirmed --json"
+          make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-actions.sqlite --action-id action-001 --environment staging --json"
 
         Flags:
           --knowledge <path>        KnowledgeItem JSON file or directory.
@@ -165,6 +168,7 @@ struct OpenStaffReplayVerifyCLI {
           --action-id <id>          Semantic action id to execute.
           --snapshot <path>         Optional replay snapshot JSON file. If omitted, capture the current frontmost window via AX.
           --preferences-root <path> Preference store root. Default: data/preferences
+          --environment <name>      Execution environment label written into semantic action logs. Default: OPENSTAFF_RUNTIME_ENV or dev
           --teacher-confirmed       Approve confirmation-gated semantic actions for this run.
           --teacher-confirmation-root <path> Root directory for teacher confirmation artifacts.
           --teacher-confirmation-policy <path> Optional JSON policy override for confirmation gating.
@@ -313,11 +317,13 @@ struct OpenStaffReplayVerifyCLI {
 
     static func executionResultPayload(
         for report: SemanticActionExecutionReport,
+        environment: String,
         teacherConfirmationArtifactPath: String? = nil
     ) -> SemanticJSONObject {
         var payload: SemanticJSONObject = [
             "actionType": report.actionType,
             "dryRun": report.dryRun,
+            "environment": environment,
             "summary": report.summary,
             "status": report.status.rawValue,
         ]
@@ -365,6 +371,7 @@ struct ReplayVerifyCLIOptions {
     let input: ReplayVerifyInput
     let snapshotPath: String?
     let preferencesRootPath: String
+    let semanticEnvironment: String?
     let teacherConfirmed: Bool
     let teacherConfirmationRootPath: String?
     let teacherConfirmationPolicyPath: String?
@@ -379,6 +386,7 @@ struct ReplayVerifyCLIOptions {
         var actionId: String?
         var snapshotPath: String?
         var preferencesRootPath = "data/preferences"
+        var semanticEnvironment: String?
         var teacherConfirmed = false
         var teacherConfirmationRootPath: String?
         var teacherConfirmationPolicyPath: String?
@@ -427,6 +435,12 @@ struct ReplayVerifyCLIOptions {
                     throw ReplayVerifyCLIOptionError.missingValue("--preferences-root")
                 }
                 preferencesRootPath = arguments[index]
+            case "--environment":
+                index += 1
+                guard index < arguments.count else {
+                    throw ReplayVerifyCLIOptionError.missingValue("--environment")
+                }
+                semanticEnvironment = arguments[index]
             case "--teacher-confirmation-root":
                 index += 1
                 guard index < arguments.count else {
@@ -459,6 +473,7 @@ struct ReplayVerifyCLIOptions {
                 input: .knowledge(resolveStatic(path: knowledgeInputPath ?? "core/knowledge/examples/knowledge-item.sample.json")),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                semanticEnvironment: semanticEnvironment,
                 teacherConfirmed: teacherConfirmed,
                 teacherConfirmationRootPath: teacherConfirmationRootPath,
                 teacherConfirmationPolicyPath: teacherConfirmationPolicyPath,
@@ -480,6 +495,7 @@ struct ReplayVerifyCLIOptions {
                 input: .knowledge(resolveStatic(path: knowledgeInputPath)),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                semanticEnvironment: semanticEnvironment,
                 teacherConfirmed: teacherConfirmed,
                 teacherConfirmationRootPath: teacherConfirmationRootPath,
                 teacherConfirmationPolicyPath: teacherConfirmationPolicyPath,
@@ -494,6 +510,7 @@ struct ReplayVerifyCLIOptions {
                 input: .skillDirectory(resolveStatic(path: skillDirectoryPath)),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                semanticEnvironment: semanticEnvironment,
                 teacherConfirmed: teacherConfirmed,
                 teacherConfirmationRootPath: teacherConfirmationRootPath,
                 teacherConfirmationPolicyPath: teacherConfirmationPolicyPath,
@@ -515,6 +532,7 @@ struct ReplayVerifyCLIOptions {
                 ),
                 snapshotPath: snapshotPath,
                 preferencesRootPath: preferencesRootPath,
+                semanticEnvironment: semanticEnvironment,
                 teacherConfirmed: teacherConfirmed,
                 teacherConfirmationRootPath: teacherConfirmationRootPath,
                 teacherConfirmationPolicyPath: teacherConfirmationPolicyPath,
@@ -538,6 +556,23 @@ struct ReplayVerifyCLIOptions {
 
     var preferencesRootURL: URL {
         Self.resolveStatic(path: preferencesRootPath)
+    }
+
+    func semanticExecutionEnvironment() -> String {
+        if let semanticEnvironment {
+            let trimmed = semanticEnvironment.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                return trimmed.lowercased()
+            }
+        }
+
+        if let runtimeEnvironment = ProcessInfo.processInfo.environment["OPENSTAFF_RUNTIME_ENV"]?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !runtimeEnvironment.isEmpty {
+            return runtimeEnvironment.lowercased()
+        }
+
+        return "dev"
     }
 
     func teacherConfirmationPolicy() throws -> SemanticActionTeacherConfirmationPolicy {

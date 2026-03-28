@@ -161,6 +161,7 @@ class SemanticActionExecutorCLITests(unittest.TestCase):
                 "STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED",
             )
             self.assertEqual(action["execution_logs"][0]["selector_hit_path_json"], ["roleAndTitle"])
+            self.assertEqual(action["execution_logs"][0]["result_json"]["environment"], "dev")
             self.assertGreaterEqual(action["execution_logs"][0]["duration_ms"], 0)
 
     def test_cli_blocks_context_mismatch_and_records_structured_reason(self):

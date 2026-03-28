@@ -1,7 +1,7 @@
 # 语义动作捕获模型迁移执行 Backlog（废除纯坐标方案）
 
 更新时间：2026-03-28  
-状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 / SEM-203 / SEM-301 / SEM-302 已完成，其余待执行）
+状态：进行中（SEM-001 / SEM-002 / SEM-003 / SEM-101 / SEM-102 / SEM-103 / SEM-201 / SEM-202 / SEM-203 / SEM-301 / SEM-302 / SEM-303 已完成，其余待执行）
 
 ## 1. 目标与原则
 
@@ -285,21 +285,22 @@
   - 缓解：只拦截高风险动作（跨 app、drag、批量输入）；执行器默认只在 `manual_review_required / 低置信 / switch_app / drag / 批量 type` 时触发审核，并把结果写入 `action_execution_logs.result_json.teacherConfirmation` 与独立 artifact。
 
 ### SEM-303 可观测性与指标看板
+状态：已完成（2026-03-28）
 - 目标：建立迁移期实时质量追踪。
 - 任务：
-  - 指标：
+  - [x] 指标：
     - selector 命中率
     - fallback 层级分布
     - 拦截率
     - 回放成功率
     - 人工确认率
-  - Dashboard 与告警阈值。
+  - [x] Dashboard 与告警阈值。
 - DoD：
-  - 指标按环境分维度可视化（dev/staging/prod）。
-  - 出现“误触发风险”时自动告警。
+  - [x] 指标按环境分维度可视化（dev/staging/prod）。
+  - [x] 出现“误触发风险”时自动告警。
 - 风险：
   - 指标口径不一致。
-  - 缓解：统一埋点事件与字段规范。
+  - 缓解：`OpenStaffReplayVerifyCLI` 现会在 `action_execution_logs.result_json` 固定写入 `environment`，观测脚本统一从 `semantic_actions` SQLite 聚合 `selectorHitRate / fallbackLayerDistribution / interceptRate / replaySuccessRate / manualConfirmationRate / misTriggerRiskEventCount`，并输出 `metrics-summary.json + dashboard.md`；`SEM202-CONTEXT-MISMATCH / SEM203-ASSERTION-FAILED / SEM201-COORDINATE-FALLBACK-DISALLOWED` 会自动升格为风险告警。
 
 ## Week 5（2026-04-27 ~ 2026-05-03）：稳定性与回归硬化
 

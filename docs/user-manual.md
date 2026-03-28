@@ -246,8 +246,38 @@ make replay-verify ARGS="--semantic-action-db data/semantic-actions/semantic-act
 - 未传 `--teacher-confirmed` 时，会返回 `SEM302-TEACHER-CONFIRMATION-REQUIRED`，并在输出里展示候选 selector、上下文要求和断言摘要。
 - 审核结果会写进 `action_execution_logs.result_json.teacherConfirmation`。
 - 若配置了 `--teacher-confirmation-root`，还会额外落 JSON artifact 到 `teacher-confirmations/{date}/{sessionId}/`，便于后续学习链路引用。
+- 如需把执行日志归到特定环境，可额外传 `--environment dev|staging|prod`；该字段会直接写进 `action_execution_logs.result_json.environment`，供观测看板聚合。
 
-用来验证恢复后的 rule ids 与 profile rebuild 仍然一致。
+### 4.7 语义执行观测看板（SEM-303）
+当 `semantic_actions` 已有执行日志后，可直接生成迁移期质量看板。
+
+单环境默认库：
+
+```bash
+make semantic-observability-dashboard
+```
+
+如果需要按阈值直接 fail：
+
+```bash
+make semantic-observability-gates
+```
+
+多环境聚合示例：
+
+```bash
+python3 scripts/observability/build_semantic_action_dashboard.py \
+  --source dev=/tmp/openstaff-dev/semantic-actions.sqlite \
+  --source staging=/tmp/openstaff-staging/semantic-actions.sqlite \
+  --source prod=/tmp/openstaff-prod/semantic-actions.sqlite \
+  --check-gates
+```
+
+说明：
+- 默认产物会写到 `data/reports/semantic-action-observability/metrics-summary.json` 与 `data/reports/semantic-action-observability/dashboard.md`。
+- 看板会按 `dev / staging / prod` 展示 `selectorHitRate / fallbackLayerDistribution / interceptRate / replaySuccessRate / manualConfirmationRate`。
+- 只要出现 `SEM202-CONTEXT-MISMATCH`、`SEM203-ASSERTION-FAILED` 或 `SEM201-COORDINATE-FALLBACK-DISALLOWED`，摘要就会自动生成“误触发风险”告警。
+- 若当前只有 dry-run 日志，`replaySuccessRate` 会退回用全量样本计算，并在摘要里标明 `mode=all_runs`。
 
 ## 5. 发布前检查
 

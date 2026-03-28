@@ -1,0 +1,45 @@
+{
+  "configId": "semantic-action-observability-v0-20260328",
+  "defaultEnvironment": "dev",
+  "expectedEnvironments": [
+    "dev",
+    "staging",
+    "prod"
+  ],
+  "gates": {
+    "selectorHitRate": {
+      "type": "minimum",
+      "value": 0.95
+    },
+    "replaySuccessRate": {
+      "type": "minimum",
+      "value": 0.95
+    },
+    "manualConfirmationRate": {
+      "type": "maximum",
+      "value": 0.1
+    },
+    "misTriggerRiskEventCount": {
+      "type": "maximum",
+      "value": 0
+    }
+  },
+  "perEnvironmentGates": {
+    "selectorHitRate": {
+      "type": "minimum",
+      "value": 0.95
+    },
+    "replaySuccessRate": {
+      "type": "minimum",
+      "value": 0.95
+    },
+    "manualConfirmationRate": {
+      "type": "maximum",
+      "value": 0.1
+    },
+    "misTriggerRiskEventCount": {
+      "type": "maximum",
+      "value": 0
+    }
+  }
+}
