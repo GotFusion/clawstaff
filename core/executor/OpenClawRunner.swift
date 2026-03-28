@@ -605,12 +605,6 @@ public struct OpenClawRunner {
                 errorCode: OpenClawExecutionErrorCode.semanticOnlyRequired.rawValue
             )
         }
-        if !request.runtimeArguments.contains("--semantic-only") {
-            return RequestValidationFailure(
-                summary: "OpenClaw execution request must forward --semantic-only to the gateway. Legacy coordinate entry has been disabled.",
-                errorCode: OpenClawExecutionErrorCode.semanticOnlyRequired.rawValue
-            )
-        }
         return nil
     }
 

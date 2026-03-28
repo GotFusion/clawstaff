@@ -353,17 +353,24 @@
 ## Week 6（2026-05-04 ~ 2026-05-10）：切流与清理发布
 
 ### SEM-501 正式切流（Semantic-Only）
+状态：工程已完成（2026-03-28，待生产一周观测验收）
 - 目标：全量启用语义执行，关闭旧路径。
 - 任务：
-  - staging 全量灰度 -> prod 全量。
-  - 发布开关固定为 `semantic_only=true`。
-  - 建立回滚预案（仅回滚版本，不恢复坐标执行）。
+  - [x] staging 全量灰度 -> prod 全量。
+  - [x] 发布开关固定为 `semantic_only=true`。
+  - [x] 建立回滚预案（仅回滚版本，不恢复坐标执行）。
+- 落地产物：
+  - `apps/macos/Sources/OpenStaffOpenClawCLI/OpenStaffOpenClawCLI.swift`
+  - `core/executor/OpenClawRunner.swift`
+  - `apps/macos/Tests/OpenStaffAppTests/OpenClawRunnerTests.swift`
+  - `tests/integration/test_openclaw_runner_cli.py`
+  - `docs/semantic-only-cutover-runbook.md`
 - DoD：
-  - 生产环境无坐标执行调用。
-  - 全量后一周核心指标稳定。
+  - [x] 生产环境无坐标执行调用。
+  - [ ] 全量后一周核心指标稳定。
 - 风险：
   - 线上长尾场景失败率上升。
-  - 缓解：灰度分批 + 人工确认兜底。
+  - 缓解：灰度分批 + 人工确认兜底；gateway/runner 现已固定 semantic-only，legacy `--semantic-only` 仅作为兼容 no-op，切流与回滚步骤统一收敛到 `docs/semantic-only-cutover-runbook.md`。生产一周稳定性需按 `SEM-303/SEM-402` 看板与 gate 完成真实观测后再勾选。
 
 ### SEM-502 技术债清理与文档收口
 - 目标：完成坐标方案残留清理。

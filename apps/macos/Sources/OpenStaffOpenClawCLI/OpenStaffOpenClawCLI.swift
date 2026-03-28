@@ -65,33 +65,12 @@ struct OpenStaffOpenClawCLI {
         let skillName = skillBundle.skillName
         let skillDirectoryPath = options.skillDirectoryURL.path
 
-        guard options.semanticOnly else {
-            let finishedAt = currentTimestamp()
-            return OpenClawGatewayExecutionPayload(
-                traceId: traceId,
-                sessionId: sessionId,
-                taskId: taskId,
-                skillName: skillName,
-                skillDirectoryPath: skillDirectoryPath,
-                status: .failed,
-                errorCode: OpenClawExecutionErrorCode.semanticOnlyRequired.rawValue,
-                startedAt: startedAt,
-                finishedAt: finishedAt,
-                summary: "Gateway refused legacy execution entry because --semantic-only was not provided. Coordinate execution is disabled by SEM-001.",
-                totalSteps: 0,
-                succeededSteps: 0,
-                failedSteps: 0,
-                blockedSteps: 0,
-                stepResults: []
-            )
-        }
-
         let preflight = validator.validate(
             payload: skillBundle,
             skillDirectoryPath: skillDirectoryPath,
             options: SkillPreflightOptions(
                 safetyRulesPath: options.safetyRulesPath,
-                semanticOnly: options.semanticOnly
+                semanticOnly: true
             )
         )
         if preflight.status == .failed {
@@ -306,9 +285,8 @@ struct OpenStaffOpenClawCLI {
           --working-dir <path>                  Optional subprocess working directory.
           --timeout-seconds <n>                 Subprocess timeout in seconds. Default: 30
           --simulate-runtime-failure-step <n>   Simulate gateway failure on step n (1-based).
-          --semantic-only                       Required in --gateway-mode. Runner forwards it automatically.
           --teacher-confirmed                   Confirm teacher approval for skills gated by preflight.
-          --gateway-mode                        Internal runtime entry. Must be paired with --semantic-only.
+          --gateway-mode                        Internal runtime entry. Semantic-only is always enforced.
           --json-result                         Print structured JSON result.
           --help                                Show this help message.
         """)
@@ -335,7 +313,6 @@ private struct OpenClawCLIOptions {
     let timeoutSeconds: Int
     let simulateRuntimeFailureAtStepIndex: Int?
     let teacherConfirmed: Bool
-    let semanticOnly: Bool
     let jsonResult: Bool
     let showHelp: Bool
     let gatewayMode: Bool
@@ -360,7 +337,6 @@ private struct OpenClawCLIOptions {
         var timeoutSeconds = 30
         var simulateRuntimeFailureAtStepIndex: Int?
         var teacherConfirmed = false
-        var semanticOnly = false
         var jsonResult = false
         var showHelp = false
         var gatewayMode = false
@@ -442,7 +418,7 @@ private struct OpenClawCLIOptions {
             case "--teacher-confirmed":
                 teacherConfirmed = true
             case "--semantic-only":
-                semanticOnly = true
+                break
             case "--json-result":
                 jsonResult = true
             case "--gateway-mode":
@@ -469,7 +445,6 @@ private struct OpenClawCLIOptions {
                 timeoutSeconds: timeoutSeconds,
                 simulateRuntimeFailureAtStepIndex: simulateRuntimeFailureAtStepIndex,
                 teacherConfirmed: teacherConfirmed,
-                semanticOnly: semanticOnly,
                 jsonResult: jsonResult,
                 showHelp: true,
                 gatewayMode: gatewayMode
@@ -492,7 +467,6 @@ private struct OpenClawCLIOptions {
             timeoutSeconds: timeoutSeconds,
             simulateRuntimeFailureAtStepIndex: simulateRuntimeFailureAtStepIndex,
             teacherConfirmed: teacherConfirmed,
-            semanticOnly: semanticOnly,
             jsonResult: jsonResult,
             showHelp: false,
             gatewayMode: gatewayMode
@@ -507,7 +481,6 @@ private struct OpenClawCLIOptions {
     ) -> [String] {
         var arguments = [
             "--gateway-mode",
-            "--semantic-only",
             "--skill-dir",
             skillDirectoryURL.path,
             "--trace-id",

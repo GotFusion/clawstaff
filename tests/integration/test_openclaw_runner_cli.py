@@ -104,22 +104,43 @@ def make_coordinate_only_skill(skill_dir: Path) -> None:
 
 
 class OpenClawRunnerCLITests(unittest.TestCase):
-    def test_gateway_requires_semantic_only_flag(self):
+    def test_gateway_enforces_semantic_only_by_default_without_flag(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = Path(tmpdir) / "skill"
+            shutil.copytree(SKILL_SAMPLE_DIRECTORIES[0], skill_dir)
+            make_coordinate_only_skill(skill_dir)
+
+            result = run_swift_target(
+                "OpenStaffOpenClawCLI",
+                [
+                    "--gateway-mode",
+                    "--skill-dir",
+                    str(skill_dir),
+                    "--json-result",
+                ],
+            )
+
+            self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
+            payload = extract_last_json_object(result.stdout)
+            self.assertEqual(payload["status"], "failed")
+            self.assertEqual(payload["errorCode"], "OCW-COORDINATE-EXECUTION-DISABLED")
+
+    def test_gateway_accepts_semantic_only_flag_as_compatibility_noop(self):
         result = run_swift_target(
             "OpenStaffOpenClawCLI",
             [
                 "--gateway-mode",
+                "--semantic-only",
                 "--skill-dir",
                 str(SKILL_SAMPLE_DIRECTORIES[0]),
+                "--teacher-confirmed",
                 "--json-result",
             ],
         )
 
-        self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
+        self.assertEqual(result.returncode, 0, msg=result.stderr or result.stdout)
         payload = extract_last_json_object(result.stdout)
-        self.assertEqual(payload["status"], "failed")
-        self.assertEqual(payload["errorCode"], "OCW-SEMANTIC-ONLY-REQUIRED")
-        self.assertIn("Coordinate execution is disabled by SEM-001", payload["summary"])
+        self.assertEqual(payload["status"], "succeeded")
 
     def test_runner_executes_three_sample_skills_via_subprocess(self):
         with tempfile.TemporaryDirectory() as tmpdir:

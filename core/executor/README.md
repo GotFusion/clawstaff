@@ -15,7 +15,7 @@
   - 指定步骤失败模拟（用于闭环验证）。
 - `OpenClawRunner.swift`：阶段 8.2 的 OpenClaw 适配层，支持：
   - 通过子进程调用 OpenClaw CLI / gateway。
-  - 强制 `semantic_only=true`，拒绝 legacy coordinate execution entry。
+  - 执行入口固定为 semantic-only，不再暴露可关闭开关。
   - 捕获 stdout / stderr / exit code。
   - 写入 `data/logs/{date}/{sessionId}-openclaw.log` 结构化执行日志。
   - 产出 `OpenClawExecutionResult` 与 `OpenClawExecutionReview`。

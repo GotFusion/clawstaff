@@ -1,6 +1,6 @@
 # scripts/release/
 
-发布前回归检查工具（TODO 6.3 / TODO 10.2 / TODO 11.5.3 / SEM-402）。
+发布前回归检查工具（TODO 6.3 / TODO 10.2 / TODO 11.5.3 / SEM-402 / SEM-501）。
 
 ## 包含内容
   - `run_regression.py`
@@ -33,6 +33,11 @@ make benchmark-semantic-e2e
 make benchmark-semantic-e2e-preflight
 make benchmark-preference-preflight
 ```
+
+## Semantic-Only 切流
+- `SEM-501` 起，OpenClaw gateway 已固定为 semantic-only；发布流程不再存在“恢复坐标执行”的开关。
+- 推荐切流顺序：先跑 `make release-preflight`，再对目标环境执行 `make semantic-observability-gates`，最后按 `docs/semantic-only-cutover-runbook.md` 做 staging -> prod 放量与 7 天观测。
+- 如出现异常，只允许回滚版本、收紧老师确认策略或暂停自动执行；不允许重新打开坐标执行路径。
 
 如需复用已构建 CLI，加快本地门禁：
 
