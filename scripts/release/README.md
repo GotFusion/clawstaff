@@ -1,6 +1,6 @@
 # scripts/release/
 
-发布前回归检查工具（TODO 6.3 / TODO 10.2 / TODO 11.5.3）。
+发布前回归检查工具（TODO 6.3 / TODO 10.2 / TODO 11.5.3 / SEM-402）。
 
 ## 包含内容
   - `run_regression.py`
@@ -13,9 +13,10 @@
     6. replay verify sample。
     7. personal desktop benchmark。
     8. semantic action e2e benchmark。
-    9. personal preference benchmark。
-    10. preference-learning v0 gate（`metrics-v0.json`）。
-    11. 测试套件（`scripts/tests/run_all.py`）。
+    9. semantic action e2e gate（`metrics-v0.json` + `repeatCount=3`）。
+    10. personal preference benchmark。
+    11. preference-learning v0 gate（`metrics-v0.json`）。
+    12. 测试套件（`scripts/tests/run_all.py`）。
   - 输出结构化回归报告 JSON。
 
 ## 推荐命令
@@ -29,6 +30,7 @@ python3 scripts/release/run_regression.py --suite all
 make release-regression
 make release-preflight
 make benchmark-semantic-e2e
+make benchmark-semantic-e2e-preflight
 make benchmark-preference-preflight
 ```
 

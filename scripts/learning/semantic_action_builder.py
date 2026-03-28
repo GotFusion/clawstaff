@@ -27,7 +27,7 @@ from semantic_action_store import (
 )
 
 
-BUILDER_VERSION = "sem-101-102-103-rule-v1"
+BUILDER_VERSION = "sem-101-102-103-402-rule-v1"
 PRINTABLE_SHORTCUT_EXCLUSIONS = {"\r", "\n", "\t", "\x03", "\x7f", "\x1b"}
 KEY_CODE_NAMES = {
     36: "return",
@@ -43,6 +43,8 @@ class ActionBuilderConfig:
     type_gap_ms: int = 1200
     shortcut_gap_ms: int = 900
     drag_gap_ms: int = 1500
+    click_noise_gap_ms: int = 110
+    click_noise_radius_px: int = 6
 
 
 @dataclass
@@ -155,6 +157,13 @@ def key_name(event: dict[str, Any]) -> str | None:
     return character.lower()
 
 
+def normalized_token(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    normalized = value.strip().lower()
+    return normalized or None
+
+
 def is_printable_text_key(event: dict[str, Any]) -> bool:
     if event.get("action") != "keyDown":
         return False
@@ -179,6 +188,63 @@ def event_kind(event: dict[str, Any]) -> str | None:
 
 def same_context(left: dict[str, Any], right: dict[str, Any]) -> bool:
     return context_key(left) == context_key(right)
+
+
+def focused_element_signature(event: dict[str, Any]) -> tuple[str | None, str | None, str | None]:
+    focused = event_context(event).get("focusedElement")
+    if not isinstance(focused, dict):
+        return (None, None, None)
+    return (
+        normalized_token(focused.get("identifier")),
+        normalized_token(focused.get("role")),
+        normalized_token(focused.get("title")),
+    )
+
+
+def pointer_close(left: dict[str, Any], right: dict[str, Any], radius_px: int) -> bool:
+    left_pointer = event_pointer(left)
+    right_pointer = event_pointer(right)
+    if not isinstance(left_pointer, dict) or not isinstance(right_pointer, dict):
+        return False
+    if left_pointer.get("coordinateSpace") != right_pointer.get("coordinateSpace"):
+        return False
+
+    left_x = left_pointer.get("x")
+    left_y = left_pointer.get("y")
+    right_x = right_pointer.get("x")
+    right_y = right_pointer.get("y")
+    if not all(isinstance(value, (int, float)) for value in (left_x, left_y, right_x, right_y)):
+        return False
+    return abs(float(left_x) - float(right_x)) <= radius_px and abs(float(left_y) - float(right_y)) <= radius_px
+
+
+def is_duplicate_click_noise(previous: dict[str, Any], current: dict[str, Any], config: ActionBuilderConfig) -> bool:
+    if previous.get("action") not in {"leftClick", "rightClick"}:
+        return False
+    if current.get("action") != previous.get("action"):
+        return False
+    if not same_context(previous, current):
+        return False
+
+    gap_ms = time_gap_millis(previous, current)
+    if gap_ms is None or gap_ms > config.click_noise_gap_ms:
+        return False
+    if not pointer_close(previous, current, config.click_noise_radius_px):
+        return False
+
+    previous_signature = focused_element_signature(previous)
+    current_signature = focused_element_signature(current)
+    previous_identifier = previous_signature[0]
+    current_identifier = current_signature[0]
+    if previous_identifier and current_identifier:
+        return previous_identifier == current_identifier
+
+    previous_role, previous_title = previous_signature[1], previous_signature[2]
+    current_role, current_title = current_signature[1], current_signature[2]
+    if previous_role and current_role and previous_title and current_title:
+        return previous_role == current_role and previous_title == current_title
+
+    return True
 
 
 def shortcut_signature(event: dict[str, Any]) -> tuple[str, ...]:
@@ -906,6 +972,17 @@ def build_actions_for_task_chunk(
     if config is None:
         config = ActionBuilderConfig()
 
+    filtered_events: list[dict[str, Any]] = []
+    noise_suppressed_event_ids: list[str] = []
+    for event in events:
+        previous_kept_event = filtered_events[-1] if filtered_events else None
+        if previous_kept_event is not None and is_duplicate_click_noise(previous_kept_event, event, config):
+            raw_event_id = event_id(event)
+            if raw_event_id is not None:
+                noise_suppressed_event_ids.append(raw_event_id)
+            continue
+        filtered_events.append(event)
+
     bundles: list[ActionBuildBundle] = []
     skipped_events: list[str] = []
     cluster: EventCluster | None = None
@@ -937,9 +1014,9 @@ def build_actions_for_task_chunk(
 
     previous_event: dict[str, Any] | None = None
     cursor = 0
-    while cursor < len(events):
-        event = events[cursor]
-        drag_cluster_result = detect_drag_cluster(events, cursor, config)
+    while cursor < len(filtered_events):
+        event = filtered_events[cursor]
+        drag_cluster_result = detect_drag_cluster(filtered_events, cursor, config)
         if drag_cluster_result is not None:
             drag_cluster, next_cursor = drag_cluster_result
             if previous_event is not None and not same_context(previous_event, event):
@@ -1015,7 +1092,7 @@ def build_actions_for_task_chunk(
 
     flush_cluster()
 
-    source_event_ids = {event_id(event) for event in events if event_id(event)}
+    source_event_ids = {event_id(event) for event in filtered_events if event_id(event)}
     semanticized_event_ids = {
         source_event_id
         for bundle in bundles
@@ -1027,11 +1104,14 @@ def build_actions_for_task_chunk(
         "taskId": task_chunk.get("taskId"),
         "sessionId": task_chunk.get("sessionId"),
         "inputEventCount": len(events),
+        "effectiveInputEventCount": len(filtered_events),
         "builtActionCount": len(bundles),
         "semanticizedEventCount": len(semanticized_event_ids),
         "semanticizedEventRatio": (len(semanticized_event_ids) / len(source_event_ids)) if source_event_ids else 0.0,
         "manualReviewRequiredCount": sum(1 for bundle in bundles if bundle.action.manual_review_required),
         "diagnosticCount": diagnostics_count,
         "skippedEventIds": skipped_events,
+        "noiseSuppressedEventCount": len(noise_suppressed_event_ids),
+        "noiseSuppressedEventIds": noise_suppressed_event_ids,
     }
     return bundles, summary

@@ -96,6 +96,55 @@ class SemanticActionE2EBenchmarkIntegrationTests(unittest.TestCase):
                 self.assertTrue((attempt_dir / "execution-log.json").exists())
                 self.assertTrue((attempt_dir / "attempt-report.json").exists())
 
+    def test_runner_supports_repeat_count_for_stability_replay(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            benchmark_root = Path(tmpdir) / "benchmark"
+            manifest_path = benchmark_root / "manifest.json"
+            command = [
+                sys.executable,
+                str(RUNNER),
+                "--benchmark-root",
+                str(benchmark_root),
+                "--report",
+                str(manifest_path),
+                "--case-id",
+                "sem401-switch-app-safari-to-finder",
+                "--repeat-count",
+                "3",
+            ]
+            if REPLAY_VERIFY_EXECUTABLE.exists():
+                command.extend(["--replay-verify-executable", str(REPLAY_VERIFY_EXECUTABLE)])
+
+            result = self.run_cmd(command)
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr or result.stdout)
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(manifest["repeatCount"], 3)
+            self.assertEqual(manifest["sourceCaseCount"], 1)
+            self.assertEqual(manifest["totalCases"], 3)
+            self.assertEqual(manifest["passedCases"], 3)
+
+            case_ids = [case["caseId"] for case in manifest["cases"]]
+            self.assertEqual(
+                case_ids,
+                [
+                    "sem401-switch-app-safari-to-finder::run-001",
+                    "sem401-switch-app-safari-to-finder::run-002",
+                    "sem401-switch-app-safari-to-finder::run-003",
+                ],
+            )
+
+            for run_index in range(1, 4):
+                case_dir = (
+                    benchmark_root
+                    / "generated"
+                    / "sem401-switch-app-safari-to-finder"
+                    / "runs"
+                    / f"run-{run_index:03d}"
+                )
+                self.assertTrue((case_dir / "source-record.json").exists())
+                self.assertTrue((case_dir / "case-report.json").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

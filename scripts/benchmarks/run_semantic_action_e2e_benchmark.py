@@ -86,6 +86,12 @@ def parse_args() -> argparse.Namespace:
         help="Maximum retry attempts per failed case (default: 1).",
     )
     parser.add_argument(
+        "--repeat-count",
+        type=int,
+        default=1,
+        help="Repeat the selected case set sequentially to simulate longer sessions (default: 1).",
+    )
+    parser.add_argument(
         "--report",
         type=Path,
         help="Optional explicit manifest/report path. Default: <benchmark-root>/manifest.json",
@@ -259,6 +265,26 @@ def select_cases(
     return selected
 
 
+def repeat_label(run_index: int, repeat_count: int) -> str | None:
+    if repeat_count <= 1:
+        return None
+    return f"run-{run_index:03d}"
+
+
+def case_run_id(case: dict[str, Any], run_index: int, repeat_count: int) -> str:
+    label = repeat_label(run_index, repeat_count)
+    if label is None:
+        return str(case["caseId"])
+    return f"{case['caseId']}::{label}"
+
+
+def with_run_suffix(base: str, run_index: int, repeat_count: int) -> str:
+    label = repeat_label(run_index, repeat_count)
+    if label is None:
+        return base
+    return f"{base}-{label}"
+
+
 def resolve_replay_verify_executable(explicit_path: str | None) -> str:
     if explicit_path:
         candidate = Path(explicit_path)
@@ -299,14 +325,23 @@ def resolve_case_snapshot(case: dict[str, Any]) -> Path:
     return snapshot_path
 
 
-def build_source_record(case: dict[str, Any], snapshot_path: Path) -> dict[str, Any]:
+def build_source_record(
+    case: dict[str, Any],
+    snapshot_path: Path,
+    *,
+    run_index: int,
+    repeat_count: int,
+) -> dict[str, Any]:
     action_payload = case["action"]
     fingerprint = hashlib.sha256(
         json.dumps(action_payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
     ).hexdigest()
     return {
         "schemaVersion": SOURCE_RECORD_SCHEMA_VERSION,
-        "caseId": case["caseId"],
+        "caseId": case_run_id(case, run_index, repeat_count),
+        "sourceCaseId": case["caseId"],
+        "runIndex": run_index,
+        "repeatCount": repeat_count,
         "category": case["category"],
         "title": case["title"],
         "coverage": case["coverage"],
@@ -319,13 +354,34 @@ def build_source_record(case: dict[str, Any], snapshot_path: Path) -> dict[str, 
     }
 
 
-def build_action_record(case: dict[str, Any]) -> SemanticActionRecord:
+def build_action_record(
+    case: dict[str, Any],
+    *,
+    run_index: int,
+    repeat_count: int,
+) -> SemanticActionRecord:
     action = case["action"]
-    action_id = str(action.get("actionId", "")).strip() or case["caseId"]
-    session_id = str(action.get("sessionId", "")).strip() or f"benchmark-session-{case['caseId']}"
-    task_id = str(action.get("taskId", "")).strip() or f"benchmark-task-{case['caseId']}"
-    trace_id = str(action.get("traceId", "")).strip() or f"benchmark-trace-{case['caseId']}"
-    step_id = str(action.get("stepId", "")).strip() or f"benchmark-step-{case['caseId']}"
+    action_id = str(action.get("actionId", "")).strip() or case_run_id(case, run_index, repeat_count)
+    session_id = with_run_suffix(
+        str(action.get("sessionId", "")).strip() or f"benchmark-session-{case['caseId']}",
+        run_index,
+        repeat_count,
+    )
+    task_id = with_run_suffix(
+        str(action.get("taskId", "")).strip() or f"benchmark-task-{case['caseId']}",
+        run_index,
+        repeat_count,
+    )
+    trace_id = with_run_suffix(
+        str(action.get("traceId", "")).strip() or f"benchmark-trace-{case['caseId']}",
+        run_index,
+        repeat_count,
+    )
+    step_id = with_run_suffix(
+        str(action.get("stepId", "")).strip() or f"benchmark-step-{case['caseId']}",
+        run_index,
+        repeat_count,
+    )
     created_at = str(action.get("createdAt", "")).strip() or "2026-03-28T20:00:00Z"
     updated_at = str(action.get("updatedAt", "")).strip() or created_at
     confidence = float(action.get("confidence", 0.95))
@@ -397,11 +453,17 @@ def build_assertion_records(
     return records
 
 
-def materialize_case_database(case: dict[str, Any], db_path: Path) -> str:
+def materialize_case_database(
+    case: dict[str, Any],
+    db_path: Path,
+    *,
+    run_index: int,
+    repeat_count: int,
+) -> str:
     manager = SemanticActionMigrationManager(db_path)
     manager.migrate_up()
     repository = SemanticActionRepository(db_path)
-    action_record = build_action_record(case)
+    action_record = build_action_record(case, run_index=run_index, repeat_count=repeat_count)
     repository.replace_action(
         action_record,
         targets=build_target_records(case, action_record.action_id),
@@ -440,6 +502,8 @@ def compare_expected(
 def run_attempt(
     case: dict[str, Any],
     *,
+    run_index: int,
+    repeat_count: int,
     attempt_number: int,
     case_output_dir: Path,
     replay_verify_executable: str,
@@ -450,7 +514,12 @@ def run_attempt(
 
     snapshot_path = resolve_case_snapshot(case)
     db_path = attempt_dir / "semantic-actions.sqlite"
-    action_id = materialize_case_database(case, db_path)
+    action_id = materialize_case_database(
+        case,
+        db_path,
+        run_index=run_index,
+        repeat_count=repeat_count,
+    )
 
     command = [
         replay_verify_executable,
@@ -509,7 +578,9 @@ def run_attempt(
     attempt_payload = {
         "schemaVersion": ATTEMPT_SCHEMA_VERSION,
         "attemptNumber": attempt_number,
-        "caseId": case["caseId"],
+        "caseId": case_run_id(case, run_index, repeat_count),
+        "sourceCaseId": case["caseId"],
+        "runIndex": run_index,
         "passed": passed,
         "mismatches": mismatches,
         "artifacts": {
@@ -533,15 +604,24 @@ def process_case(
     case: dict[str, Any],
     benchmark_root: Path,
     *,
+    run_index: int,
+    repeat_count: int,
     replay_verify_executable: str,
     environment: str,
     max_retries: int,
 ) -> dict[str, Any]:
     case_output_dir = benchmark_root / "generated" / case["caseId"]
+    if repeat_count > 1:
+        case_output_dir = case_output_dir / "runs" / repeat_label(run_index, repeat_count)
     case_output_dir.mkdir(parents=True, exist_ok=True)
 
     snapshot_path = resolve_case_snapshot(case)
-    source_record = build_source_record(case, snapshot_path)
+    source_record = build_source_record(
+        case,
+        snapshot_path,
+        run_index=run_index,
+        repeat_count=repeat_count,
+    )
     source_record_path = case_output_dir / "source-record.json"
     write_json(source_record_path, source_record)
 
@@ -551,6 +631,8 @@ def process_case(
     for attempt_number in range(1, total_attempts + 1):
         attempt_payload = run_attempt(
             case,
+            run_index=run_index,
+            repeat_count=repeat_count,
             attempt_number=attempt_number,
             case_output_dir=case_output_dir,
             replay_verify_executable=replay_verify_executable,
@@ -566,7 +648,9 @@ def process_case(
 
     case_report = {
         "schemaVersion": CASE_REPORT_SCHEMA_VERSION,
-        "caseId": case["caseId"],
+        "caseId": case_run_id(case, run_index, repeat_count),
+        "sourceCaseId": case["caseId"],
+        "runIndex": run_index,
         "title": case["title"],
         "category": case["category"],
         "coverage": case["coverage"],
@@ -607,6 +691,7 @@ def build_manifest(
     benchmark_id: str,
     case_reports: list[dict[str, Any]],
     max_retries: int,
+    repeat_count: int,
     environment: str,
 ) -> dict[str, Any]:
     failed_cases = [case["caseId"] for case in case_reports if not case["passed"]]
@@ -627,6 +712,8 @@ def build_manifest(
         "catalogPath": repo_relative(catalog_path),
         "environment": environment,
         "maxRetries": max_retries,
+        "repeatCount": repeat_count,
+        "sourceCaseCount": len({case["sourceCaseId"] for case in case_reports}),
         "totalCases": len(case_reports),
         "passedCases": len(case_reports) - len(failed_cases),
         "failedCases": failed_cases,
@@ -648,17 +735,24 @@ def main() -> int:
     replay_verify_executable = resolve_replay_verify_executable(args.replay_verify_executable)
 
     case_reports: list[dict[str, Any]] = []
-    for case in selected_cases:
-        print(f"[semantic-benchmark] case={case['caseId']} category={case['category']}")
-        case_reports.append(
-            process_case(
-                case,
-                benchmark_root,
-                replay_verify_executable=replay_verify_executable,
-                environment=args.environment.strip().lower(),
-                max_retries=max(args.max_retries, 0),
+    repeat_count = max(args.repeat_count, 1)
+    for run_index in range(1, repeat_count + 1):
+        for case in selected_cases:
+            print(
+                f"[semantic-benchmark] case={case_run_id(case, run_index, repeat_count)} "
+                f"category={case['category']}"
             )
-        )
+            case_reports.append(
+                process_case(
+                    case,
+                    benchmark_root,
+                    run_index=run_index,
+                    repeat_count=repeat_count,
+                    replay_verify_executable=replay_verify_executable,
+                    environment=args.environment.strip().lower(),
+                    max_retries=max(args.max_retries, 0),
+                )
+            )
 
     benchmark_id = (
         str(catalog.get("benchmarkId", "semantic-action-e2e-benchmark")).strip()
@@ -670,6 +764,7 @@ def main() -> int:
         benchmark_id=benchmark_id,
         case_reports=case_reports,
         max_retries=max(args.max_retries, 0),
+        repeat_count=repeat_count,
         environment=args.environment.strip().lower(),
     )
     report_path = args.report.resolve() if args.report else benchmark_root / "manifest.json"

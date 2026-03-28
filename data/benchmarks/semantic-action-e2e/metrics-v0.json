@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "openstaff.semantic-action-e2e-metrics-config.v0",
+  "configId": "semantic-action-e2e-metrics-v0-20260328",
+  "benchmarkId": "semantic-action-e2e-v20260328",
+  "generatedAt": "2026-03-28T11:20:00+08:00",
+  "baseline": {
+    "casePassRate": 1.0,
+    "selectorResolutionRate": 0.875,
+    "p50ActionDurationMs": 0.0,
+    "p95ActionDurationMs": 1.0,
+    "maxActionDurationMs": 1.0,
+    "timeoutCount": 0,
+    "flakeRecoveryRate": 0.0
+  },
+  "gates": {
+    "casePassRate": {
+      "type": "minimum",
+      "value": 1.0
+    },
+    "selectorResolutionRate": {
+      "type": "minimum",
+      "value": 0.85
+    },
+    "p95ActionDurationMs": {
+      "type": "maximum",
+      "value": 25
+    },
+    "maxActionDurationMs": {
+      "type": "maximum",
+      "value": 50
+    },
+    "timeoutCount": {
+      "type": "maximum",
+      "value": 0
+    },
+    "flakeRecoveryRate": {
+      "type": "maximum",
+      "value": 0.05
+    },
+    "stabilityPassRate": {
+      "type": "minimum",
+      "value": 1.0
+    }
+  }
+}

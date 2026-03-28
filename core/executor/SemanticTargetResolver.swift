@@ -166,6 +166,21 @@ public protocol SemanticScreenFingerprintCapturing {
 }
 
 public struct SemanticTargetResolver {
+    private struct CandidateEntry {
+        let snapshot: ReplayElementSnapshot
+        let normalizedAxPath: String?
+        let normalizedIdentifier: String?
+        let normalizedRoleTokens: Set<String>
+        let searchableText: String
+    }
+
+    private struct CandidateIndex {
+        let entries: [CandidateEntry]
+        let axPathIndex: [String: CandidateEntry]
+        let identifierIndex: [String: [CandidateEntry]]
+        let roleIndex: [String: [CandidateEntry]]
+    }
+
     private let fingerprintCapture: any SemanticScreenFingerprintCapturing
     private let imageAnchorLumaTolerance: Double
 
@@ -282,7 +297,7 @@ public struct SemanticTargetResolver {
     private func resolveTarget(
         _ target: SemanticTarget,
         coordinate: PointerLocation?,
-        candidates: [ReplayElementSnapshot],
+        candidates: CandidateIndex,
         snapshot: ReplayEnvironmentSnapshot
     ) -> SemanticTargetResolutionAttempt {
         switch target.locatorType {
@@ -296,7 +311,7 @@ public struct SemanticTargetResolver {
                 )
             }
 
-            guard let matched = candidates.first(where: { normalizedAxPath($0.axPath) == axPath }) else {
+            guard let matched = candidates.axPathIndex[axPath]?.snapshot else {
                 return SemanticTargetResolutionAttempt(
                     locatorType: .axPath,
                     status: .unresolved,
@@ -342,7 +357,9 @@ public struct SemanticTargetResolver {
                 )
             }
 
-            if let matched = candidates.first(where: { searchableText(for: $0).contains(textAnchor) }) {
+            let nearbyCandidates = nearbyCandidates(for: target, candidates: candidates)
+
+            if let matched = nearbyCandidates.first(where: { $0.searchableText.contains(textAnchor) })?.snapshot {
                 return SemanticTargetResolutionAttempt(
                     locatorType: .textAnchor,
                     status: .resolved,
@@ -352,9 +369,7 @@ public struct SemanticTargetResolver {
                 )
             }
 
-            let hasNearbyCandidate = candidates.contains { candidate in
-                roleMatches(target: target, candidate: candidate) || identifierMatches(target: target, candidate: candidate)
-            }
+            let hasNearbyCandidate = !nearbyCandidates.isEmpty
 
             return SemanticTargetResolutionAttempt(
                 locatorType: .textAnchor,
@@ -460,7 +475,7 @@ public struct SemanticTargetResolver {
         return base - 1
     }
 
-    private func collectCandidates(from snapshot: ReplayEnvironmentSnapshot) -> [ReplayElementSnapshot] {
+    private func collectCandidates(from snapshot: ReplayEnvironmentSnapshot) -> CandidateIndex {
         var candidates: [ReplayElementSnapshot] = []
         var seen = Set<String>()
 
@@ -486,7 +501,43 @@ public struct SemanticTargetResolver {
 
         append(snapshot.focusedElement)
         snapshot.visibleElements.forEach(append)
-        return candidates
+
+        var entries: [CandidateEntry] = []
+        var axPathIndex: [String: CandidateEntry] = [:]
+        var identifierIndex: [String: [CandidateEntry]] = [:]
+        var roleIndex: [String: [CandidateEntry]] = [:]
+
+        for candidate in candidates {
+            let roleTokens = Set(
+                [normalizedText(candidate.role), normalizedText(candidate.subrole)]
+                    .compactMap { $0 }
+            )
+            let entry = CandidateEntry(
+                snapshot: candidate,
+                normalizedAxPath: normalizedAxPath(candidate.axPath),
+                normalizedIdentifier: normalizedText(candidate.identifier),
+                normalizedRoleTokens: roleTokens,
+                searchableText: searchableText(for: candidate)
+            )
+            entries.append(entry)
+
+            if let normalizedAxPath = entry.normalizedAxPath {
+                axPathIndex[normalizedAxPath] = entry
+            }
+            if let normalizedIdentifier = entry.normalizedIdentifier {
+                identifierIndex[normalizedIdentifier, default: []].append(entry)
+            }
+            for roleToken in entry.normalizedRoleTokens {
+                roleIndex[roleToken, default: []].append(entry)
+            }
+        }
+
+        return CandidateIndex(
+            entries: entries,
+            axPathIndex: axPathIndex,
+            identifierIndex: identifierIndex,
+            roleIndex: roleIndex
+        )
     }
 
     private func appAndWindowCompatible(target: SemanticTarget?, snapshot: ReplayEnvironmentSnapshot) -> Bool {
@@ -520,12 +571,12 @@ public struct SemanticTargetResolver {
 
     private func bestRoleAndTitleMatch(
         for target: SemanticTarget,
-        candidates: [ReplayElementSnapshot]
+        candidates: CandidateIndex
     ) -> ReplayElementSnapshot? {
         var bestScore = Int.min
         var bestMatch: ReplayElementSnapshot?
 
-        for candidate in candidates {
+        for candidate in nearbyCandidates(for: target, candidates: candidates) {
             guard roleMatches(target: target, candidate: candidate),
                   titleMatches(target: target, candidate: candidate),
                   identifierMatches(target: target, candidate: candidate) else {
@@ -535,59 +586,76 @@ public struct SemanticTargetResolver {
             let score = score(target: target, candidate: candidate)
             if score > bestScore {
                 bestScore = score
-                bestMatch = candidate
+                bestMatch = candidate.snapshot
             }
         }
 
         return bestMatch
     }
 
-    private func roleMatches(target: SemanticTarget, candidate: ReplayElementSnapshot) -> Bool {
+    private func nearbyCandidates(
+        for target: SemanticTarget,
+        candidates: CandidateIndex
+    ) -> [CandidateEntry] {
+        if let identifier = normalizedText(target.elementIdentifier),
+           let matches = candidates.identifierIndex[identifier],
+           !matches.isEmpty {
+            return matches
+        }
+
+        if let role = normalizedText(target.elementRole),
+           let matches = candidates.roleIndex[role],
+           !matches.isEmpty {
+            return matches
+        }
+
+        return candidates.entries
+    }
+
+    private func roleMatches(target: SemanticTarget, candidate: CandidateEntry) -> Bool {
         guard let role = normalizedText(target.elementRole) else {
             return true
         }
 
-        return role == normalizedText(candidate.role)
-            || role == normalizedText(candidate.subrole)
+        return candidate.normalizedRoleTokens.contains(role)
     }
 
-    private func titleMatches(target: SemanticTarget, candidate: ReplayElementSnapshot) -> Bool {
+    private func titleMatches(target: SemanticTarget, candidate: CandidateEntry) -> Bool {
         guard let title = normalizedText(target.elementTitle) else {
             return true
         }
 
-        let candidateText = searchableText(for: candidate)
-        return candidateText.contains(title)
+        return candidate.searchableText.contains(title)
     }
 
-    private func identifierMatches(target: SemanticTarget, candidate: ReplayElementSnapshot) -> Bool {
+    private func identifierMatches(target: SemanticTarget, candidate: CandidateEntry) -> Bool {
         guard let identifier = normalizedText(target.elementIdentifier) else {
             return true
         }
 
-        return normalizedText(candidate.identifier) == identifier
+        return candidate.normalizedIdentifier == identifier
     }
 
-    private func score(target: SemanticTarget, candidate: ReplayElementSnapshot) -> Int {
+    private func score(target: SemanticTarget, candidate: CandidateEntry) -> Int {
         var score = 0
 
         if let identifier = normalizedText(target.elementIdentifier),
-           normalizedText(candidate.identifier) == identifier {
+           candidate.normalizedIdentifier == identifier {
             score += 8
         }
 
         if let title = normalizedText(target.elementTitle),
-           searchableText(for: candidate).contains(title) {
+           candidate.searchableText.contains(title) {
             score += 4
         }
 
         if let role = normalizedText(target.elementRole),
-           role == normalizedText(candidate.role) || role == normalizedText(candidate.subrole) {
+           candidate.normalizedRoleTokens.contains(role) {
             score += 2
         }
 
         if let targetRect = target.boundingRect,
-           let candidateRect = candidate.boundingRect,
+           let candidateRect = candidate.snapshot.boundingRect,
            overlapRatio(lhs: targetRect, rhs: candidateRect) > 0.5 {
             score += 1
         }

@@ -59,6 +59,7 @@ class ReleaseRegressionIntegrationTests(unittest.TestCase):
             self.assertIn("knowledge-data-compat", check_names)
             self.assertIn("replay-verify-sample", check_names)
             self.assertIn("benchmark-semantic-action-e2e", check_names)
+            self.assertIn("benchmark-semantic-action-e2e-gates", check_names)
             self.assertIn("benchmark-personal-preference", check_names)
             self.assertIn("benchmark-personal-preference-gates", check_names)
 
@@ -100,6 +101,7 @@ class ReleaseRegressionIntegrationTests(unittest.TestCase):
             self.assertIn("benchmark-personal-preference-gates", payload["failedChecks"])
             check_names = {check["name"] for check in payload["checks"]}
             self.assertIn("benchmark-semantic-action-e2e", check_names)
+            self.assertIn("benchmark-semantic-action-e2e-gates", check_names)
             self.assertIn("benchmark-personal-preference", check_names)
             self.assertIn("benchmark-personal-preference-gates", check_names)
 

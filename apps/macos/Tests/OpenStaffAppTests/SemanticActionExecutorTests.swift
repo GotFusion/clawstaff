@@ -38,6 +38,41 @@ final class SemanticActionExecutorTests: XCTestCase {
         XCTAssertTrue(performer.events.isEmpty)
     }
 
+    func testDryRunClickReusesInitialSnapshotForResolution() {
+        let snapshot = makeSnapshot(
+            focusedElement: ReplayElementSnapshot(
+                axPath: "AXWindow/AXButton[0]",
+                role: "AXButton",
+                title: "Open",
+                identifier: "open-button",
+                boundingRect: SemanticBoundingRect(x: 220, y: 140, width: 72, height: 28)
+            ),
+            visibleElements: [
+                ReplayElementSnapshot(
+                    axPath: "AXWindow/AXButton[0]",
+                    role: "AXButton",
+                    title: "Open",
+                    identifier: "open-button",
+                    boundingRect: SemanticBoundingRect(x: 220, y: 140, width: 72, height: 28)
+                )
+            ]
+        )
+        let provider = SequenceReplayEnvironmentSnapshotProvider(snapshots: [snapshot])
+        let performer = StubSemanticActionPerformer()
+        let executor = SemanticActionExecutor(
+            snapshotProvider: provider,
+            resolver: SemanticTargetResolver(fingerprintCapture: StubFingerprintCapture(anchor: nil)),
+            performer: performer,
+            nowProvider: fixedNow
+        )
+
+        let report = executor.execute(action: makeClickAction(), dryRun: true)
+
+        XCTAssertEqual(report.status, .succeeded)
+        XCTAssertEqual(provider.snapshotCount, 1)
+        XCTAssertTrue(performer.events.isEmpty)
+    }
+
     func testDryRunBlocksCoordinateFallbackOnlyAction() {
         let performer = StubSemanticActionPerformer()
         let executor = SemanticActionExecutor(
@@ -470,6 +505,66 @@ final class SemanticActionExecutorTests: XCTestCase {
         XCTAssertEqual(performer.events, ["activate:com.target.app"])
     }
 
+    func testLiveSwitchAppRetriesPostAssertionSnapshotBeforeFailingOrPassing() {
+        let performer = StubSemanticActionPerformer()
+        let sourceSnapshot = makeSnapshot(appName: "SourceApp", appBundleId: "com.source.app")
+        let recoveredSnapshot = makeSnapshot(appName: "TargetApp", appBundleId: "com.target.app")
+        let provider = SequenceReplayEnvironmentSnapshotProvider(
+            snapshots: [
+                sourceSnapshot,
+                sourceSnapshot,
+                recoveredSnapshot,
+            ]
+        )
+        let executor = SemanticActionExecutor(
+            snapshotProvider: provider,
+            resolver: SemanticTargetResolver(fingerprintCapture: StubFingerprintCapture(anchor: nil)),
+            performer: performer,
+            nowProvider: fixedNow,
+            postAssertionSnapshotMaxAttempts: 3,
+            postAssertionSnapshotRetryDelay: 0
+        )
+
+        let action = SemanticActionStoreAction(
+            actionId: "action-switch-app-retry-001",
+            sessionId: "session-001",
+            taskId: "task-001",
+            traceId: "trace-switch-retry-001",
+            stepId: "step-switch-retry-001",
+            actionType: "switch_app",
+            selector: [
+                "selectorStrategy": "app_context",
+                "appBundleId": "com.target.app",
+            ],
+            args: [
+                "fromAppBundleId": "com.source.app",
+                "fromAppName": "SourceApp",
+                "toAppBundleId": "com.target.app",
+                "toAppName": "TargetApp",
+            ],
+            context: [:],
+            preferredLocatorType: nil,
+            manualReviewRequired: false,
+            createdAt: "2026-03-28T08:00:00Z",
+            updatedAt: "2026-03-28T08:00:00Z",
+            targets: [],
+            assertions: []
+        )
+
+        let report = executor.execute(
+            action: action,
+            dryRun: false,
+            teacherConfirmed: true
+        )
+
+        XCTAssertEqual(report.status, .succeeded)
+        XCTAssertEqual(report.postAssertions?.status, .passed)
+        XCTAssertEqual(report.postAssertions?.snapshotAttempts, 2)
+        XCTAssertEqual(report.postAssertions?.recoveredAfterRetry, true)
+        XCTAssertEqual(provider.snapshotCount, 3)
+        XCTAssertEqual(performer.events, ["activate:com.target.app"])
+    }
+
     func testLiveTypePassesTextValuePostAssertion() {
         let preResolutionSnapshot = makeSnapshot(
             focusedElement: ReplayElementSnapshot(
@@ -761,6 +856,7 @@ private struct StubFingerprintCapture: SemanticScreenFingerprintCapturing {
 private final class SequenceReplayEnvironmentSnapshotProvider: ReplayEnvironmentSnapshotProviding {
     private var snapshots: [ReplayEnvironmentSnapshot]
     private var index: Int = 0
+    private(set) var snapshotCount: Int = 0
 
     init(snapshots: [ReplayEnvironmentSnapshot]) {
         self.snapshots = snapshots
@@ -772,6 +868,7 @@ private final class SequenceReplayEnvironmentSnapshotProvider: ReplayEnvironment
         }
         let value = snapshots[min(index, snapshots.count - 1)]
         index += 1
+        snapshotCount += 1
         return value
     }
 }

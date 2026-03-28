@@ -27,6 +27,7 @@
   - `manifest.json` 冻结结果为 `8 / 8` 通过
   - `browser_url` mismatch case 固定返回 `SEM202-CONTEXT-MISMATCH`
   - 其余 `7` 条 dry-run case 固定返回 `STATUS_SEMANTIC_ACTION_DRY_RUN_SUCCEEDED`
+  - `SEM-402` 压力回归默认以 `repeatCount=3` 执行，要求 `stabilityPassRate = 1.0`
 
 ## 目录结构
 
@@ -34,6 +35,10 @@
   - 冻结的 case 清单、snapshot 引用与 expected 结果。
 - `data/benchmarks/semantic-action-e2e/manifest.json`
   - 最近一次完整 benchmark run 的汇总基线。
+- `data/benchmarks/semantic-action-e2e/metrics-v0.json`
+  - `SEM-402` 性能与鲁棒性门槛配置。
+- `<benchmark-root>/metrics-summary.json`
+  - `aggregate_semantic_action_e2e_metrics.py` 生成的聚合摘要与 gate 结果。
 - `data/benchmarks/semantic-action-e2e/snapshots/*.json`
   - committed `ReplayEnvironmentSnapshot` fixture。
 - `<benchmark-root>/generated/<caseId>/source-record.json`
@@ -97,6 +102,24 @@ python3 scripts/benchmarks/run_semantic_action_e2e_benchmark.py \
 - `--replay-verify-executable <path>`：复用已编译 `OpenStaffReplayVerifyCLI`。
 - `--environment <name>`：写入执行日志环境标签，默认 `benchmark`。
 - `--max-retries <n>`：失败后追加重跑次数，默认 `1`，用于固定 flake 恢复策略。
+- `--repeat-count <n>`：按顺序重复整组 case，用于长会话稳定性与压力回归。
+
+如需同时执行 `SEM-402` 指标 gate：
+
+```bash
+make benchmark-semantic-e2e-preflight
+```
+
+或直接运行：
+
+```bash
+python3 scripts/benchmarks/aggregate_semantic_action_e2e_metrics.py \
+  --benchmark-root /tmp/openstaff-semantic-action-e2e \
+  --manifest /tmp/openstaff-semantic-action-e2e/manifest.json \
+  --config data/benchmarks/semantic-action-e2e/metrics-v0.json \
+  --output /tmp/openstaff-semantic-action-e2e/metrics-summary.json \
+  --check-gates
+```
 
 ## 通过标准
 
@@ -113,4 +136,5 @@ python3 scripts/benchmarks/run_semantic_action_e2e_benchmark.py \
 - benchmark 走的是 `semantic action -> SQLite -> ReplayVerifyCLI -> action_execution_logs` 的完整链路，而不是单测级别的局部函数调用。
 - committed snapshot 替代 live accessibility 环境，保证 PR / nightly 能稳定复现结果。
 - `--max-retries` 只用于吸收编译或环境级偶发抖动；expected 结果本身仍是确定性的，不允许通过“模糊匹配”掩盖行为变化。
+- `--repeat-count` 会在不依赖 live 桌面的前提下重复整组 case，用作 `SEM-402` 的长会话压力代理；配合 `metrics-v0.json`，可以稳定 gate `p95ActionDurationMs / timeoutCount / stabilityPassRate`。
 - nightly workflow 会在失败时上传整套 benchmark output artifact，确保回归不是只有一个红灯，而是能直接看到具体哪条 case、哪次 attempt、哪份 CLI/SQLite 结果出了问题。

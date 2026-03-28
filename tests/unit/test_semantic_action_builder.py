@@ -389,6 +389,72 @@ class SemanticActionBuilderTests(unittest.TestCase):
         self.assertEqual(summary["semanticizedEventCount"], 3)
         self.assertIn("merged-drag-gesture-events", bundles[0].diagnostics)
 
+    def test_builder_suppresses_duplicate_click_noise_before_action_build(self):
+        task_chunk = {
+            "taskId": "task-004",
+            "sessionId": "session-001",
+            "boundaryReason": "sessionEnd",
+            "eventIds": ["event-001", "event-002", "event-003"],
+        }
+        focused_button = {
+            "role": "AXButton",
+            "subrole": None,
+            "title": "Open",
+            "identifier": "open-button",
+            "descriptionText": "Open",
+            "helpText": "",
+            "boundingRect": {"x": 200, "y": 160, "width": 90, "height": 32, "coordinateSpace": "screen"},
+            "valueRedacted": False,
+        }
+        events = [
+            raw_event(
+                event_id="event-001",
+                timestamp="2026-04-06T09:30:00Z",
+                action="leftClick",
+                app_bundle_id="com.apple.finder",
+                app_name="Finder",
+                window_title="Downloads",
+                pointer=(240, 180),
+                focused_element=focused_button,
+            ),
+            raw_event(
+                event_id="event-002",
+                timestamp="2026-04-06T09:30:00.060Z",
+                action="leftClick",
+                app_bundle_id="com.apple.finder",
+                app_name="Finder",
+                window_title="Downloads",
+                pointer=(242, 181),
+                focused_element=focused_button,
+            ),
+            raw_event(
+                event_id="event-003",
+                timestamp="2026-04-06T09:30:00.095Z",
+                action="leftClick",
+                app_bundle_id="com.apple.finder",
+                app_name="Finder",
+                window_title="Downloads",
+                pointer=(241, 179),
+                focused_element=focused_button,
+            ),
+        ]
+
+        bundles, summary = build_actions_for_task_chunk(
+            task_chunk=task_chunk,
+            task_chunk_path=REPO_ROOT / "data/task-chunks/fixture/task-004.json",
+            raw_event_log_path=REPO_ROOT / "data/raw-events/fixture/session-001.jsonl",
+            events=events,
+            workspace_root=REPO_ROOT,
+        )
+
+        self.assertEqual(len(bundles), 1)
+        self.assertEqual(bundles[0].action.action_type, "click")
+        self.assertEqual(bundles[0].action.source_event_ids, ["event-001"])
+        self.assertEqual(summary["inputEventCount"], 3)
+        self.assertEqual(summary["effectiveInputEventCount"], 1)
+        self.assertEqual(summary["noiseSuppressedEventCount"], 2)
+        self.assertEqual(summary["noiseSuppressedEventIds"], ["event-002", "event-003"])
+
 
 if __name__ == "__main__":
     unittest.main()

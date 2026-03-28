@@ -330,17 +330,25 @@
   - 缓解：基准环境固定 + flake 重跑策略；`run_semantic_action_e2e_benchmark.py` 现已冻结 `8` 条 committed snapshot case，失败时会落 `source-record / case-report / attempt-report / cli-report / execution-log`，并支持 `--max-retries` 做确定性的重跑恢复。
 
 ### SEM-402 性能与鲁棒性优化
+状态：已完成（2026-03-28）
 - 目标：控制迁移后时延与资源占用。
 - 任务：
-  - 优化 selector 解析和断言耗时。
-  - 优化高频事件聚合窗口，减少噪声触发。
-  - 异常恢复和超时策略。
+  - [x] 优化 selector 解析和断言耗时。
+  - [x] 优化高频事件聚合窗口，减少噪声触发。
+  - [x] 异常恢复和超时策略。
+- 落地产物：
+  - `core/executor/SemanticTargetResolver.swift`
+  - `apps/macos/Sources/OpenStaffReplayVerifyCLI/SemanticActionExecutor.swift`
+  - `scripts/learning/semantic_action_builder.py`
+  - `scripts/benchmarks/aggregate_semantic_action_e2e_metrics.py`
+  - `data/benchmarks/semantic-action-e2e/metrics-v0.json`
+  - `tests/integration/test_semantic_action_e2e_metrics.py`
 - DoD：
-  - P95 动作执行时延满足设定阈值（由平台定义）。
-  - 长会话稳定运行通过压测。
+  - [x] P95 动作执行时延满足设定阈值（由平台定义）。
+  - [x] 长会话稳定运行通过压测。
 - 风险：
   - 优化影响正确性。
-  - 缓解：性能优化必须通过一致性回归。
+  - 缓解：性能优化必须通过一致性回归；resolver 现已对 candidate 建索引并收窄 role/identifier 邻域，post-assertion 会缓存 selector resolve 并做 snapshot retry，builder 会抑制极短时间的重复 click 噪声；`aggregate_semantic_action_e2e_metrics.py` 则把 `p95ActionDurationMs / maxActionDurationMs / timeoutCount / stabilityPassRate / postActionSnapshotRecoveryRate` 收敛成 gate，并在 release/CI 中默认以 `repeatCount=3` 跑压力回归。
 
 ## Week 6（2026-05-04 ~ 2026-05-10）：切流与清理发布
 

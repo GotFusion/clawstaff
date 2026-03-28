@@ -1,6 +1,6 @@
 # OpenStaff 用户使用说明书
 
-版本：v0.6.7
+版本：v0.6.8
 更新时间：2026-03-28
 
 ## 1. 产品简介
@@ -301,6 +301,7 @@ python3 scripts/benchmarks/run_semantic_action_e2e_benchmark.py \
 - runner 会自动物化 `semantic_actions` SQLite，并驱动 `OpenStaffReplayVerifyCLI` 对 committed snapshot 做 dry-run 回归，不依赖实时桌面环境。
 - 每条 case 都会产出 `source-record.json`、`case-report.json` 与 `attempts/attempt-XX/{semantic-actions.sqlite,cli-report.json,execution-log.json,attempt-report.json}`，便于复现失败原因。
 - 如需降低环境抖动，可传 `--max-retries <n>` 启用固定次数 flake 重跑；如需只跑部分 case，可配合 `--case-id` 或 `--case-limit`。
+- 如需做 `SEM-402` 压力回归，可传 `--repeat-count 3`，或直接执行 `make benchmark-semantic-e2e-preflight`，它会在 benchmark 结束后继续跑 `metrics-v0.json` gate。
 - 默认环境标签为 `benchmark`，会直接写入 `action_execution_logs.result_json.environment`，方便后续观测与聚合。
 
 ## 5. 发布前检查
@@ -316,7 +317,7 @@ make release-preflight
 ```
 
 说明：
-- 该入口会依次执行：`SEM-003` 坐标执行静态守门、原始事件校验、知识条目校验、LLM 样例校验、skill 映射、`validate_openclaw_skill.py`、`validate_skill_bundle.py`、replay verify sample、personal desktop benchmark、semantic action e2e benchmark、personal preference benchmark、preference metrics gate。
+- 该入口会依次执行：`SEM-003` 坐标执行静态守门、原始事件校验、知识条目校验、LLM 样例校验、skill 映射、`validate_openclaw_skill.py`、`validate_skill_bundle.py`、replay verify sample、personal desktop benchmark、semantic action e2e benchmark、semantic action e2e metrics gate、personal preference benchmark、preference metrics gate。
 - `data/raw-events` 采用 compat 模式校验，当前会把历史键盘事件缺失 `keyboard.isSensitiveInput` 记为告警而非失败。
 - `data/knowledge` 会对缺失 `target` 的历史知识条目输出告警，提醒 replay/自动执行能力可能退化。
 - `validate_skill_bundle.py` 默认允许 `needs_teacher_confirmation` 通过，以便发布前看到安全门提示；若要做“必须可自动执行”的 CI 门禁，可加 `--require-auto-runnable`。
@@ -338,6 +339,12 @@ make benchmark-preference-preflight
 
 ```bash
 make benchmark-semantic-e2e
+```
+
+如需单独复现 `SEM-402` 性能与鲁棒性门禁，可运行：
+
+```bash
+make benchmark-semantic-e2e-preflight
 ```
 
 ## 6. 常见问题

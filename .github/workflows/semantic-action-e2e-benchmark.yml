@@ -15,6 +15,7 @@ jobs:
     timeout-minutes: 30
     env:
       BENCHMARK_ROOT: ${{ runner.temp }}/semantic-action-e2e-benchmark
+      SEMANTIC_E2E_REPEAT_COUNT: "3"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,7 +29,17 @@ jobs:
         run: |
           python3 scripts/benchmarks/run_semantic_action_e2e_benchmark.py \
             --benchmark-root "$BENCHMARK_ROOT" \
-            --report "$BENCHMARK_ROOT/manifest.json"
+            --report "$BENCHMARK_ROOT/manifest.json" \
+            --repeat-count "$SEMANTIC_E2E_REPEAT_COUNT"
+
+      - name: Run SEM-402 semantic action metric gates
+        run: |
+          python3 scripts/benchmarks/aggregate_semantic_action_e2e_metrics.py \
+            --benchmark-root "$BENCHMARK_ROOT" \
+            --manifest "$BENCHMARK_ROOT/manifest.json" \
+            --config data/benchmarks/semantic-action-e2e/metrics-v0.json \
+            --output "$BENCHMARK_ROOT/metrics-summary.json" \
+            --check-gates
 
       - name: Upload benchmark artifacts
         if: always()

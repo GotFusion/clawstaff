@@ -17,6 +17,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_ROOT = Path("/tmp/openstaff-release-regression")
+DEFAULT_SEMANTIC_E2E_METRICS_CONFIG_PATH = REPO_ROOT / "data/benchmarks/semantic-action-e2e/metrics-v0.json"
 DEFAULT_PREFERENCE_CATALOG_PATH = REPO_ROOT / "data/benchmarks/personal-preference/catalog.json"
 DEFAULT_PREFERENCE_METRICS_CONFIG_PATH = REPO_ROOT / "data/benchmarks/personal-preference/metrics-v0.json"
 
@@ -80,6 +81,12 @@ def parse_args() -> argparse.Namespace:
         help="Optional limit forwarded to both benchmark runners.",
     )
     parser.add_argument(
+        "--semantic-e2e-repeat-count",
+        type=int,
+        default=3,
+        help="Repeat count forwarded to the semantic action e2e benchmark runner (default: 3).",
+    )
+    parser.add_argument(
         "--openclaw-executable",
         type=str,
         help="Optional prebuilt OpenStaffOpenClawCLI executable path for benchmark execution.",
@@ -88,6 +95,15 @@ def parse_args() -> argparse.Namespace:
         "--replay-verify-executable",
         type=str,
         help="Optional prebuilt OpenStaffReplayVerifyCLI executable path for replay-verify checks.",
+    )
+    parser.add_argument(
+        "--semantic-e2e-metrics-config",
+        type=Path,
+        default=DEFAULT_SEMANTIC_E2E_METRICS_CONFIG_PATH,
+        help=(
+            "Semantic action e2e metric gate config JSON path "
+            f"(default: {DEFAULT_SEMANTIC_E2E_METRICS_CONFIG_PATH})."
+        ),
     )
     parser.add_argument(
         "--assist-executable",
@@ -350,9 +366,12 @@ def append_semantic_action_e2e_benchmark_check(
     benchmark_root: Path,
     *,
     benchmark_case_limit: int | None,
+    repeat_count: int,
     replay_verify_executable: str | None,
+    semantic_e2e_metrics_config: Path,
 ) -> None:
     manifest_path = benchmark_root / "manifest.json"
+    metrics_summary_path = benchmark_root / "metrics-summary.json"
     command = [
         sys.executable,
         str(REPO_ROOT / "scripts/benchmarks/run_semantic_action_e2e_benchmark.py"),
@@ -360,6 +379,8 @@ def append_semantic_action_e2e_benchmark_check(
         str(benchmark_root),
         "--report",
         str(manifest_path),
+        "--repeat-count",
+        str(max(repeat_count, 1)),
     ]
     if benchmark_case_limit is not None:
         command.extend(["--case-limit", str(benchmark_case_limit)])
@@ -367,6 +388,28 @@ def append_semantic_action_e2e_benchmark_check(
         command.extend(["--replay-verify-executable", replay_verify_executable])
 
     results.append(run_check(name="benchmark-semantic-action-e2e", command=command))
+
+    if not manifest_path.exists():
+        return
+
+    results.append(
+        run_check(
+            name="benchmark-semantic-action-e2e-gates",
+            command=[
+                sys.executable,
+                str(REPO_ROOT / "scripts/benchmarks/aggregate_semantic_action_e2e_metrics.py"),
+                "--benchmark-root",
+                str(benchmark_root),
+                "--manifest",
+                str(manifest_path),
+                "--config",
+                str(semantic_e2e_metrics_config),
+                "--output",
+                str(metrics_summary_path),
+                "--check-gates",
+            ],
+        )
+    )
 
 
 def append_preference_benchmark_checks(
@@ -470,7 +513,9 @@ def main() -> int:
             results,
             run_dir / "semantic-action-e2e-benchmark",
             benchmark_case_limit=args.benchmark_case_limit,
+            repeat_count=args.semantic_e2e_repeat_count,
             replay_verify_executable=args.replay_verify_executable,
+            semantic_e2e_metrics_config=args.semantic_e2e_metrics_config.resolve(),
         )
     if not args.skip_benchmark and not args.skip_preference_benchmark:
         append_preference_benchmark_checks(

@@ -64,6 +64,8 @@ struct SemanticActionPostAssertionResult: Codable {
 struct SemanticActionPostAssertionReport: Codable {
     let status: SemanticActionPostAssertionStatus
     let checkedAt: String
+    let snapshotAttempts: Int
+    let recoveredAfterRetry: Bool
     let assertions: [SemanticActionPostAssertionResult]
 }
 
@@ -106,22 +108,34 @@ protocol SemanticActionPerforming {
 }
 
 final class SemanticActionExecutor {
+    private struct SnapshotRecoveryResult {
+        let snapshot: ReplayEnvironmentSnapshot
+        let attempts: Int
+        let recoveredAfterRetry: Bool
+    }
+
     private let snapshotProvider: any ReplayEnvironmentSnapshotProviding
     private let resolver: SemanticTargetResolver
     private let performer: any SemanticActionPerforming
     private let nowProvider: () -> Date
+    private let postAssertionSnapshotMaxAttempts: Int
+    private let postAssertionSnapshotRetryDelay: TimeInterval
     private let formatter: ISO8601DateFormatter
 
     init(
         snapshotProvider: any ReplayEnvironmentSnapshotProviding = LiveReplayEnvironmentSnapshotProvider(),
         resolver: SemanticTargetResolver = SemanticTargetResolver(),
         performer: any SemanticActionPerforming = LiveSemanticActionPerformer(),
-        nowProvider: @escaping () -> Date = Date.init
+        nowProvider: @escaping () -> Date = Date.init,
+        postAssertionSnapshotMaxAttempts: Int = 3,
+        postAssertionSnapshotRetryDelay: TimeInterval = 0.12
     ) {
         self.snapshotProvider = snapshotProvider
         self.resolver = resolver
         self.performer = performer
         self.nowProvider = nowProvider
+        self.postAssertionSnapshotMaxAttempts = max(postAssertionSnapshotMaxAttempts, 1)
+        self.postAssertionSnapshotRetryDelay = max(postAssertionSnapshotRetryDelay, 0)
 
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -193,7 +207,8 @@ final class SemanticActionExecutor {
                 action: action,
                 dryRun: dryRun,
                 started: started,
-                teacherConfirmation: teacherConfirmation
+                teacherConfirmation: teacherConfirmation,
+                initialSnapshot: contextSnapshot
             )
         case "shortcut":
             outcome = executeShortcut(
@@ -208,7 +223,8 @@ final class SemanticActionExecutor {
                 dryRun: dryRun,
                 started: started,
                 kind: .click,
-                teacherConfirmation: teacherConfirmation
+                teacherConfirmation: teacherConfirmation,
+                initialSnapshot: contextSnapshot
             )
         case "type":
             outcome = executeElementAction(
@@ -216,14 +232,16 @@ final class SemanticActionExecutor {
                 dryRun: dryRun,
                 started: started,
                 kind: .type,
-                teacherConfirmation: teacherConfirmation
+                teacherConfirmation: teacherConfirmation,
+                initialSnapshot: contextSnapshot
             )
         case "drag":
             outcome = executeDrag(
                 action: action,
                 dryRun: dryRun,
                 started: started,
-                teacherConfirmation: teacherConfirmation
+                teacherConfirmation: teacherConfirmation,
+                initialSnapshot: contextSnapshot
             )
         default:
             outcome = finalize(
@@ -300,7 +318,8 @@ final class SemanticActionExecutor {
         action: SemanticActionStoreAction,
         dryRun: Bool,
         started: Date,
-        teacherConfirmation: SemanticActionTeacherConfirmationReview?
+        teacherConfirmation: SemanticActionTeacherConfirmationReview?,
+        initialSnapshot: ReplayEnvironmentSnapshot
     ) -> SemanticActionExecutionReport {
         guard let bundleId = string(action.selector["appBundleId"]),
               !bundleId.isEmpty else {
@@ -321,9 +340,8 @@ final class SemanticActionExecutor {
         let signature = windowSignatureValue(action.selector["windowSignature"])
 
         if dryRun {
-            let snapshot = snapshotProvider.snapshot()
-            let windowMatches = snapshot.appBundleId == bundleId
-                && matchesWindow(snapshot: snapshot, windowTitlePattern: pattern, windowSignature: signature)
+            let windowMatches = initialSnapshot.appBundleId == bundleId
+                && matchesWindow(snapshot: initialSnapshot, windowTitlePattern: pattern, windowSignature: signature)
             return finalize(
                 action: action,
                 dryRun: true,
@@ -427,7 +445,8 @@ final class SemanticActionExecutor {
         dryRun: Bool,
         started: Date,
         kind: ElementActionKind,
-        teacherConfirmation: SemanticActionTeacherConfirmationReview?
+        teacherConfirmation: SemanticActionTeacherConfirmationReview?,
+        initialSnapshot: ReplayEnvironmentSnapshot
     ) -> SemanticActionExecutionReport {
         let candidates = semanticTargets(
             for: action,
@@ -463,7 +482,7 @@ final class SemanticActionExecutor {
             )
         }
 
-        let snapshot = snapshotProvider.snapshot()
+        let snapshot = dryRun ? initialSnapshot : snapshotProvider.snapshot()
         let resolution = resolver.resolve(
             targets: candidates,
             preferredLocatorType: preferredLocatorType(
@@ -556,7 +575,8 @@ final class SemanticActionExecutor {
         action: SemanticActionStoreAction,
         dryRun: Bool,
         started: Date,
-        teacherConfirmation: SemanticActionTeacherConfirmationReview?
+        teacherConfirmation: SemanticActionTeacherConfirmationReview?,
+        initialSnapshot: ReplayEnvironmentSnapshot
     ) -> SemanticActionExecutionReport {
         let sourceTargets = semanticTargets(for: action, targetRolePrefixes: ["source"], fallbackSelector: selector(action.args["sourceSelector"]))
         let targetTargets = semanticTargets(for: action, targetRolePrefixes: ["target"], fallbackSelector: selector(action.args["targetSelector"]))
@@ -589,7 +609,7 @@ final class SemanticActionExecutor {
             )
         }
 
-        let snapshot = snapshotProvider.snapshot()
+        let snapshot = dryRun ? initialSnapshot : snapshotProvider.snapshot()
         let sourceResolution = resolver.resolve(
             targets: sourceTargets,
             preferredLocatorType: preferredLocatorType(rawValue: action.preferredLocatorType),
@@ -1252,9 +1272,12 @@ final class SemanticActionExecutor {
             )
         }
 
+        let snapshotRecovery = capturePostAssertionSnapshot(for: action)
         let postAssertionReport = evaluatePostAssertions(
             action: action,
-            snapshot: snapshotProvider.snapshot()
+            snapshot: snapshotRecovery.snapshot,
+            snapshotAttempts: snapshotRecovery.attempts,
+            recoveredAfterRetry: snapshotRecovery.recoveredAfterRetry
         )
         if postAssertionReport.status == .failed {
             let failedMessage = postAssertionReport.assertions
@@ -1290,22 +1313,36 @@ final class SemanticActionExecutor {
 
     private func evaluatePostAssertions(
         action: SemanticActionStoreAction,
-        snapshot: ReplayEnvironmentSnapshot
+        snapshot: ReplayEnvironmentSnapshot,
+        snapshotAttempts: Int,
+        recoveredAfterRetry: Bool
     ) -> SemanticActionPostAssertionReport {
         let specs = effectivePostAssertionSpecs(for: action)
         guard !specs.isEmpty else {
             return SemanticActionPostAssertionReport(
                 status: .skipped,
                 checkedAt: formatter.string(from: nowProvider()),
+                snapshotAttempts: snapshotAttempts,
+                recoveredAfterRetry: recoveredAfterRetry,
                 assertions: []
             )
         }
 
-        let results = specs.map { evaluatePostAssertion($0, action: action, snapshot: snapshot) }
+        var resolutionCache: [String: SemanticTargetResolution] = [:]
+        let results = specs.map {
+            evaluatePostAssertion(
+                $0,
+                action: action,
+                snapshot: snapshot,
+                resolutionCache: &resolutionCache
+            )
+        }
         let hasRequiredFailure = results.contains(where: { $0.isRequired && $0.status == .failed })
         return SemanticActionPostAssertionReport(
             status: hasRequiredFailure ? .failed : .passed,
             checkedAt: formatter.string(from: nowProvider()),
+            snapshotAttempts: snapshotAttempts,
+            recoveredAfterRetry: recoveredAfterRetry,
             assertions: results
         )
     }
@@ -1399,7 +1436,8 @@ final class SemanticActionExecutor {
     private func evaluatePostAssertion(
         _ spec: SemanticActionPostAssertionSpec,
         action: SemanticActionStoreAction,
-        snapshot: ReplayEnvironmentSnapshot
+        snapshot: ReplayEnvironmentSnapshot,
+        resolutionCache: inout [String: SemanticTargetResolution]
     ) -> SemanticActionPostAssertionResult {
         switch spec.assertionType {
         case "requiredFrontmostApp":
@@ -1436,15 +1474,16 @@ final class SemanticActionExecutor {
             )
 
         case "selectorResolvable":
-            let resolution = resolver.resolve(
+            let resolution = cachedResolution(
+                cacheKey: "primary",
                 targets: semanticTargets(
                     for: action,
                     targetRolePrefixes: ["primary", "candidate", "fallback"],
                     fallbackSelector: action.selector
                 ),
                 preferredLocatorType: preferredLocatorType(rawValue: action.preferredLocatorType),
-                coordinate: nil,
-                in: snapshot
+                snapshot: snapshot,
+                cache: &resolutionCache
             )
             let passed = resolution.status == .resolved && resolution.matchedLocatorType != .coordinateFallback
             return SemanticActionPostAssertionResult(
@@ -1461,15 +1500,16 @@ final class SemanticActionExecutor {
             )
 
         case "targetSelectorResolvable":
-            let resolution = resolver.resolve(
+            let resolution = cachedResolution(
+                cacheKey: "target",
                 targets: semanticTargets(
                     for: action,
                     targetRolePrefixes: ["target"],
                     fallbackSelector: selector(action.args["targetSelector"])
                 ),
                 preferredLocatorType: preferredLocatorType(rawValue: action.preferredLocatorType),
-                coordinate: nil,
-                in: snapshot
+                snapshot: snapshot,
+                cache: &resolutionCache
             )
             let passed = resolution.status == .resolved && resolution.matchedLocatorType != .coordinateFallback
             return SemanticActionPostAssertionResult(
@@ -1487,15 +1527,16 @@ final class SemanticActionExecutor {
 
         case "textValueContains":
             let expectedText = string(spec.payload["text"]) ?? ""
-            let resolution = resolver.resolve(
+            let resolution = cachedResolution(
+                cacheKey: "primary",
                 targets: semanticTargets(
                     for: action,
                     targetRolePrefixes: ["primary", "candidate", "fallback"],
                     fallbackSelector: action.selector
                 ),
                 preferredLocatorType: preferredLocatorType(rawValue: action.preferredLocatorType),
-                coordinate: nil,
-                in: snapshot
+                snapshot: snapshot,
+                cache: &resolutionCache
             )
             let actualValue = resolution.matchedElement?.valueText
             let passed = resolution.status == .resolved
@@ -1525,6 +1566,78 @@ final class SemanticActionExecutor {
                 actual: [:]
             )
         }
+    }
+
+    private func cachedResolution(
+        cacheKey: String,
+        targets: [SemanticTarget],
+        preferredLocatorType: SemanticLocatorType?,
+        snapshot: ReplayEnvironmentSnapshot,
+        cache: inout [String: SemanticTargetResolution]
+    ) -> SemanticTargetResolution {
+        let resolvedCacheKey = "\(cacheKey)|\(preferredLocatorType?.rawValue ?? "none")"
+        if let cached = cache[resolvedCacheKey] {
+            return cached
+        }
+
+        let resolution = resolver.resolve(
+            targets: targets,
+            preferredLocatorType: preferredLocatorType,
+            coordinate: nil,
+            in: snapshot
+        )
+        cache[resolvedCacheKey] = resolution
+        return resolution
+    }
+
+    private func capturePostAssertionSnapshot(
+        for action: SemanticActionStoreAction
+    ) -> SnapshotRecoveryResult {
+        var attempts = 0
+        var snapshot = snapshotProvider.snapshot()
+        attempts += 1
+
+        while attempts < postAssertionSnapshotMaxAttempts,
+              shouldRetryPostAssertionSnapshot(snapshot, for: action) {
+            if postAssertionSnapshotRetryDelay > 0 {
+                Thread.sleep(forTimeInterval: postAssertionSnapshotRetryDelay)
+            }
+            snapshot = snapshotProvider.snapshot()
+            attempts += 1
+        }
+
+        return SnapshotRecoveryResult(
+            snapshot: snapshot,
+            attempts: attempts,
+            recoveredAfterRetry: attempts > 1 && !shouldRetryPostAssertionSnapshot(snapshot, for: action)
+        )
+    }
+
+    private func shouldRetryPostAssertionSnapshot(
+        _ snapshot: ReplayEnvironmentSnapshot,
+        for action: SemanticActionStoreAction
+    ) -> Bool {
+        if !snapshot.captureDiagnostics.isEmpty {
+            return true
+        }
+
+        if let expectedAppBundleId = postAssertionAppBundleId(for: action),
+           normalizedText(expectedAppBundleId) != normalizedText(snapshot.appBundleId) {
+            return true
+        }
+
+        if let expectedWindowTitlePattern = postAssertionWindowTitlePattern(for: action),
+           !matchesRegex(expectedWindowTitlePattern, snapshot.windowTitle) {
+            return true
+        }
+
+        if action.actionType != "switch_app",
+           snapshot.focusedElement == nil,
+           snapshot.visibleElements.isEmpty {
+            return true
+        }
+
+        return false
     }
 
     private func postAssertionAppBundleId(for action: SemanticActionStoreAction) -> String? {
