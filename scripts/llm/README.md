@@ -11,6 +11,7 @@ LLM 解析与调用适配工具目录（Phase 3.1 + Phase 3.2）。
   - LLM 输出结构约束（`llm.knowledge-parse.v0`）。
 - `render_knowledge_prompts.py`
   - 读取 `KnowledgeItem`，渲染稳定的 system/user prompts。
+  - 默认输出 `semantic-first` 视图：保留语义 target/context，省略坐标 provenance 与 boundingRect。
 - `validate_knowledge_parse_output.py`
   - 强制 JSON 提取与严格校验（可选与原始 `KnowledgeItem` 做一致性比对）。
 - `examples/knowledge-parse-output.sample.json`
@@ -82,6 +83,7 @@ python3 scripts/llm/chatgpt_adapter.py \
 ## 约束说明
 - 模型响应必须只包含 JSON 对象。
 - 必须匹配 `schemas/knowledge-parse-output.schema.json` 的字段和枚举约束。
+- 手动提示词与 `text` provider 默认禁止把 `coordinate:x,y` 当成主目标；若缺少稳定语义锚点，应输出 `unknown`。
 - 当传入 `--knowledge-item` 时，会额外检查：
   - ID、上下文、步骤顺序、源事件引用一致性。
   - `objective == KnowledgeItem.goal`。

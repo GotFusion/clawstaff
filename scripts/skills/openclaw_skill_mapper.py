@@ -39,6 +39,22 @@ GUI_LOCATOR_STRATEGY_ORDER = [
     "relativeCoordinate",
     "absoluteCoordinate",
 ]
+ROLE_PREFIX_BY_AX_ROLE = {
+    "axbutton": "button",
+    "axcheckbox": "checkbox",
+    "axlink": "link",
+    "axmenuitem": "menu",
+    "axmenubutton": "menu",
+    "axpopbutton": "menu",
+    "axradiobutton": "radio",
+    "axrow": "row",
+    "axstatictext": "text",
+    "axtab": "tab",
+    "axtable": "table",
+    "axtextfield": "field",
+    "axtextarea": "field",
+    "axwindow": "window",
+}
 POLICY_ASSEMBLY_FLAG_ENV = "OPENSTAFF_ENABLE_POLICY_ASSEMBLY_LOG"
 
 
@@ -115,17 +131,69 @@ def infer_action_type(instruction: str) -> str:
     return "unknown"
 
 
-def infer_target(instruction: str, action_type: str, app_name: str) -> str:
-    pattern_xy = re.search(r"x\s*=\s*(\d+)\s*[,，]\s*y\s*=\s*(\d+)", instruction, flags=re.IGNORECASE)
-    if pattern_xy:
-        return f"coordinate:{pattern_xy.group(1)},{pattern_xy.group(2)}"
+def role_prefix_for_role(role: str | None) -> str | None:
+    normalized_role = normalize_optional_string(role)
+    if not normalized_role:
+        return None
+    return ROLE_PREFIX_BY_AX_ROLE.get(normalized_role.lower())
 
-    pattern_tuple = re.search(r"\((\d+)\s*,\s*(\d+)\)", instruction)
-    if pattern_tuple:
-        return f"coordinate:{pattern_tuple.group(1)},{pattern_tuple.group(2)}"
+
+def semantic_target_label(target: dict[str, Any]) -> str | None:
+    locator_type = normalize_optional_string(target.get("locatorType"))
+    if locator_type == "coordinateFallback":
+        return None
+
+    role = normalize_optional_string(target.get("elementRole"))
+    title = normalize_optional_string(target.get("elementTitle"))
+    identifier = normalize_optional_string(target.get("elementIdentifier"))
+    text_anchor = normalize_optional_string(target.get("textAnchor"))
+    ax_path = normalize_optional_string(target.get("axPath"))
+    prefix = role_prefix_for_role(role)
+
+    if title and prefix:
+        return f"{prefix}:{title}"
+    if title:
+        return f"element:{title}"
+    if identifier and prefix:
+        return f"{prefix}:{identifier}"
+    if identifier:
+        return f"element:{identifier}"
+    if text_anchor:
+        return f"text:{text_anchor}"
+    if ax_path:
+        if prefix:
+            return f"{prefix}:{ax_path}"
+        return f"ax:{ax_path}"
+    return None
+
+
+def infer_target_from_knowledge_step(
+    knowledge_step: dict[str, Any],
+    action_type: str,
+    context: dict[str, Any],
+) -> str:
+    target = knowledge_step.get("target")
+    if isinstance(target, dict):
+        semantic_targets = [
+            item for item in target.get("semanticTargets", [])
+            if isinstance(item, dict)
+        ]
+        semantic_targets.sort(
+            key=lambda item: normalize_float(item.get("confidence"), 0.0),
+            reverse=True,
+        )
+        for semantic_target in semantic_targets:
+            label = semantic_target_label(semantic_target)
+            if label:
+                return label
 
     if action_type == "openApp":
-        return f"app:{app_name or 'unknown'}"
+        bundle_id = normalize_optional_string(context.get("appBundleId"))
+        app_name = normalize_optional_string(context.get("appName"))
+        if bundle_id:
+            return f"bundle:{bundle_id}"
+        if app_name:
+            return f"app:{app_name}"
 
     return "unknown"
 
@@ -399,7 +467,7 @@ def normalize_execution_plan(
 
         target = llm_step.get("target")
         if not isinstance(target, str) or not target.strip():
-            target = infer_target(instruction, action_type, str(context.get("appName", "unknown")))
+            target = infer_target_from_knowledge_step(knowledge_step, action_type, context)
             llm_fallback_count += 1
 
         source_event_ids = llm_step.get("sourceEventIds")

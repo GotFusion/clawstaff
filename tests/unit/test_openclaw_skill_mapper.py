@@ -96,6 +96,17 @@ class OpenClawSkillMapperTests(unittest.TestCase):
         self.assertEqual(first_step["coordinate"]["y"], 654)
         self.assertEqual(first_step["semanticTargets"][0]["locatorType"], "coordinateFallback")
 
+    def test_normalize_execution_plan_fallback_prefers_semantic_targets(self):
+        normalized, diagnostics = self.mod.normalize_execution_plan(
+            knowledge_item=self.sample_knowledge,
+            llm_output=None,
+            llm_valid=False,
+        )
+
+        self.assertEqual(normalized["executionPlan"]["steps"][0]["target"], "button:Pull requests")
+        self.assertEqual(normalized["executionPlan"]["steps"][1]["target"], "link:Issues")
+        self.assertTrue(any("Applied fallback" in item for item in diagnostics))
+
     def test_validate_knowledge_item_detects_missing_steps(self):
         broken = dict(self.sample_knowledge)
         broken["steps"] = []

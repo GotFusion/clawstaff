@@ -31,9 +31,11 @@ from render_knowledge_prompts import (
     DEFAULT_OUTPUT_SCHEMA,
     DEFAULT_SYSTEM_TEMPLATE,
     DEFAULT_TASK_TEMPLATE,
+    infer_semantic_target,
     load_json,
     load_text,
     render_task_prompt,
+    sanitize_instruction_text,
 )
 from validate_knowledge_parse_output import (
     extract_json_from_text,
@@ -193,14 +195,14 @@ def build_text_provider_output(knowledge_item: dict[str, Any]) -> dict[str, Any]
             continue
         instruction = str(step.get("instruction", "")).strip()
         action_type = map_action_type(instruction)
-        target = infer_target(instruction, action_type, str(context.get("appName", "unknown")))
+        target = infer_target(step, action_type, context)
         if action_type != "unknown":
             recognized_actions += 1
         output_steps.append(
             {
                 "stepId": step.get("stepId", "step-000"),
                 "actionType": action_type,
-                "instruction": instruction or "unknown",
+                "instruction": sanitize_instruction_text(instruction) or "unknown",
                 "target": target,
                 "sourceEventIds": list(step.get("sourceEventIds", [])) or ["unknown"],
             }
@@ -277,16 +279,13 @@ def map_action_type(instruction: str) -> str:
     return "unknown"
 
 
-def infer_target(instruction: str, action_type: str, app_name: str) -> str:
-    pattern1 = re.search(r"x\s*=\s*(\d+)\s*[,，]\s*y\s*=\s*(\d+)", instruction, flags=re.IGNORECASE)
-    if pattern1:
-        return f"coordinate:{pattern1.group(1)},{pattern1.group(2)}"
-
-    pattern2 = re.search(r"\((\d+)\s*,\s*(\d+)\)", instruction)
-    if pattern2:
-        return f"coordinate:{pattern2.group(1)},{pattern2.group(2)}"
+def infer_target(step: dict[str, Any], action_type: str, context: dict[str, Any]) -> str:
+    semantic_target = infer_semantic_target(step, context)
+    if semantic_target != "unknown":
+        return semantic_target
 
     if action_type == "openApp":
+        app_name = str(context.get("appName", "unknown"))
         return f"app:{app_name or 'unknown'}"
 
     return "unknown"

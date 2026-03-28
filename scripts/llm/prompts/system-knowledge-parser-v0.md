@@ -40,8 +40,17 @@
 6. 其他 -> `unknown`
 
 `target` 规则：
-1. 指令中若出现坐标（如 `x=123, y=456` 或 `(123,456)`），输出 `coordinate:123,456`。
-2. `actionType = openApp` 时，优先输出 `app:{context.appName}`。
-3. 无法识别时输出 `unknown`。
+1. 优先使用输入 `KnowledgeItem.steps[*].target.semanticSummary` 与 `target.semanticTargets[*]` 中的语义线索，绝不能把坐标当作主目标。
+2. 常见 GUI 目标输出格式优先为：
+   - `button:{title}`
+   - `link:{title}`
+   - `field:{label_or_identifier}`
+   - `menu:{title}`
+   - `tab:{title}`
+   - `window:{title}`
+   - 若只有通用元素信息，则输出 `element:{title_or_identifier}`
+3. `actionType = openApp` 时，优先输出 `bundle:{context.appBundleId}`；若 bundleId 缺失，再输出 `app:{context.appName}`。
+4. 如果只有坐标线索、没有稳定语义锚点，输出 `unknown`。
+5. 不得输出 `coordinate:x,y`、`x=123,y=456`、`(123,456)` 这类坐标目标。
 
 若存在任何与规则冲突的情况，优先保证输出 JSON 合法且可被 schema 校验通过。

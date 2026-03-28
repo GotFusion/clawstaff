@@ -142,6 +142,10 @@ make student ARGS="--goal 在 Safari 中复现点击流程 --knowledge core/know
 5. 粘贴到 App 的“LLM 结果输入”文本框，点击“执行手动结果”。  
 6. App 会生成 OpenClaw Skill，并显示输出目录路径。  
 
+补充说明：
+- `SEM-502` 后，手动提示词默认渲染为 `semantic-first` 视图，只向 ChatGPT 暴露语义目标、上下文和约束，不再把屏幕坐标当作主目标提示。
+- 若某步暂时缺少稳定语义锚点，提示词会保守显示为 `unknown`，而不是继续鼓励生成 `coordinate:x,y`。
+
 ### 4.1 提示词渲染与校验
 ```bash
 make llm-prompts
@@ -166,6 +170,7 @@ python3 scripts/validation/validate_skill_bundle.py \
 - `validate_openclaw_skill.py` 负责 bundle/frontmatter/schema 一致性校验。
 - `validate_skill_bundle.py` 负责执行前预检：locator 可解析性、高风险动作、低置信步骤、低复现度、敏感窗口识别、目标 App 白名单。
 - 目标 App 白名单默认从 skill 自身声明的 app 集合推导：顶层 context、completionCriteria，以及步骤里显式声明的 bundle / semantic target app。
+- `render_knowledge_prompts.py` 与离线 `text` provider 都已切到 `semantic-first`：优先输出 `button:/link:/field:/menu:/tab:/window:` 这类语义目标，而不是坐标目标。
 - 统一安全策略位于 `config/safety-rules.yaml`；如需做项目级放行，请优先在其中配置 `App / task / skill` 白名单，而不是直接改代码。
 - App 技能列表会直接展示预检状态；`需老师确认` 的技能不会进入学生模式自动执行。
 
